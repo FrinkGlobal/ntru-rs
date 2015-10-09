@@ -1,0 +1,7 @@
+[package]
+name = "ntru"
+version = "0.1.0"
+authors = ["Razican <admin@razican.com>"]
+
+[dependencies]
+libc = "0.1.10"
