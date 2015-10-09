@@ -1,5 +1,8 @@
 # NTRU library for Rust #
 
+[![Build Status](https://travis-ci.org/Razican/ntru-rs.svg)](https://travis-ci.org/Razican/ntru-rs)
+[![Coverage Status](https://coveralls.io/repos/Razican/ntru-rs/badge.svg?branch=develop&service=github)](https://coveralls.io/github/Razican/ntru-rs?branch=develop)
+
 This library implements an interface with *[ntrulib](https://tbuktu.github.io/ntru/)* C library. It
 is currently under development, and is not usable.
 
