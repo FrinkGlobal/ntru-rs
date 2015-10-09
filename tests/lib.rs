@@ -13,5 +13,6 @@ fn it_keygen() {
     for params in param_arr {
         let kp: NtruEncKeyPair = Default::default();
         let mut rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
+        // TODO
     }
 }
