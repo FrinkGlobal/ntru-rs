@@ -6,7 +6,7 @@ rust:
 sudo: required
 before_install:
 - git clone https://github.com/tbuktu/libntru.git
-- cd libntru && make && make install && cd ..
+- cd libntru && make && sudo make install && cd ..
 script:
 - cargo build --verbose
 - cargo test --verbose
