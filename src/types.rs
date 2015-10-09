@@ -1,14 +1,15 @@
 use std::default::Default;
-use libc::uint8_t;
+use libc::{int16_t, uint8_t, uint16_t};
+use super::ffi;
 
 use encparams::NTRU_INT_POLY_SIZE;
 use encparams::NTRU_MAX_ONES;
 
 /// A polynomial with integer coefficients.
 #[repr(C)]
-struct NtruIntPoly {
-    n: u16,
-    coeffs: [i16; NTRU_INT_POLY_SIZE],
+pub struct NtruIntPoly {
+    n: uint16_t,
+    coeffs: [int16_t; NTRU_INT_POLY_SIZE],
 }
 
 impl Default for NtruIntPoly {
@@ -19,12 +20,12 @@ impl Default for NtruIntPoly {
 
 /// A ternary polynomial, i.e. all coefficients are equal to -1, 0, or 1.
 #[repr(C)]
-struct NtruTernPoly {
-    n: u16,
-    num_ones: u16,
-    num_neg_ones: u16,
-    ones: [u16; NTRU_MAX_ONES],
-    neg_ones: [u16; NTRU_MAX_ONES],
+pub struct NtruTernPoly {
+    n: uint16_t,
+    num_ones: uint16_t,
+    num_neg_ones: uint16_t,
+    ones: [uint16_t; NTRU_MAX_ONES],
+    neg_ones: [uint16_t; NTRU_MAX_ONES],
 }
 
 impl Default for NtruTernPoly {
@@ -34,11 +35,32 @@ impl Default for NtruTernPoly {
     }
 }
 
+impl NtruTernPoly {
+    /// Ternary to general integer polynomial
+    ///
+    /// Converts a NtruTernPoly to an equivalent NtruIntPoly.
+    pub fn to_int_poly(&self) -> NtruIntPoly {
+        NtruIntPoly {n: self.n,
+        coeffs: {
+            let mut coeffs = [0; NTRU_INT_POLY_SIZE];
+
+            for i in 0..self.num_ones {
+                coeffs[self.ones[i as usize] as usize] = 1;
+            }
+            for i in 0..self.num_neg_ones {
+                coeffs[self.neg_ones[i as usize] as usize] = -1;
+            }
+
+            coeffs
+        }}
+    }
+}
+
 /// A product-form polynomial, i.e. a polynomial of the form f1*f2+f3 where f1,f2,f3 are very
 /// sparsely populated ternary polynomials.
 #[repr(C)]
 struct NtruProdPoly {
-    n: u16,
+    n: uint16_t,
     f1: NtruTernPoly,
     f2: NtruTernPoly,
     f3: NtruTernPoly,
@@ -54,7 +76,7 @@ impl Default for NtruProdPoly {
 #[repr(C)]
 struct NtruPrivPoly { // maybe we could do conditional compilation?
     /// Whether the polynomial is in product form
-    prod_flag: u8,
+    prod_flag: uint8_t,
     prod: NtruProdPoly,
 //     union {
 //         NtruTernPoly tern;
@@ -73,7 +95,7 @@ impl Default for NtruPrivPoly {
 /// NtruEncrypt private key
 #[repr(C)]
 struct NtruEncPrivKey {
-    q: u16,
+    q: uint16_t,
     t: NtruPrivPoly,
 }
 
@@ -86,7 +108,7 @@ impl Default for NtruEncPrivKey {
 /// NtruEncrypt public key
 #[repr(C)]
 struct NtruEncPubKey {
-    q: u16,
+    q: uint16_t,
     h: NtruIntPoly,
 }
 

@@ -14,32 +14,32 @@ pub struct NtruEncParams {
     /// Name of the parameter set
     name: [c_char; 11],
     /// Number of polynomial coefficients
-    n: u16,
+    n: uint16_t,
     /// Modulus
-    q: u16,
+    q: uint16_t,
     /// Product flag, 1 for product-form private keys, 0 for ternary
-    prod_flag: u8,
+    prod_flag: uint8_t,
     /// Number of ones in the private polynomial f1 (if prod=1) or f (if prod=0)
-    df1: u16,
+    df1: uint16_t,
     /// Number of ones in the private polynomial f2; ignored if prod=0
-    df2: u16,
+    df2: uint16_t,
     /// Number of ones in the private polynomial f3; ignored if prod=0
-    df3: u16,
+    df3: uint16_t,
     /// Minimum acceptable number of -1's, 0's, and 1's in the polynomial m' in the last encryption
     /// step
-    dm0: u16,
+    dm0: uint16_t,
     /// Number of random bits to prepend to the message
-    db: u16,
+    db: uint16_t,
     /// A parameter for the Index Generation Function
-    c: u16,
+    c: uint16_t,
     /// Minimum number of hash calls for the IGF to make
-    min_calls_r: u16,
+    min_calls_r: uint16_t,
     /// Minimum number of calls to generate the masking polynomial
-    min_calls_mask: u16,
+    min_calls_mask: uint16_t,
     /// Whether to hash the seed in the MGF first (1) or use the seed directly (0)
-    hash_seed: u8,
+    hash_seed: uint8_t,
     /// Three bytes that uniquely identify the parameter set
-    oid: [u8; 3],
+    oid: [uint8_t; 3],
     /// Hash function, e.g. ntru_sha256
     hash: unsafe extern fn(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t)
                             -> c_void,
@@ -47,43 +47,14 @@ pub struct NtruEncParams {
     hash_4way: unsafe extern fn(input: *const *const uint8_t, input_len: uint16_t,
                                 digest: *mut *mut uint8_t) -> c_void,
     /// output length of the hash function
-    hlen: u16,
+    hlen: uint16_t,
     /// number of bits of the public key to hash
-    pklen: u16,
+    pklen: uint16_t,
 }
 
-// /// Produce a `CStr` reference out of a static string literal.
-// ///
-// /// This macro provides a convenient way to use string literals in
-// /// expressions where a `CStr` reference is expected.
-// /// The macro parameter does not need to end with `"\0"`, it is
-// /// appended by the macro.
-// ///
-// /// # Example
-// ///
-// /// ```rust
-// ///
-// /// #[macro_use]
-// /// extern crate c_string;
-// ///
-// /// extern crate libc;
-// ///
-// /// fn main() {
-// ///     unsafe { libc::puts(c_str!("Hello, world!").as_ptr()) };
-// /// }
-// /// ```
-// #[macro_export]
-// macro_rules! c_str {
-//     ($lit:expr) => {
-//         // Currently, there is no working way to concatenate a byte string
-//         // literal out of bytestring or string literals. Otherwise, we could
-//         // use from_static_bytes and accept byte strings as well.
-//         // See https://github.com/rust-lang/rfcs/pull/566
-//         unsafe {
-//             CStr::from_ptr(concat!($lit, "\0").as_ptr() as *const c_char)
-//         }
-//     }
-// }
+impl NtruEncParams {
+    pub fn get_n(&self) -> u16 { self.n }
+}
 
 const EES401EP1: NtruEncParams = NtruEncParams {
     name: [69, 69, 83, 52, 48, 49, 69, 80, 49, 0, 0], // EES401EP1
