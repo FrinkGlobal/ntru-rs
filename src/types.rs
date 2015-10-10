@@ -1,7 +1,7 @@
+use std::ops::Add;
 use std::default::Default;
 use libc::{int16_t, uint8_t, uint16_t};
 use super::ffi;
-
 use encparams::NTRU_INT_POLY_SIZE;
 use encparams::NTRU_MAX_ONES;
 
@@ -15,6 +15,28 @@ pub struct NtruIntPoly {
 impl Default for NtruIntPoly {
     fn default() -> NtruIntPoly {
         NtruIntPoly {n: 0, coeffs: [0; NTRU_INT_POLY_SIZE]}
+    }
+}
+
+impl Clone for NtruIntPoly {
+    fn clone(&self) -> NtruIntPoly {
+        NtruIntPoly {n: self.n, coeffs: self.coeffs}
+    }
+}
+
+impl Add for NtruIntPoly {
+    type Output = NtruIntPoly;
+    fn add(self, rhs: NtruIntPoly) -> Self::Output {
+        let mut out = self.clone();
+        unsafe {ffi::ntru_add_int(&mut out, &rhs)};
+        out
+    }
+}
+
+impl NtruIntPoly {
+    pub fn mod_mask(&mut self, mod_mask: u16) -> NtruIntPoly {
+        unsafe {ffi::ntru_mod_mask(self, mod_mask)}
+        self.clone()
     }
 }
 
@@ -94,7 +116,7 @@ impl Default for NtruPrivPoly {
 
 /// NtruEncrypt private key
 #[repr(C)]
-struct NtruEncPrivKey {
+pub struct NtruEncPrivKey {
     q: uint16_t,
     t: NtruPrivPoly,
 }
@@ -107,7 +129,7 @@ impl Default for NtruEncPrivKey {
 
 /// NtruEncrypt public key
 #[repr(C)]
-struct NtruEncPubKey {
+pub struct NtruEncPubKey {
     q: uint16_t,
     h: NtruIntPoly,
 }
@@ -116,6 +138,11 @@ impl Default for NtruEncPubKey {
     fn default() -> NtruEncPubKey {
         NtruEncPubKey {q: 0, h: Default::default()}
     }
+}
+
+impl NtruEncPubKey {
+    pub fn get_q(&self) -> u16 { self.q }
+    pub fn get_h(&self) -> &NtruIntPoly { &self.h }
 }
 
 /// NtruEncrypt key pair
@@ -129,6 +156,11 @@ impl Default for NtruEncKeyPair {
     fn default() -> NtruEncKeyPair {
         NtruEncKeyPair {private: Default::default(), public: Default::default()}
     }
+}
+
+impl NtruEncKeyPair {
+    pub fn get_private(&self) -> &NtruEncPrivKey { &self.private }
+    pub fn get_public(&self) -> &NtruEncPubKey { &self.public }
 }
 
 pub enum NtruError {

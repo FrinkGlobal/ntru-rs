@@ -1,5 +1,5 @@
 use libc::{c_char, c_void, uint16_t, uint8_t};
-use ffi::{ntru_sha1, ntru_sha1_4way, ntru_sha256, ntru_sha256_4way};
+use super::ffi;
 
 /// Max N value for all param sets; +1 for ntru_invert_...()
 pub const NTRU_MAX_DEGREE: usize = (1499+1);
@@ -54,6 +54,7 @@ pub struct NtruEncParams {
 
 impl NtruEncParams {
     pub fn get_n(&self) -> u16 { self.n }
+    pub fn get_q(&self) -> u16 { self.q }
 }
 
 const EES401EP1: NtruEncParams = NtruEncParams {
@@ -69,8 +70,8 @@ const EES401EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 9,
     hash_seed: 1,
     oid: [0, 2, 4],
-    hash: ntru_sha1,
-    hash_4way: ntru_sha1_4way,
+    hash: ffi::ntru_sha1,
+    hash_4way: ffi::ntru_sha1_4way,
     hlen: 20,
     pklen: 114,
 };
@@ -90,8 +91,8 @@ const EES449EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 9,
     hash_seed: 1,
     oid: [0, 3, 3],
-    hash: ntru_sha1,
-    hash_4way: ntru_sha1_4way,
+    hash: ffi::ntru_sha1,
+    hash_4way: ffi::ntru_sha1_4way,
     hlen: 20,
     pklen: 128,
 };
@@ -111,8 +112,8 @@ const EES677EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 9,
     hash_seed: 1,
     oid: [0, 5, 3],
-    hash: ntru_sha256,
-    hash_4way: ntru_sha256_4way,
+    hash: ffi::ntru_sha256,
+    hash_4way: ffi::ntru_sha256_4way,
     hlen: 32,
     pklen: 192,
 };
@@ -132,8 +133,8 @@ const EES1087EP2: NtruEncParams = NtruEncParams {
     min_calls_mask: 14,
     hash_seed: 1,
     oid: [0, 6, 3],
-    hash: ntru_sha256,
-    hash_4way: ntru_sha256_4way,
+    hash: ffi::ntru_sha256,
+    hash_4way: ffi::ntru_sha256_4way,
     hlen: 32,
     pklen: 256,
 };
@@ -153,8 +154,8 @@ const EES541EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 11,
     hash_seed: 1,
     oid: [0, 2, 5],
-    hash: ntru_sha1,
-    hash_4way: ntru_sha1_4way,
+    hash: ffi::ntru_sha1,
+    hash_4way: ffi::ntru_sha1_4way,
     hlen: 20,
     pklen: 112,
 };
@@ -174,8 +175,8 @@ const EES613EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 13,
     hash_seed: 1,
     oid: [0, 3, 4],
-    hash: ntru_sha1,
-    hash_4way: ntru_sha1_4way,
+    hash: ffi::ntru_sha1,
+    hash_4way: ffi::ntru_sha1_4way,
     hlen: 20,
     pklen: 128,
 };
@@ -195,8 +196,8 @@ const EES887EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 12,
     hash_seed: 1,
     oid: [0, 5, 4],
-    hash: ntru_sha256,
-    hash_4way: ntru_sha256_4way,
+    hash: ffi::ntru_sha256,
+    hash_4way: ffi::ntru_sha256_4way,
     hlen: 32,
     pklen: 192,
 };
@@ -216,8 +217,8 @@ const EES1171EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 15,
     hash_seed: 1,
     oid: [0, 6, 4],
-    hash: ntru_sha256,
-    hash_4way: ntru_sha256_4way,
+    hash: ffi::ntru_sha256,
+    hash_4way: ffi::ntru_sha256_4way,
     hlen: 32,
     pklen: 256,
 };
@@ -237,8 +238,8 @@ const EES659EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 14,
     hash_seed: 1,
     oid: [0, 2, 6],
-    hash: ntru_sha1,
-    hash_4way: ntru_sha1_4way,
+    hash: ffi::ntru_sha1,
+    hash_4way: ffi::ntru_sha1_4way,
     hlen: 20,
     pklen: 112,
 };
@@ -258,8 +259,8 @@ const EES761EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 16,
     hash_seed: 1,
     oid: [0, 3, 5],
-    hash: ntru_sha1,
-    hash_4way: ntru_sha1_4way,
+    hash: ffi::ntru_sha1,
+    hash_4way: ffi::ntru_sha1_4way,
     hlen: 20,
     pklen: 128,
 };
@@ -279,8 +280,8 @@ const EES1087EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 14,
     hash_seed: 1,
     oid: [0, 5, 5],
-    hash: ntru_sha256,
-    hash_4way: ntru_sha256_4way,
+    hash: ffi::ntru_sha256,
+    hash_4way: ffi::ntru_sha256_4way,
     hlen: 32,
     pklen: 192,
 };
@@ -300,8 +301,8 @@ const EES1499EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 19,
     hash_seed: 1,
     oid: [0, 6, 5],
-    hash: ntru_sha256,
-    hash_4way: ntru_sha256_4way,
+    hash: ffi::ntru_sha256,
+    hash_4way: ffi::ntru_sha256_4way,
     hlen: 32,
     pklen: 256,
 };
@@ -321,8 +322,8 @@ const EES401EP2: NtruEncParams = NtruEncParams {
     min_calls_mask: 6,
     hash_seed: 1,
     oid: [0, 2, 16],
-    hash: ntru_sha1,
-    hash_4way: ntru_sha1_4way,
+    hash: ffi::ntru_sha1,
+    hash_4way: ffi::ntru_sha1_4way,
     hlen: 20,
     pklen: 112,
 };
@@ -342,8 +343,8 @@ const EES439EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 6,
     hash_seed: 1,
     oid: [0, 3, 16],
-    hash: ntru_sha1,
-    hash_4way: ntru_sha1_4way,
+    hash: ffi::ntru_sha1,
+    hash_4way: ffi::ntru_sha1_4way,
     hlen: 20,
     pklen: 128,
 };
@@ -363,8 +364,8 @@ const EES593EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 5,
     hash_seed: 1,
     oid: [0, 5, 16],
-    hash: ntru_sha256,
-    hash_4way: ntru_sha256_4way,
+    hash: ffi::ntru_sha256,
+    hash_4way: ffi::ntru_sha256_4way,
     hlen: 32,
     pklen: 192,
 };
@@ -384,8 +385,8 @@ const EES743EP1: NtruEncParams = NtruEncParams {
     min_calls_mask: 7,
     hash_seed: 1,
     oid: [0, 6, 16],
-    hash: ntru_sha256,
-    hash_4way: ntru_sha256_4way,
+    hash: ffi::ntru_sha256,
+    hash_4way: ffi::ntru_sha256_4way,
     hlen: 32,
     pklen: 256,
 };

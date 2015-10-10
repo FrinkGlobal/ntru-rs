@@ -19,8 +19,8 @@ impl Default for NtruRandContext {
     }
 }
 
-impl Drop for NtruRandContext {
-    fn drop(&mut self) {
+impl NtruRandContext {
+    pub fn release(&mut self) {
         let result = unsafe {ffi::ntru_rand_release(self)};
         if result != 0 {
             panic!()
@@ -89,8 +89,6 @@ pub fn init_det(rand_gen: &NtruRandGen, seed: &[u8])
 }
 // pub fn generate(rand_data: *const uint8_t, len: uint16_t,
 //                             rand_ctx: *const NtruRandContext) -> uint8_t;
-// pub fn release(rand_ctx: *mut NtruRandContext) -> uint8_t;
-
 
 /// Random ternary polynomial
 ///

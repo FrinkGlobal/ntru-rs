@@ -1,7 +1,7 @@
 use libc::{uint16_t, uint8_t, c_void};
 
 use encparams::NtruEncParams;
-use types::{NtruEncKeyPair, NtruTernPoly};
+use types::{NtruIntPoly, NtruTernPoly, NtruEncKeyPair};
 use rand::{NtruRandContext, NtruRandGen};
 
 #[link(name = "ntru")]
@@ -62,4 +62,8 @@ extern {
     // poly.h
     pub fn ntru_rand_tern(n: uint16_t, num_ones: uint16_t, num_neg_ones: uint16_t,
                             poly: *mut NtruTernPoly, rand_ctx: *const NtruRandContext) -> uint8_t;
+    pub fn ntru_mult_tern(a: *const NtruIntPoly, b: *const NtruTernPoly, c: *mut NtruIntPoly,
+                            mod_mask: uint16_t) -> uint8_t;
+    pub fn ntru_add_int(a: *mut NtruIntPoly, b: *const NtruIntPoly);
+    pub fn ntru_mod_mask(p: *mut NtruIntPoly, mod_mask: uint16_t);
 }
