@@ -1,5 +1,6 @@
 use std::ops::Add;
 use std::default::Default;
+use std::fmt;
 use libc::{int16_t, uint8_t, uint16_t};
 use super::ffi;
 use encparams::NTRU_INT_POLY_SIZE;
@@ -7,6 +8,7 @@ use encparams::NTRU_MAX_ONES;
 
 /// A polynomial with integer coefficients.
 #[repr(C)]
+#[derive(Copy)]
 pub struct NtruIntPoly {
     n: uint16_t,
     coeffs: [int16_t; NTRU_INT_POLY_SIZE],
@@ -33,10 +35,55 @@ impl Add for NtruIntPoly {
     }
 }
 
+impl fmt::Debug for NtruIntPoly {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{{ n: {}, coeffs: [{}...{}] }}", self.n, self.coeffs[0],
+                self.coeffs[NTRU_INT_POLY_SIZE-1])
+    }
+}
+
+impl PartialEq for NtruIntPoly {
+    fn eq(&self, other: &NtruIntPoly) -> bool {
+        self.n == other.n && {
+            for i in 0..NTRU_INT_POLY_SIZE-1 {
+                if self.coeffs[i] != other.coeffs[i] { return false }
+            }
+            true
+        }
+    }
+}
+
 impl NtruIntPoly {
-    pub fn mod_mask(&mut self, mod_mask: u16) -> NtruIntPoly {
+    pub fn get_n(&self) -> u16 { self.n }
+    pub fn get_coeffs(&self) -> &[i16; NTRU_INT_POLY_SIZE] { &self.coeffs }
+    pub fn set_coeff(&mut self, index: usize, value: i16) { self.coeffs[index] = value }
+
+    pub fn mod_mask(&mut self, mod_mask: u16) {
         unsafe {ffi::ntru_mod_mask(self, mod_mask)}
-        self.clone()
+    }
+
+    pub fn mult_tern(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_tern(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_prod(&self, b: &NtruProdPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_prod(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_fac(&mut self, factor: i16) {
+        unsafe {ffi::ntru_mult_fac(self, factor)}
+    }
+
+    pub fn mod_center(&mut self, modulus: u16) {
+        unsafe {ffi::ntru_mod_center(self, modulus)}
+    }
+
+    pub fn mod3(&mut self) {
+        unsafe {ffi::ntru_mod3(self)}
     }
 }
 
@@ -54,6 +101,28 @@ impl Default for NtruTernPoly {
     fn default() -> NtruTernPoly {
         NtruTernPoly {n: 0, num_ones: 0, num_neg_ones: 0, ones: [0; NTRU_MAX_ONES],
                     neg_ones: [0; NTRU_MAX_ONES]}
+    }
+}
+
+impl fmt::Debug for NtruTernPoly {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f,
+            "{{ n: {}, num_ones: {}, num_neg_ones: {}, ones: [{}...{}], neg_ones: [{}...{}] }}",
+                self.n, self.num_ones, self.num_neg_ones, self.ones[0], self.ones[NTRU_MAX_ONES-1],
+                self.neg_ones[0], self.neg_ones[NTRU_MAX_ONES-1])
+    }
+}
+
+impl PartialEq for NtruTernPoly {
+    fn eq(&self, other: &NtruTernPoly) -> bool {
+        self.n == other.n && self.num_ones == other.num_ones &&
+        self.num_neg_ones == other.num_neg_ones && {
+            for i in 0..NTRU_MAX_ONES-1 {
+                if self.ones[i] != other.ones[i] { return false }
+                if self.neg_ones[i] != other.neg_ones[i] { return false }
+            }
+            true
+        }
     }
 }
 
@@ -81,7 +150,8 @@ impl NtruTernPoly {
 /// A product-form polynomial, i.e. a polynomial of the form f1*f2+f3 where f1,f2,f3 are very
 /// sparsely populated ternary polynomials.
 #[repr(C)]
-struct NtruProdPoly {
+#[derive(Debug, PartialEq)]
+pub struct NtruProdPoly {
     n: uint16_t,
     f1: NtruTernPoly,
     f2: NtruTernPoly,
@@ -94,28 +164,47 @@ impl Default for NtruProdPoly {
     }
 }
 
+#[repr(C)]
+#[derive(Debug, PartialEq)]
+pub struct PrivUnion {
+    tern: NtruTernPoly,
+    prod: NtruProdPoly,
+}
+
+impl Default for PrivUnion {
+    fn default() -> PrivUnion {
+        PrivUnion {tern: Default::default(), prod: Default::default()}
+    }
+}
+
+impl PrivUnion {
+    pub fn get_tern(&self) -> &NtruTernPoly { &self.tern }
+    pub fn get_prod(&self) -> &NtruProdPoly { &self.prod }
+}
+
 /// Private polynomial, can be ternary or product-form
 #[repr(C)]
-struct NtruPrivPoly { // maybe we could do conditional compilation?
+#[derive(Debug, PartialEq)]
+pub struct NtruPrivPoly { // maybe we could do conditional compilation?
     /// Whether the polynomial is in product form
     prod_flag: uint8_t,
-    prod: NtruProdPoly,
-//     union {
-//         NtruTernPoly tern;
-// #ifndef NTRU_AVOID_HAMMING_WT_PATENT
-//         NtruProdPoly prod;
-// #endif   /* NTRU_AVOID_HAMMING_WT_PATENT */
-//     } poly;
+    poly: PrivUnion,
 }
 
 impl Default for NtruPrivPoly {
     fn default() -> NtruPrivPoly {
-        NtruPrivPoly {prod_flag: 0, prod: Default::default()}
+        NtruPrivPoly {prod_flag: 0, poly: Default::default()}
     }
+}
+
+impl NtruPrivPoly {
+    pub fn get_prod_flag(&self) -> u8 { self.prod_flag }
+    pub fn get_poly(&self) -> &PrivUnion { &self.poly }
 }
 
 /// NtruEncrypt private key
 #[repr(C)]
+#[derive(Debug, PartialEq)]
 pub struct NtruEncPrivKey {
     q: uint16_t,
     t: NtruPrivPoly,
@@ -127,8 +216,14 @@ impl Default for NtruEncPrivKey {
     }
 }
 
+impl NtruEncPrivKey {
+    pub fn get_q(&self) -> u16 { self.q }
+    pub fn get_t(&self) -> &NtruPrivPoly { &self.t }
+}
+
 /// NtruEncrypt public key
 #[repr(C)]
+#[derive(Debug, PartialEq)]
 pub struct NtruEncPubKey {
     q: uint16_t,
     h: NtruIntPoly,
@@ -147,6 +242,7 @@ impl NtruEncPubKey {
 
 /// NtruEncrypt key pair
 #[repr(C)]
+#[derive(Debug, PartialEq)]
 pub struct NtruEncKeyPair {
     private: NtruEncPrivKey,
     public: NtruEncPubKey,
