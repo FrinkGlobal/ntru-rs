@@ -164,22 +164,52 @@ impl Default for NtruProdPoly {
     }
 }
 
+/// The size of the union in 16 bit words
+const PRIVUNION_SIZE: usize = 3004;
+
 #[repr(C)]
-#[derive(Debug, PartialEq)]
-pub struct PrivUnion {
-    tern: NtruTernPoly,
-    prod: NtruProdPoly,
+struct PrivUnion {
+    data: [uint16_t; PRIVUNION_SIZE],
 }
 
 impl Default for PrivUnion {
     fn default() -> PrivUnion {
-        PrivUnion {tern: Default::default(), prod: Default::default()}
+        PrivUnion {data: [0; PRIVUNION_SIZE]}
+    }
+}
+
+impl PartialEq for PrivUnion {
+    fn eq(&self, other: &PrivUnion) -> bool {
+        for i in 0..PRIVUNION_SIZE-1 {
+            if self.data[i] != other.data[i] { return false }
+        }
+        true
+    }
+}
+
+impl fmt::Debug for PrivUnion {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{{ data: [...] }}")
     }
 }
 
 impl PrivUnion {
-    pub fn get_tern(&self) -> &NtruTernPoly { &self.tern }
-    pub fn get_prod(&self) -> &NtruProdPoly { &self.prod }
+    unsafe fn as_tern(&self) -> &NtruTernPoly {
+        let p = self as *const _ as *const NtruTernPoly;
+        &*p
+    }
+    unsafe fn as_tern_mut(&mut self) -> &mut NtruTernPoly {
+        let p = self as *mut _ as *mut NtruTernPoly;
+        &mut *p
+    }
+    unsafe fn as_prod(&self) -> &NtruProdPoly {
+        let p = self as *const _ as *const NtruProdPoly;
+        &*p
+    }
+    unsafe fn as_prod_mut(&mut self) -> &mut NtruProdPoly {
+        let p = self as *mut _ as *mut NtruProdPoly;
+        &mut *p
+    }
 }
 
 /// Private polynomial, can be ternary or product-form
@@ -188,18 +218,19 @@ impl PrivUnion {
 pub struct NtruPrivPoly { // maybe we could do conditional compilation?
     /// Whether the polynomial is in product form
     prod_flag: uint8_t,
-    poly: PrivUnion,
+    poly: Box<PrivUnion>,
 }
 
 impl Default for NtruPrivPoly {
     fn default() -> NtruPrivPoly {
-        NtruPrivPoly {prod_flag: 0, poly: Default::default()}
+        NtruPrivPoly {prod_flag: 0, poly: Box::new(Default::default())}
     }
 }
 
 impl NtruPrivPoly {
     pub fn get_prod_flag(&self) -> u8 { self.prod_flag }
-    pub fn get_poly(&self) -> &PrivUnion { &self.poly }
+    pub fn get_poly_prod(&self) -> &NtruProdPoly { unsafe { &self.poly.as_prod() } }
+    pub fn get_poly_tern(&self) -> &NtruTernPoly { unsafe { &self.poly.as_tern() } }
 }
 
 /// NtruEncrypt private key

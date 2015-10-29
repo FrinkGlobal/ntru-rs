@@ -1,11 +1,12 @@
 # NTRU library for Rust #
 
-[![Build Status](https://travis-ci.org/Razican/ntru-rs.svg)](https://travis-ci.org/Razican/ntru-rs)
+[![Build Status](https://travis-ci.org/FractalGlobal/ntru-rs.svg?branch=develop)](https://travis-ci.org/FractalGlobal/ntru-rs)
 [![Coverage Status](https://coveralls.io/repos/Razican/ntru-rs/badge.svg?branch=develop&service=github)](https://coveralls.io/github/Razican/ntru-rs?branch=develop)
 
-This library implements an interface with *[libntru](https://tbuktu.github.io/ntru/)* C library. It
-is currently under development, and is not usable. The documentation can be found in
-[GitHub pages](http://razican.github.io/ntru-rs).
+This library implements an interface with
+*[libntru](https://tbuktu.github.io/ntru/)* C library. It is currently under
+development, and is not usable. The documentation can be found
+[here](http://fractal.global/ntru-rs).
 
 # License #
 

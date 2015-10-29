@@ -4,17 +4,17 @@ use super::ffi;
 
 #[repr(C)]
 pub struct NtruRandContext {
-    rand_gen: NtruRandGen,
+    rand_gen: *mut NtruRandGen,
     /// For deterministic RNGs
-    seed: *const u8,
+    seed: *const uint8_t,
     /// For deterministic RNGs
-    seed_len: u16,
+    seed_len: uint16_t,
     state: *mut c_void,
 }
 
 impl Default for NtruRandContext {
     fn default() -> NtruRandContext {
-        NtruRandContext {rand_gen: NTRU_RNG_DEFAULT, seed: &0, seed_len: 0,
+        NtruRandContext {rand_gen: &mut NTRU_RNG_DEFAULT, seed: &0, seed_len: 0,
                             state: &mut 0 as *mut _ as *mut c_void}
     }
 }
@@ -26,6 +26,8 @@ impl NtruRandContext {
             panic!()
         }
     }
+
+    pub fn get_seed_len(&self) -> u16 { self.seed_len }
 }
 
 #[repr(C)]

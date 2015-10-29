@@ -13,7 +13,7 @@ fn encrypt_poly(m: NtruIntPoly, r: &NtruTernPoly, h: &NtruIntPoly, q: u16) -> Nt
 }
 
 fn decrypt_poly(e: NtruIntPoly, private: &NtruEncPrivKey, modulus: u16)  -> NtruIntPoly {
-    let (mut d, _) = e.mult_prod(private.get_t().get_poly().get_prod(), modulus-1);
+    let (mut d, _) = e.mult_prod(private.get_t().get_poly_prod(), modulus-1);
     d.mod_mask(modulus-1);
     d.mult_fac(3);
     d = d + e;
@@ -32,7 +32,7 @@ fn it_keygen() {
     for params in param_arr {
         let mut rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
         let kp = ntru::gen_key_pair(&params, &rand_ctx).ok().unwrap();
-        println!("{:?}", kp);
+        println!("{:?}", rand_ctx.get_seed_len());
 
         // Encrypt a random message
         let m = ntru::rand::tern(params.get_n(), params.get_n()/3, params.get_n()/3,

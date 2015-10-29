@@ -53,6 +53,13 @@ pub struct NtruEncParams {
 }
 
 impl NtruEncParams {
+    pub fn get_name(&self) -> String {
+        let slice: [u8; 11] = [self.name[0] as u8, self.name[1] as u8, self.name[2] as u8,
+                                self.name[3] as u8, self.name[4] as u8, self.name[5] as u8,
+                                self.name[6] as u8, self.name[7] as u8, self.name[8] as u8,
+                                self.name[9] as u8, self.name[10] as u8];
+        String::from_utf8_lossy(&slice).into_owned()
+    }
     pub fn get_n(&self) -> u16 { self.n }
     pub fn get_q(&self) -> u16 { self.q }
 }

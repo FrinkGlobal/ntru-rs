@@ -4,8 +4,8 @@ version = "0.0.1-dev"
 authors = ["Razican <admin@razican.com>"]
 license = "GPL-3.0+"
 readme = "README.md"
-repository = "https://github.com/Razican/ntru-rs"
-documentation = "http://razican.github.io/ntru-rs"
+repository = "https://github.com/FractalGlobal/ntru-rs"
+documentation = "http://fractal.global/ntru-rs"
 description = """
 Implementation of the NTRU algorithm. It uses an interface to libntru.
 """
