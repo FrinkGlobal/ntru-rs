@@ -6,7 +6,6 @@ use ntru::types::{NtruIntPoly, NtruTernPoly, NtruEncPrivKey};
 
 fn encrypt_poly(m: NtruIntPoly, r: &NtruTernPoly, h: &NtruIntPoly, q: u16) -> NtruIntPoly {
     let (mut e, _) = h.mult_tern(r, q);
-    println!("{:?}", h);
     e = e + m;
     e.mod_mask(q-1);
     e
@@ -32,7 +31,6 @@ fn it_keygen() {
     for params in param_arr {
         let mut rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
         let kp = ntru::gen_key_pair(&params, &rand_ctx).ok().unwrap();
-        println!("{:?}", rand_ctx.get_seed_len());
 
         // Encrypt a random message
         let m = ntru::rand::tern(params.get_n(), params.get_n()/3, params.get_n()/3,

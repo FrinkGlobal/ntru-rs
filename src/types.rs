@@ -1,6 +1,7 @@
 use std::ops::Add;
 use std::default::Default;
 use std::fmt;
+use std::mem;
 use libc::{int16_t, uint8_t, uint16_t};
 use super::ffi;
 use encparams::NTRU_INT_POLY_SIZE;
@@ -194,21 +195,11 @@ impl fmt::Debug for PrivUnion {
 }
 
 impl PrivUnion {
-    unsafe fn as_tern(&self) -> &NtruTernPoly {
-        let p = self as *const _ as *const NtruTernPoly;
-        &*p
+    unsafe fn tern(&self) -> &NtruTernPoly {
+        mem::transmute(&self.data)
     }
-    unsafe fn as_tern_mut(&mut self) -> &mut NtruTernPoly {
-        let p = self as *mut _ as *mut NtruTernPoly;
-        &mut *p
-    }
-    unsafe fn as_prod(&self) -> &NtruProdPoly {
-        let p = self as *const _ as *const NtruProdPoly;
-        &*p
-    }
-    unsafe fn as_prod_mut(&mut self) -> &mut NtruProdPoly {
-        let p = self as *mut _ as *mut NtruProdPoly;
-        &mut *p
+    unsafe fn prod(&self) -> &NtruProdPoly {
+        mem::transmute(&self.data)
     }
 }
 
@@ -218,19 +209,19 @@ impl PrivUnion {
 pub struct NtruPrivPoly { // maybe we could do conditional compilation?
     /// Whether the polynomial is in product form
     prod_flag: uint8_t,
-    poly: Box<PrivUnion>,
+    poly: PrivUnion,
 }
 
 impl Default for NtruPrivPoly {
     fn default() -> NtruPrivPoly {
-        NtruPrivPoly {prod_flag: 0, poly: Box::new(Default::default())}
+        NtruPrivPoly {prod_flag: 0, poly: Default::default()}
     }
 }
 
 impl NtruPrivPoly {
     pub fn get_prod_flag(&self) -> u8 { self.prod_flag }
-    pub fn get_poly_prod(&self) -> &NtruProdPoly { unsafe { &self.poly.as_prod() } }
-    pub fn get_poly_tern(&self) -> &NtruTernPoly { unsafe { &self.poly.as_tern() } }
+    pub fn get_poly_prod(&self) -> &NtruProdPoly { unsafe { &*self.poly.prod() } }
+    pub fn get_poly_tern(&self) -> &NtruTernPoly { unsafe { &*self.poly.tern() } }
 }
 
 /// NtruEncrypt private key
