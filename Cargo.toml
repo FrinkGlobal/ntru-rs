@@ -12,4 +12,4 @@ Implementation of the NTRU algorithm. It uses an interface to libntru.
 keywords = ["libntru", "NTRU"]
 
 [dependencies]
-libc = "0.1.10"
+libc = "0.1.12"

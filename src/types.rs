@@ -46,7 +46,7 @@ impl fmt::Debug for NtruIntPoly {
 impl PartialEq for NtruIntPoly {
     fn eq(&self, other: &NtruIntPoly) -> bool {
         self.n == other.n && {
-            for i in 0..NTRU_INT_POLY_SIZE-1 {
+            for i in 0..self.n as usize {
                 if self.coeffs[i] != other.coeffs[i] { return false }
             }
             true
@@ -179,15 +179,6 @@ impl Default for PrivUnion {
     }
 }
 
-impl PartialEq for PrivUnion {
-    fn eq(&self, other: &PrivUnion) -> bool {
-        for i in 0..PRIVUNION_SIZE-1 {
-            if self.data[i] != other.data[i] { return false }
-        }
-        true
-    }
-}
-
 impl fmt::Debug for PrivUnion {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{{ data: [...] }}")
@@ -205,7 +196,7 @@ impl PrivUnion {
 
 /// Private polynomial, can be ternary or product-form
 #[repr(C)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub struct NtruPrivPoly { // maybe we could do conditional compilation?
     /// Whether the polynomial is in product form
     prod_flag: uint8_t,
@@ -218,10 +209,29 @@ impl Default for NtruPrivPoly {
     }
 }
 
+impl PartialEq for NtruPrivPoly {
+    fn eq(&self, other: &NtruPrivPoly) -> bool {
+        self.prod_flag == other.prod_flag && {
+            if self.prod_flag > 0 { self.get_poly_prod() == other.get_poly_prod() }
+            else { self.get_poly_tern() == other.get_poly_tern() }
+        }
+    }
+}
+
 impl NtruPrivPoly {
     pub fn get_prod_flag(&self) -> u8 { self.prod_flag }
-    pub fn get_poly_prod(&self) -> &NtruProdPoly { unsafe { &*self.poly.prod() } }
-    pub fn get_poly_tern(&self) -> &NtruTernPoly { unsafe { &*self.poly.tern() } }
+    pub fn get_poly_prod(&self) -> &NtruProdPoly {
+        if self.prod_flag != 1 {
+            panic!("Trying to get NtruPrivPoly from an union that is NtruTernPoly.");
+        }
+        unsafe { &*self.poly.prod() }
+    }
+    pub fn get_poly_tern(&self) -> &NtruTernPoly {
+        if self.prod_flag != 0 {
+            panic!("Trying to get NtruTernPoly from an union that is NtruProdPoly.");
+        }
+        unsafe { &*self.poly.tern() }
+    }
 }
 
 /// NtruEncrypt private key
