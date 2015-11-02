@@ -1,3 +1,4 @@
+use std::{mem, slice};
 use libc::{c_void, uint8_t, uint16_t};
 use types::{NtruError, NtruTernPoly};
 use super::ffi;
@@ -22,12 +23,15 @@ impl Default for NtruRandContext {
 impl NtruRandContext {
     pub fn release(&mut self) {
         let result = unsafe {ffi::ntru_rand_release(self)};
-        if result != 0 {
-            panic!()
-        }
+        if result != 0 { panic!() }
     }
 
-    pub fn get_seed_len(&self) -> u16 { self.seed_len }
+    pub fn get_seed(&self) -> &[u8] { unsafe {slice::from_raw_parts(self.seed,
+                                                                    self.seed_len as usize)} }
+    pub fn set_seed(&mut self, seed: &[u8]) {
+        self.seed_len = seed.len() as uint16_t;
+        self.seed = &seed[0];
+    }
 }
 
 #[repr(C)]
