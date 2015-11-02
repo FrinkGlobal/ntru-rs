@@ -291,6 +291,7 @@ impl NtruEncKeyPair {
     pub fn get_public(&self) -> &NtruEncPubKey { &self.public }
 }
 
+#[derive(Debug, PartialEq, Clone)]
 pub enum NtruError {
     /// Out of memory error
     OutOfMemory,

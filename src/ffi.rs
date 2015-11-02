@@ -1,7 +1,7 @@
 use libc::{uint16_t, int16_t, uint8_t, c_void};
 
 use encparams::NtruEncParams;
-use types::{NtruIntPoly, NtruTernPoly, NtruProdPoly, NtruEncKeyPair};
+use types::{NtruIntPoly, NtruTernPoly, NtruProdPoly, NtruEncKeyPair, NtruEncPubKey};
 use rand::{NtruRandContext, NtruRandGen};
 
 #[link(name = "ntru")]
@@ -9,6 +9,12 @@ extern {
     // ntru.h
     pub fn ntru_gen_key_pair(params: *const NtruEncParams, kp: *mut NtruEncKeyPair,
                         rand_ctx: *const NtruRandContext) -> uint8_t;
+    pub fn ntru_encrypt(msg: *const uint8_t, msg_len: uint16_t, public: *const NtruEncPubKey,
+                        params: *const NtruEncParams, rand_ctx: *const NtruRandContext,
+                        enc: *const uint8_t) -> uint8_t;
+    pub fn ntru_decrypt(enc: *const uint8_t, kp: *const NtruEncKeyPair,
+                        params: *const NtruEncParams, dec: *const uint8_t,
+                        dec_len: *const uint16_t) -> uint8_t;
 
     // hash.h
     pub fn ntru_sha1(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t) -> c_void;

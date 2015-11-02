@@ -62,6 +62,28 @@ impl NtruEncParams {
     }
     pub fn get_n(&self) -> u16 { self.n }
     pub fn get_q(&self) -> u16 { self.q }
+    pub fn get_db(&self) -> u16 { self.db }
+
+    pub fn max_msg_len(&self) -> u8 {
+        (self.n / 2 * 3 / 8 - 1 - self.db/8) as u8
+    }
+
+    pub fn enc_len(&self) -> u16 {
+        // Make sure q is a power of 2
+        if self.q & (self.q-1) != 0 { 0 }
+        else {
+            let len_bits = self.n * {
+                let mut q = self.q;
+                let mut log = 0;
+                while q > 1 {
+                    q /= 2;
+                    log += 1;
+                }
+                log
+            };
+            (len_bits+7) / 8
+        }
+    }
 }
 
 const EES401EP1: NtruEncParams = NtruEncParams {

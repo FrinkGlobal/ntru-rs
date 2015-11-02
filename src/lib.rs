@@ -5,7 +5,7 @@ pub mod rand;
 pub mod encparams;
 mod ffi;
 
-use types::{NtruEncKeyPair, NtruError};
+use types::{NtruEncKeyPair, NtruEncPubKey, NtruError};
 use encparams::NtruEncParams;
 use rand::NtruRandContext;
 
@@ -20,6 +20,36 @@ pub fn gen_key_pair(params: &NtruEncParams, rand_context: &NtruRandContext)
     let result = unsafe {ffi::ntru_gen_key_pair(params, &mut kp, rand_context)};
     if result == 0 {
         Ok(kp)
+    } else {
+        Err(NtruError::from_uint8_t(result))
+    }
+}
+
+pub fn encrypt(msg: &[u8], msg_len: u16, public: &NtruEncPubKey, params: &NtruEncParams,
+                rand_ctx: &NtruRandContext) -> Result<Box<[u8]>, NtruError> {
+    let mut enc = vec![0u8; params.enc_len() as usize];
+    let result = unsafe {ffi::ntru_encrypt(&msg[0], msg_len, public, params, rand_ctx,
+                                            &mut enc[0])};
+
+    if result == 0 {
+        Ok(enc.into_boxed_slice())
+    } else {
+        Err(NtruError::from_uint8_t(result))
+    }
+}
+
+pub fn decrypt(enc: &[u8], kp: &NtruEncKeyPair, params: &NtruEncParams)
+                -> Result<Box<[u8]>, NtruError> {
+    let mut dec = vec![0u8; params.max_msg_len() as usize];
+    let mut dec_len = 0u16;
+    let result = unsafe {ffi::ntru_decrypt(&enc[0], kp, params, &mut dec[0], &mut dec_len)};
+
+    if result == 0 {
+        let mut final_dec = Vec::with_capacity(dec_len as usize);
+        for i in 0..(dec_len as usize) {
+            final_dec.push(dec[i]);
+        }
+        Ok(final_dec.into_boxed_slice())
     } else {
         Err(NtruError::from_uint8_t(result))
     }

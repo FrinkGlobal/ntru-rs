@@ -1,4 +1,4 @@
-use std::{mem, slice};
+use std::{slice};
 use libc::{c_void, uint8_t, uint16_t};
 use types::{NtruError, NtruTernPoly};
 use super::ffi;
@@ -93,8 +93,16 @@ pub fn init_det(rand_gen: &NtruRandGen, seed: &[u8])
         Err(NtruError::from_uint8_t(result))
     }
 }
-// pub fn generate(rand_data: *const uint8_t, len: uint16_t,
-//                             rand_ctx: *const NtruRandContext) -> uint8_t;
+pub fn generate(length: u16, rand_ctx: &NtruRandContext) -> Result<Box<[u8]>, NtruError> {
+    let mut plain = vec![0u8; length as usize];
+    let result = unsafe {ffi::ntru_rand_generate(&mut plain[0], length, rand_ctx)};
+
+    if result == 0 {
+        Ok(plain.into_boxed_slice())
+    } else {
+        Err(NtruError::from_uint8_t(result))
+    }
+}
 
 /// Random ternary polynomial
 ///
