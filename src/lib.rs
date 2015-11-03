@@ -25,11 +25,11 @@ pub fn gen_key_pair(params: &NtruEncParams, rand_context: &NtruRandContext)
     }
 }
 
-pub fn encrypt(msg: &[u8], msg_len: u16, public: &NtruEncPubKey, params: &NtruEncParams,
+pub fn encrypt(msg: &[u8], public: &NtruEncPubKey, params: &NtruEncParams,
                 rand_ctx: &NtruRandContext) -> Result<Box<[u8]>, NtruError> {
     let mut enc = vec![0u8; params.enc_len() as usize];
-    let result = unsafe {ffi::ntru_encrypt(&msg[0], msg_len, public, params, rand_ctx,
-                                            &mut enc[0])};
+    let result = unsafe {ffi::ntru_encrypt(if msg.len() > 0 {&msg[0]} else {std::ptr::null()},
+                         msg.len() as u16, public, params, rand_ctx, &mut enc[0])};
 
     if result == 0 {
         Ok(enc.into_boxed_slice())

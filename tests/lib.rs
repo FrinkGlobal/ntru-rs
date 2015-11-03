@@ -82,8 +82,8 @@ fn test_encr_decr_nondet(params: &NtruEncParams) {
     let max_len: u16 = params.max_msg_len() as u16;
     let plain = ntru::rand::generate(max_len, &rand_ctx).ok().unwrap();
 
-    for plain_len in 0u16..max_len+1 {
-        let encrypted = ntru::encrypt(&plain[..], plain_len, kp.get_public(), params,
+    for plain_len in 0..max_len+1 {
+        let encrypted = ntru::encrypt(&plain[0..plain_len as usize], kp.get_public(), params,
                                         &rand_ctx).ok().unwrap();
         let decrypted = ntru::decrypt(&encrypted, &kp, params).ok().unwrap();
 
