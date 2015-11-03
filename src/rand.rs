@@ -20,12 +20,14 @@ impl Default for NtruRandContext {
     }
 }
 
-impl NtruRandContext {
-    pub fn release(&mut self) {
+impl Drop for NtruRandContext {
+    fn drop(&mut self) {
         let result = unsafe {ffi::ntru_rand_release(self)};
         if result != 0 { panic!() }
     }
+}
 
+impl NtruRandContext {
     pub fn get_seed(&self) -> &[u8] { unsafe {slice::from_raw_parts(self.seed,
                                                                     self.seed_len as usize)} }
     pub fn set_seed(&mut self, seed: &[u8]) {

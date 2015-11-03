@@ -77,4 +77,8 @@ extern {
     pub fn ntru_mult_fac(a: *mut NtruIntPoly, factor: int16_t);
     pub fn ntru_mod_center(p: *mut NtruIntPoly, modulus: uint16_t);
     pub fn ntru_mod3(p: *mut NtruIntPoly);
+
+    // key.h
+    pub fn ntru_export_pub(key: *const NtruEncPubKey, arr: *mut uint8_t);
+    pub fn ntru_import_pub(arr: *const uint8_t, key: *mut NtruEncPubKey) -> uint16_t;
 }

@@ -1,11 +1,9 @@
 use std::ops::Add;
 use std::default::Default;
-use std::fmt;
-use std::mem;
+use std::{fmt, mem};
 use libc::{int16_t, uint8_t, uint16_t};
-use super::ffi;
-use encparams::NTRU_INT_POLY_SIZE;
-use encparams::NTRU_MAX_ONES;
+use ffi;
+use encparams::{NtruEncParams, NTRU_INT_POLY_SIZE, NTRU_MAX_ONES};
 
 /// A polynomial with integer coefficients.
 #[repr(C)]
@@ -270,6 +268,20 @@ impl Default for NtruEncPubKey {
 impl NtruEncPubKey {
     pub fn get_q(&self) -> u16 { self.q }
     pub fn get_h(&self) -> &NtruIntPoly { &self.h }
+
+    pub fn import(arr: &[u8]) -> NtruEncPubKey {
+        let mut key: NtruEncPubKey = Default::default();
+        unsafe{ ffi::ntru_import_pub(&arr[0], &mut key) };
+
+        key
+    }
+
+    pub fn export(&self, params: &NtruEncParams) -> Box<[u8]> {
+        let mut arr = vec![0u8; 4 + params.enc_len() as usize];
+        unsafe { ffi::ntru_export_pub(self, &mut arr[..][0]) };
+
+        arr.into_boxed_slice()
+    }
 }
 
 /// NtruEncrypt key pair
