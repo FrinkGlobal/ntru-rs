@@ -107,7 +107,6 @@ fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
     // rand_ctx_plaintext.release();
 
     let plain2 = plain.clone();
-    let enc_len = params.enc_len();
 
     let seed = b"seed value";
     let seed2 = b"seed value";
@@ -122,6 +121,10 @@ fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
                                       &rand_ctx).ok().unwrap();
         let encrypted2 = ntru::encrypt(&plain2[0..plain_len], &pub2, params,
                                        &rand_ctx2).ok().unwrap();
+
+        for i in 0..encrypted.len() {
+            assert_eq!(encrypted[i], encrypted2[i]);
+        }
 
         let decrypted = ntru::decrypt(&encrypted, &kp, params).ok().unwrap();
 
