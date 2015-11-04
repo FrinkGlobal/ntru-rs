@@ -1,0 +1,15 @@
+[package]
+name = "ntru"
+version = "0.0.1"
+authors = ["Razican <admin@razican.com>"]
+license = "GPL-3.0+"
+readme = "README.md"
+repository = "https://github.com/FractalGlobal/ntru-rs"
+documentation = "http://fractal.global/ntru-rs"
+description = """
+Implementation of the NTRU algorithm. Interface to libntru.
+"""
+keywords = ["libntru", "NTRU"]
+
+[dependencies]
+libc = "0.2.0"
