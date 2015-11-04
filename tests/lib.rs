@@ -136,10 +136,7 @@ fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
     let encrypted = ntru::encrypt(&plain, kp.get_public(), params,
                                   &rand_ctx).ok().unwrap();
     let digest = ntru::sha1(&encrypted);
-
-    for i in 0..digest.len() {
-        assert_eq!(digest[i], digest_expected[i]);
-    }
+    assert_eq!(digest, digest_expected);
 }
 
 #[test]

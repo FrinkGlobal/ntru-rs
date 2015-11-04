@@ -55,8 +55,8 @@ pub fn decrypt(enc: &[u8], kp: &NtruEncKeyPair, params: &NtruEncParams)
     }
 }
 
-pub fn sha1(input: &[u8]) -> Box<[u8]> {
+pub fn sha1(input: &[u8]) -> [u8; 20] {
     let mut digest = [0u8; 20];
     unsafe { ffi::ntru_sha1(&input[0], input.len() as u16, &mut digest[0])};
-    Box::new(digest)
+    digest
 }

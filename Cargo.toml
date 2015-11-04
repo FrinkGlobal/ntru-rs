@@ -1,6 +1,6 @@
 [package]
 name = "ntru"
-version = "0.0.1"
+version = "0.0.2-dev"
 authors = ["Razican <admin@razican.com>"]
 license = "GPL-3.0+"
 readme = "README.md"
