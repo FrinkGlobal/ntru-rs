@@ -53,6 +53,15 @@ impl PartialEq for NtruIntPoly {
 }
 
 impl NtruIntPoly {
+    pub fn new(n: u16, coeffs: &[i16]) -> NtruIntPoly {
+        let mut new_coeffs = [0; NTRU_INT_POLY_SIZE];
+
+        for i in 0..coeffs.len() {
+            new_coeffs[i] = coeffs[i];
+        }
+        NtruIntPoly { n: n, coeffs: new_coeffs }
+    }
+
     pub fn get_n(&self) -> u16 { self.n }
     pub fn get_coeffs(&self) -> &[i16; NTRU_INT_POLY_SIZE] { &self.coeffs }
     pub fn set_coeff(&mut self, index: usize, value: i16) { self.coeffs[index] = value }
@@ -73,6 +82,12 @@ impl NtruIntPoly {
         (c, result == 1)
     }
 
+    pub fn mult_int(&self, b: &NtruIntPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_int(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
     pub fn mult_fac(&mut self, factor: i16) {
         unsafe {ffi::ntru_mult_fac(self, factor)}
     }
@@ -83,6 +98,15 @@ impl NtruIntPoly {
 
     pub fn mod3(&mut self) {
         unsafe {ffi::ntru_mod3(self)}
+    }
+
+    pub fn equals_mod(&self, other: &NtruIntPoly, modulus: u16) -> bool {
+        self.n == other.n && {
+            for i in 0..self.n as usize {
+                if (self.coeffs[i] - other.coeffs[i]) as i32 % modulus as i32 != 0 { return false }
+            }
+            true
+        }
     }
 }
 

@@ -1,21 +1,21 @@
-use std::{slice};
+use std::{slice, ptr};
 use libc::{c_void, uint8_t, uint16_t};
 use types::{NtruError, NtruTernPoly};
 use super::ffi;
 
 #[repr(C)]
 pub struct NtruRandContext {
-    rand_gen: *mut NtruRandGen,
+    rand_gen: *const NtruRandGen,
     /// For deterministic RNGs
     seed: *const uint8_t,
     /// For deterministic RNGs
     seed_len: uint16_t,
-    state: *mut c_void,
+    state: *const c_void,
 }
 
 impl Default for NtruRandContext {
     fn default() -> NtruRandContext {
-        NtruRandContext {rand_gen: &mut NTRU_RNG_DEFAULT, seed: &0, seed_len: 0,
+        NtruRandContext {rand_gen: &mut NTRU_RNG_DEFAULT, seed: ptr::null(), seed_len: 0,
                             state: &mut 0 as *mut _ as *mut c_void}
     }
 }
@@ -30,6 +30,7 @@ impl Drop for NtruRandContext {
 impl NtruRandContext {
     pub fn get_seed(&self) -> &[u8] { unsafe {slice::from_raw_parts(self.seed,
                                                                     self.seed_len as usize)} }
+    pub fn get_rand_gen(&self) -> &NtruRandGen { unsafe { &*self.rand_gen } }
     pub fn set_seed(&mut self, seed: &[u8]) {
         self.seed_len = seed.len() as uint16_t;
         self.seed = &seed[0];
@@ -38,13 +39,13 @@ impl NtruRandContext {
 
 #[repr(C)]
 pub struct NtruRandGen {
-    init: unsafe extern fn(rand_ctx: *mut NtruRandContext, rand_gen: *mut NtruRandGen)
-                            -> uint8_t,
+    pub init: unsafe extern fn(rand_ctx: *mut NtruRandContext, rand_gen: *const NtruRandGen)
+                           -> uint8_t,
     /// A pointer to a function that takes an array and an array size, and fills the array with
     /// random data
-    generate: unsafe extern fn(rand_data: *const uint8_t, len: uint16_t,
-                                rand_ctx: *mut NtruRandContext) -> uint8_t,
-    release: unsafe extern fn(rand_ctx: *mut NtruRandContext) -> uint8_t,
+    pub generate: unsafe extern fn(rand_data: *mut uint8_t, len: uint16_t,
+                               rand_ctx: *const NtruRandContext) -> uint8_t,
+    pub release: unsafe extern fn(rand_ctx: *mut NtruRandContext) -> uint8_t,
 }
 
 #[cfg(target_os = "windows")]
