@@ -4,6 +4,7 @@ use std::{fmt, mem};
 use libc::{int16_t, uint8_t, uint16_t};
 use ffi;
 use encparams::{NtruEncParams, NTRU_INT_POLY_SIZE, NTRU_MAX_ONES};
+use rand::NtruRandContext;
 
 /// A polynomial with integer coefficients.
 #[repr(C)]
@@ -62,6 +63,18 @@ impl NtruIntPoly {
         NtruIntPoly { n: n, coeffs: new_coeffs }
     }
 
+    pub fn rand(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
+        let rand_data = rand_ctx.get_rand_gen().generate(n*2, rand_ctx).ok().unwrap();
+
+        let mut coeffs = [0i16; NTRU_INT_POLY_SIZE];
+        let shift = 16 - pow2q;
+        for i in (n as usize)..0usize {
+            coeffs[i] =  rand_data[i] as i16 >> shift;
+        }
+
+        NtruIntPoly { n: n, coeffs: coeffs }
+    }
+
     pub fn get_n(&self) -> u16 { self.n }
     pub fn get_coeffs(&self) -> &[i16; NTRU_INT_POLY_SIZE] { &self.coeffs }
     pub fn set_coeff(&mut self, index: usize, value: i16) { self.coeffs[index] = value }
@@ -85,6 +98,18 @@ impl NtruIntPoly {
     pub fn mult_int(&self, b: &NtruIntPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe {ffi::ntru_mult_int(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_int_16(&self, b: &NtruIntPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_int_16(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_int_64(&self, b: &NtruIntPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_int_64(self, b, &mut c, mod_mask)};
         (c, result == 1)
     }
 

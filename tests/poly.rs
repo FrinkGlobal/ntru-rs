@@ -1,6 +1,7 @@
 extern crate ntru;
 use ntru::types::NtruIntPoly;
-use ntru::encparams::NTRU_INT_POLY_SIZE;
+use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE};
+use ntru::rand::NTRU_RNG_DEFAULT;
 
 fn ntru_mult_int_nomod(a: &NtruIntPoly, b: &NtruIntPoly) -> NtruIntPoly {
     if a.get_n() != b.get_n() { panic!("Incompatible int polys") }
@@ -16,6 +17,11 @@ fn ntru_mult_int_nomod(a: &NtruIntPoly, b: &NtruIntPoly) -> NtruIntPoly {
     }
 
     NtruIntPoly::new(n as u16, &coeffs)
+}
+
+fn u8_arr_to_u16(arr: &[u8]) -> u16 {
+    if arr.len() != 2 { panic!("u8_arr_to_u16() requires an array of 2 elements") }
+    ((arr[0] as u16) << 8) + arr[1] as u16
 }
 
 #[test]
@@ -38,28 +44,24 @@ fn it_mult_int() {
 
     assert!(c2_exp.equals_mod(&c2, 2048));
 
-//     NtruRandGen rng = NTRU_RNG_DEFAULT;
-//     NtruRandContext rand_ctx;
-//     valid &= ntru_rand_init(&rand_ctx, &rng) == NTRU_SUCCESS;
-//     int i;
-//     for (i=0; i<10; i++) {
-//         uint16_t N;
-//         valid &= rand_ctx.rand_gen->generate((uint8_t*)&N, sizeof N, &rand_ctx);
-//         N = 100 + (N%(NTRU_MAX_DEGREE-100));
-//         NtruIntPoly a3, b3, c3, c3_exp;
-//         valid &= rand_int(N, 11, &a3, &rand_ctx);
-//         valid &= rand_int(N, 11, &b3, &rand_ctx);
-//         valid &= ntru_mult_int_nomod(&a3, &b3, &c3_exp);
-//         ntru_mod_mask(&c3_exp, 2048-1);
-//         valid &= ntru_mult_int_16(&a3, &b3, &c3, 2048-1);
-//         valid &= equals_int_mod(&c3_exp, &c3, 2048);
-// #ifndef __ARMEL__
-//         valid &= ntru_mult_int_64(&a3, &b3, &c3, 2048-1);
-//         valid &= equals_int_mod(&c3_exp, &c3, 2048);
-// #endif
-//     }
-//
-//     valid &= ntru_rand_release(&rand_ctx) == NTRU_SUCCESS;
-//     print_result("test_mult_int", valid);
-//     return valid;
+    let rng = NTRU_RNG_DEFAULT;
+    let rand_ctx = ntru::rand::init(&rng).ok().unwrap();
+
+    for _ in 0..10 {
+        let n_arr = rand_ctx.get_rand_gen().generate(2, &rand_ctx).ok().unwrap();
+        let mut n = u8_arr_to_u16(&n_arr);
+        n = 100 + (n % (NTRU_MAX_DEGREE-100) as u16);
+
+        let a3 = NtruIntPoly::rand(n, 11, &rand_ctx);
+        let b3 = NtruIntPoly::rand(n, 11, &rand_ctx);
+        let mut c3_exp = ntru_mult_int_nomod(&a3, &b3);
+        c3_exp.mod_mask(2048-1);
+
+        let (c3, _) = a3.mult_int_16(&b3, 2048-1);
+        assert!(c3_exp.equals_mod(&c3, 2048));
+        // ifndef __ARMEL__
+        let (c3, _) = a3.mult_int_64(&b3, 2048-1);
+        assert!(c3_exp.equals_mod(&c3, 2048));
+        // endif
+    }
 }

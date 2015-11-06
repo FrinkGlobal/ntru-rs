@@ -39,13 +39,37 @@ impl NtruRandContext {
 
 #[repr(C)]
 pub struct NtruRandGen {
-    pub init: unsafe extern fn(rand_ctx: *mut NtruRandContext, rand_gen: *const NtruRandGen)
+    init_fn: unsafe extern fn(rand_ctx: *mut NtruRandContext, rand_gen: *const NtruRandGen)
                            -> uint8_t,
     /// A pointer to a function that takes an array and an array size, and fills the array with
     /// random data
-    pub generate: unsafe extern fn(rand_data: *mut uint8_t, len: uint16_t,
+    generate_fn: unsafe extern fn(rand_data: *mut uint8_t, len: uint16_t,
                                rand_ctx: *const NtruRandContext) -> uint8_t,
-    pub release: unsafe extern fn(rand_ctx: *mut NtruRandContext) -> uint8_t,
+    release_fn: unsafe extern fn(rand_ctx: *mut NtruRandContext) -> uint8_t,
+}
+
+impl NtruRandGen {
+    pub fn init(&self, rand_gen: &NtruRandGen) -> Result<NtruRandContext, NtruError> {
+        let mut rand_ctx: NtruRandContext = Default::default();
+        let result = unsafe {(self.init_fn)(&mut rand_ctx, rand_gen)};
+        if result == 1 {
+            Ok(rand_ctx)
+        } else {
+            Err(NtruError::Prng)
+        }
+    }
+
+    pub fn generate(&self, length: u16, rand_ctx: &NtruRandContext)
+                    -> Result<Box<[u8]>, NtruError> {
+        let mut plain = vec![0u8; length as usize];
+        let result = unsafe {(self.generate_fn)(&mut plain[0], length, rand_ctx)};
+
+        if result == 1 {
+            Ok(plain.into_boxed_slice())
+        } else {
+            Err(NtruError::Prng)
+        }
+    }
 }
 
 #[cfg(target_os = "windows")]
@@ -57,25 +81,24 @@ pub const NTRU_RNG_DEFAULT: NtruRandGen = NTRU_RNG_WINCRYPT;
 
 #[cfg(not(target_os = "windows"))]
 pub const NTRU_RNG_DEVURANDOM: NtruRandGen = NtruRandGen {
-        init: ffi::ntru_rand_devurandom_init,
-        generate: ffi::ntru_rand_devurandom_generate,
-        release: ffi::ntru_rand_devurandom_release
+        init_fn: ffi::ntru_rand_devurandom_init,
+        generate_fn: ffi::ntru_rand_devurandom_generate,
+        release_fn: ffi::ntru_rand_devurandom_release
 };
 #[cfg(not(target_os = "windows"))]
 pub const NTRU_RNG_DEVRANDOM: NtruRandGen = NtruRandGen {
-        init: ffi::ntru_rand_devrandom_init,
-        generate: ffi::ntru_rand_devrandom_generate,
-        release: ffi::ntru_rand_devrandom_release
+    init_fn: ffi::ntru_rand_devrandom_init,
+    generate_fn: ffi::ntru_rand_devrandom_generate,
+    release_fn: ffi::ntru_rand_devrandom_release
 };
 #[cfg(not(target_os = "windows"))]
 pub const NTRU_RNG_DEFAULT: NtruRandGen = NTRU_RNG_DEVURANDOM;
 
-pub const NTRU_RNG_IGF2: NtruRandGen = NtruRandGen {init: ffi::ntru_rand_igf2_init,
-                                                    generate: ffi::ntru_rand_igf2_generate,
-                                                    release: ffi::ntru_rand_igf2_release};
+pub const NTRU_RNG_IGF2: NtruRandGen = NtruRandGen {init_fn: ffi::ntru_rand_igf2_init,
+                                                    generate_fn: ffi::ntru_rand_igf2_generate,
+                                                    release_fn: ffi::ntru_rand_igf2_release};
 
-pub fn init(rand_gen: &NtruRandGen)
-            -> Result<NtruRandContext, NtruError> {
+pub fn init(rand_gen: &NtruRandGen) -> Result<NtruRandContext, NtruError> {
     let mut rand_ctx: NtruRandContext = Default::default();
     let result = unsafe {ffi::ntru_rand_init(&mut rand_ctx, rand_gen)};
     if result == 0 {
@@ -85,8 +108,7 @@ pub fn init(rand_gen: &NtruRandGen)
     }
 }
 
-pub fn init_det(rand_gen: &NtruRandGen, seed: &[u8])
-            -> Result<NtruRandContext, NtruError> {
+pub fn init_det(rand_gen: &NtruRandGen, seed: &[u8]) -> Result<NtruRandContext, NtruError> {
     let mut rand_ctx: NtruRandContext = Default::default();
     let result = unsafe {ffi::ntru_rand_init_det(&mut rand_ctx, rand_gen,
                             &seed[0] as *const uint8_t, seed.len() as uint16_t)};

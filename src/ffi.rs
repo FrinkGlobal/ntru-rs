@@ -74,6 +74,10 @@ extern {
                           mod_mask: uint16_t) -> uint8_t;
     pub fn ntru_mult_int(a: *const NtruIntPoly, b: *const NtruIntPoly, c: *mut NtruIntPoly,
                          mod_mask: uint16_t) -> uint8_t;
+    pub fn ntru_mult_int_16(a: *const NtruIntPoly, b: *const NtruIntPoly, c: *mut NtruIntPoly,
+                            mod_mask: uint16_t) -> uint8_t;
+    pub fn ntru_mult_int_64(a: *const NtruIntPoly, b: *const NtruIntPoly, c: *mut NtruIntPoly,
+                            mod_mask: uint16_t) -> uint8_t;
     pub fn ntru_add_int(a: *mut NtruIntPoly, b: *const NtruIntPoly);
     pub fn ntru_mod_mask(p: *mut NtruIntPoly, mod_mask: uint16_t);
     pub fn ntru_mult_fac(a: *mut NtruIntPoly, factor: int16_t);
