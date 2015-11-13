@@ -2,6 +2,8 @@
 name = "ntru"
 version = "0.0.2-dev"
 license = "GPL-3.0+/BSD-3-Clause"
+build = "build.rs"
+links = "ntru"
 readme = "README.md"
 repository = "https://github.com/FractalGlobal/ntru-rs"
 documentation = "http://fractal.global/ntru-rs"
