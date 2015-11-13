@@ -1,5 +1,5 @@
 extern crate ntru;
-use ntru::types::NtruIntPoly;
+use ntru::types::{NtruIntPoly, NtruPrivPoly};
 use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE};
 use ntru::rand::NTRU_RNG_DEFAULT;
 
@@ -64,4 +64,123 @@ fn it_mult_int() {
         assert!(c3_exp.equals_mod(&c3, 2048));
         // endif
     }
+}
+
+#[test]
+fn test_mult_tern() {
+//     NtruRandGen rng = NTRU_RNG_DEFAULT;
+//     NtruRandContext rand_ctx;
+//     uint8_t valid = ntru_rand_init(&rand_ctx, &rng) == NTRU_SUCCESS;
+//
+//     NtruTernPoly a;
+//     valid &= ntru_rand_tern(11, 3, 3, &a, &rand_ctx);
+//     NtruIntPoly b;
+//     valid &= rand_int(11, 5, &b, &rand_ctx);
+//     NtruIntPoly a_int;
+//     ntru_tern_to_int(&a, &a_int);
+//     NtruIntPoly c_int;
+//     ntru_mult_int(&a_int, &b, &c_int, 32-1);
+//     NtruIntPoly c_tern;
+//     ntru_mult_tern_32(&b, &a, &c_tern, 32-1);
+//     valid &= equals_int_mod(&c_tern, &c_int, 32);
+// #ifndef __ARMEL__
+//     ntru_mult_tern_64(&b, &a, &c_tern, 32-1);
+//     valid &= equals_int_mod(&c_tern, &c_int, 32);
+// #endif
+// #ifdef __SSSE3__
+//     ntru_mult_tern_sse(&b, &a, &c_tern, 32-1);
+//     valid &= equals_int_mod(&c_tern, &c_int, 32);
+// #endif
+//
+//     int i;
+//     for (i=0; i<10; i++) {
+//         uint16_t N;
+//         valid &= rand_ctx.rand_gen->generate((uint8_t*)&N, sizeof N, &rand_ctx);
+//         N = 100 + (N%(NTRU_MAX_DEGREE-100));
+//         uint16_t num_ones;
+//         valid &= rand_ctx.rand_gen->generate((uint8_t*)&num_ones, sizeof num_ones, &rand_ctx);
+//         num_ones %= N/2;
+//         num_ones %= NTRU_MAX_ONES;
+//         uint16_t num_neg_ones;
+//         valid &= rand_ctx.rand_gen->generate((uint8_t*)&num_neg_ones, sizeof num_neg_ones, &rand_ctx);
+//         num_neg_ones %= N/2;
+//         num_neg_ones %= NTRU_MAX_ONES;
+//         valid &= ntru_rand_tern(N, num_ones, num_neg_ones, &a, &rand_ctx);
+//         valid &= rand_int(N, 11, &b, &rand_ctx);
+//         ntru_tern_to_int(&a, &a_int);
+//         ntru_mult_int_nomod(&a_int, &b, &c_int);
+//         ntru_mult_tern_32(&b, &a, &c_tern, 2048-1);
+//         valid &= equals_int_mod(&c_tern, &c_int, 2048);
+// #ifndef __ARMEL__
+//         ntru_mult_tern_64(&b, &a, &c_tern, 2048-1);
+//         valid &= equals_int_mod(&c_tern, &c_int, 2048);
+// #endif
+// #ifdef __SSSE3__
+//         ntru_mult_tern_sse(&b, &a, &c_tern, 2048-1);
+//         valid &= equals_int_mod(&c_tern, &c_int, 2048);
+// #endif
+//     }
+//
+//     valid &= ntru_rand_release(&rand_ctx) == NTRU_SUCCESS;
+//
+//     print_result("test_mult_tern", valid);
+//     return valid;
+}
+
+#[test]
+fn test_mult_prod() {
+    // uint8_t valid = 1;
+    // uint16_t i;
+    // NtruRandGen rng = NTRU_RNG_DEFAULT;
+    // NtruRandContext rand_ctx;
+    // valid &= ntru_rand_init(&rand_ctx, &rng) == NTRU_SUCCESS;
+    // uint16_t log_modulus = 11;
+    // uint16_t modulus = 1 << log_modulus;
+    // for (i=0; i<10; i++) {
+    //     NtruProdPoly a;
+    //     valid &= ntru_rand_prod(853, 8, 8, 8, 9, &a, &rand_ctx);
+    //     NtruIntPoly b;
+    //     valid &= rand_int(853, 1<<log_modulus, &b, &rand_ctx);
+    //     NtruIntPoly c_prod;
+    //     ntru_mult_prod(&b, &a, &c_prod, modulus-1);
+    //     NtruIntPoly a_int;
+    //     ntru_prod_to_int(&a, &a_int, modulus);
+    //     NtruIntPoly c_int;
+    //     ntru_mult_int(&a_int, &b, &c_int, modulus-1);
+    //     valid &= equals_int_mod(&c_prod, &c_int, log_modulus);
+    // }
+    // valid &= ntru_rand_release(&rand_ctx) == NTRU_SUCCESS;
+    //
+    // print_result("test_mult_prod", valid);
+    // return valid;
+}
+
+// fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
+//     let mut a_int = a.to_int(modulus);
+//     a_int.mult_fac(3);
+//     a_int.set_coeff(0, a_int.get_coeffs()[0] + 1);
+//
+//     let mut c = a_int.mult_int(b, modulus-1);
+//     c.mod_mask(modulus-1);
+//     assert_eq!(&c, 1);
+
+    // NtruIntPoly c, a_int;
+    //
+    // ntru_priv_to_int(a, &a_int, modulus);
+    // ntru_mult_fac(&a_int, 3);
+    // a_int.coeffs[0] += 1;
+    //
+    // ntru_mult_int(&a_int, b, &c, modulus-1);
+    // ntru_mod_mask(&c, modulus-1);
+    // return ntru_equals1(&c);
+// }
+
+#[test]
+fn test_inv() {
+    // TODO
+}
+
+#[test]
+fn test_arr() {
+    // TODO
 }
