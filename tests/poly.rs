@@ -1,7 +1,7 @@
 extern crate ntru;
 use ntru::types::{NtruIntPoly, NtruPrivPoly};
 use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE};
-use ntru::rand::NTRU_RNG_DEFAULT;
+use ntru::rand::{NTRU_RNG_DEFAULT, NtruRandContext};
 
 fn ntru_mult_int_nomod(a: &NtruIntPoly, b: &NtruIntPoly) -> NtruIntPoly {
     if a.get_n() != b.get_n() { panic!("Incompatible int polys") }
@@ -25,11 +25,24 @@ fn u8_arr_to_u16(arr: &[u8]) -> u16 {
 }
 
 fn ntru_priv_to_int(a: &NtruPrivPoly, modulus: u16) -> NtruIntPoly {
-    if (a.get_prod_flag() != 0) {
+    if a.get_prod_flag() != 0 {
         a.get_poly_prod().to_int_poly(modulus)
     } else {
         a.get_poly_tern().to_int_poly()
     }
+}
+
+fn rand_int(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
+    let rand_data = rand_ctx.get_rand_gen().generate(n*2, rand_ctx).unwrap();
+
+    let mut poly: NtruIntPoly = Default::default();
+    poly.set_n(n);
+    let shift = 16-pow2q;
+
+    for i in n..0 {
+        poly.set_coeff(i as usize, rand_data[i as usize] as i16 >> shift);
+    }
+    poly
 }
 
 #[test]
@@ -76,29 +89,28 @@ fn it_mult_int() {
 
 #[test]
 fn test_mult_tern() {
-//     NtruRandGen rng = NTRU_RNG_DEFAULT;
-//     NtruRandContext rand_ctx;
-//     uint8_t valid = ntru_rand_init(&rand_ctx, &rng) == NTRU_SUCCESS;
-//
-//     NtruTernPoly a;
-//     valid &= ntru_rand_tern(11, 3, 3, &a, &rand_ctx);
-//     NtruIntPoly b;
-//     valid &= rand_int(11, 5, &b, &rand_ctx);
-//     NtruIntPoly a_int;
-//     ntru_tern_to_int(&a, &a_int);
-//     NtruIntPoly c_int;
-//     ntru_mult_int(&a_int, &b, &c_int, 32-1);
-//     NtruIntPoly c_tern;
-//     ntru_mult_tern_32(&b, &a, &c_tern, 32-1);
-//     valid &= equals_int_mod(&c_tern, &c_int, 32);
-// #ifndef __ARMEL__
-//     ntru_mult_tern_64(&b, &a, &c_tern, 32-1);
-//     valid &= equals_int_mod(&c_tern, &c_int, 32);
-// #endif
-// #ifdef __SSSE3__
-//     ntru_mult_tern_sse(&b, &a, &c_tern, 32-1);
-//     valid &= equals_int_mod(&c_tern, &c_int, 32);
-// #endif
+    let rng = NTRU_RNG_DEFAULT;
+    let rand_ctx = ntru::rand::init(&rng).unwrap();
+
+    let a = ntru::rand::tern(11, 3, 3, &rand_ctx).unwrap();
+    let b = rand_int(11, 5, &rand_ctx);
+
+    let a_int = a.to_int_poly();
+    let (c_int, _) = a_int.mult_int(&b, 32-1);
+    let (c_tern, _) = b.mult_tern_32(&a, 32-1);
+
+    assert!(c_tern.equals_mod(&c_int, 32));
+
+    // #ifndef __ARMEL__
+    let (c_tern, _) = b.mult_tern_64(&a, 32-1);
+    assert!(c_tern.equals_mod(&c_int, 32));
+    // #endif
+
+    // #ifdef __SSSE3__
+    let (c_tern, _) = b.mult_tern_sse(&a, 32-1);
+    assert!(c_tern.equals_mod(&c_int, 32));
+    // #endif
+
 //
 //     int i;
 //     for (i=0; i<10; i++) {

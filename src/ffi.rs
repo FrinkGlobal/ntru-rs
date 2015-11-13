@@ -70,6 +70,12 @@ extern {
                           poly: *mut NtruTernPoly, rand_ctx: *const NtruRandContext) -> uint8_t;
     pub fn ntru_mult_tern(a: *const NtruIntPoly, b: *const NtruTernPoly, c: *mut NtruIntPoly,
                           mod_mask: uint16_t) -> uint8_t;
+    pub fn ntru_mult_tern_32(a: *const NtruIntPoly, b: *const NtruTernPoly, c: *mut NtruIntPoly,
+                             mod_mask: uint16_t) -> uint8_t;
+    pub fn ntru_mult_tern_64(a: *const NtruIntPoly, b: *const NtruTernPoly, c: *mut NtruIntPoly,
+                             mod_mask: uint16_t) -> uint8_t;
+    pub fn ntru_mult_tern_sse(a: *const NtruIntPoly, b: *const NtruTernPoly, c: *mut NtruIntPoly,
+                              mod_mask: uint16_t) -> uint8_t;
     pub fn ntru_mult_prod(a: *const NtruIntPoly, b: *const NtruProdPoly, c: *mut NtruIntPoly,
                           mod_mask: uint16_t) -> uint8_t;
     pub fn ntru_mult_int(a: *const NtruIntPoly, b: *const NtruIntPoly, c: *mut NtruIntPoly,

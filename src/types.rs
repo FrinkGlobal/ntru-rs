@@ -76,6 +76,8 @@ impl NtruIntPoly {
     }
 
     pub fn get_n(&self) -> u16 { self.n }
+    pub fn set_n(&mut self, n: u16) { self.n = n }
+
     pub fn get_coeffs(&self) -> &[i16; NTRU_INT_POLY_SIZE] { &self.coeffs }
     pub fn set_coeff(&mut self, index: usize, value: i16) { self.coeffs[index] = value }
 
@@ -86,6 +88,24 @@ impl NtruIntPoly {
     pub fn mult_tern(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe {ffi::ntru_mult_tern(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_tern_32(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_tern_32(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_tern_64(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_tern_64(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_tern_sse(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_tern_sse(self, b, &mut c, mod_mask)};
         (c, result == 1)
     }
 
