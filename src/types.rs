@@ -89,6 +89,26 @@ impl NtruIntPoly {
         (c, result == 1)
     }
 
+    pub fn add_tern(&self, b: &NtruTernPoly) -> NtruIntPoly {
+        NtruIntPoly {
+            n: self.n,
+            coeffs: {
+                let mut coeffs = [0; NTRU_INT_POLY_SIZE];
+                let tern_ones = b.get_ones();
+                let tern_neg_ones = b.get_neg_ones();
+
+                for i in 0..tern_ones.len() {
+                    coeffs[tern_ones[i] as usize] = self.coeffs[tern_ones[i] as usize] + 1;
+                }
+
+                for i in 0..tern_neg_ones.len() {
+                    coeffs[tern_neg_ones[i] as usize] = self.coeffs[tern_neg_ones[i] as usize] + 1;
+                }
+                coeffs
+            }
+        }
+    }
+
     pub fn mult_prod(&self, b: &NtruProdPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe {ffi::ntru_mult_prod(self, b, &mut c, mod_mask)};
@@ -133,6 +153,13 @@ impl NtruIntPoly {
             true
         }
     }
+
+    pub fn equals1(&self) -> bool {
+        for i in 1..self.n {
+            if self.coeffs[i as usize] != 0 { return false }
+        }
+        self.coeffs[0] == 1
+    }
 }
 
 /// A ternary polynomial, i.e. all coefficients are equal to -1, 0, or 1.
@@ -175,6 +202,10 @@ impl PartialEq for NtruTernPoly {
 }
 
 impl NtruTernPoly {
+    pub fn get_n(&self) -> u16 { self.n }
+    pub fn get_ones(&self) -> &[u16] { &self.ones[0..self.num_ones as usize] }
+    pub fn get_neg_ones(&self) -> &[u16] { &self.neg_ones[0..self.num_neg_ones as usize] }
+
     /// Ternary to general integer polynomial
     ///
     /// Converts a NtruTernPoly to an equivalent NtruIntPoly.
@@ -209,6 +240,16 @@ pub struct NtruProdPoly {
 impl Default for NtruProdPoly {
     fn default() -> NtruProdPoly {
         NtruProdPoly {n: 0, f1: Default::default(), f2: Default::default(), f3: Default::default()}
+    }
+}
+
+impl NtruProdPoly {
+    pub fn to_int_poly(&self, modulus: u16) -> NtruIntPoly {
+        let c = NtruIntPoly {n: self.n, coeffs: [0; NTRU_INT_POLY_SIZE]};
+
+        let mod_mask = modulus - 1;
+        let (c, _) = c.mult_tern(&self.f2, mod_mask);
+        c.add_tern(&self.f3)
     }
 }
 

@@ -24,6 +24,14 @@ fn u8_arr_to_u16(arr: &[u8]) -> u16 {
     ((arr[0] as u16) << 8) + arr[1] as u16
 }
 
+fn ntru_priv_to_int(a: &NtruPrivPoly, modulus: u16) -> NtruIntPoly {
+    if (a.get_prod_flag() != 0) {
+        a.get_poly_prod().to_int_poly(modulus)
+    } else {
+        a.get_poly_tern().to_int_poly()
+    }
+}
+
 #[test]
 fn it_mult_int() {
     // Multiplication modulo q
@@ -155,25 +163,16 @@ fn test_mult_prod() {
     // return valid;
 }
 
-// fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
-//     let mut a_int = a.to_int(modulus);
-//     a_int.mult_fac(3);
-//     a_int.set_coeff(0, a_int.get_coeffs()[0] + 1);
-//
-//     let mut c = a_int.mult_int(b, modulus-1);
-//     c.mod_mask(modulus-1);
-//     assert_eq!(&c, 1);
+fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
+    let mut a_int = ntru_priv_to_int(a, modulus);
+    a_int.mult_fac(3);
+    let new_coeff = a_int.get_coeffs()[0] + 1;
+    a_int.set_coeff(0, new_coeff);
 
-    // NtruIntPoly c, a_int;
-    //
-    // ntru_priv_to_int(a, &a_int, modulus);
-    // ntru_mult_fac(&a_int, 3);
-    // a_int.coeffs[0] += 1;
-    //
-    // ntru_mult_int(&a_int, b, &c, modulus-1);
-    // ntru_mod_mask(&c, modulus-1);
-    // return ntru_equals1(&c);
-// }
+    let (mut c, _) = a_int.mult_int(b, modulus-1);
+    c.mod_mask(modulus-1);
+    c.equals1()
+}
 
 #[test]
 fn test_inv() {
