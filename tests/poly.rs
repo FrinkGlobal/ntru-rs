@@ -1,6 +1,6 @@
 extern crate ntru;
 use ntru::types::{NtruIntPoly, NtruPrivPoly};
-use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE};
+use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE, NTRU_MAX_ONES};
 use ntru::rand::{NTRU_RNG_DEFAULT, NtruRandContext};
 
 fn ntru_mult_int_nomod(a: &NtruIntPoly, b: &NtruIntPoly) -> NtruIntPoly {
@@ -111,40 +111,37 @@ fn test_mult_tern() {
     assert!(c_tern.equals_mod(&c_int, 32));
     // #endif
 
-//
-//     int i;
-//     for (i=0; i<10; i++) {
-//         uint16_t N;
-//         valid &= rand_ctx.rand_gen->generate((uint8_t*)&N, sizeof N, &rand_ctx);
-//         N = 100 + (N%(NTRU_MAX_DEGREE-100));
-//         uint16_t num_ones;
-//         valid &= rand_ctx.rand_gen->generate((uint8_t*)&num_ones, sizeof num_ones, &rand_ctx);
-//         num_ones %= N/2;
-//         num_ones %= NTRU_MAX_ONES;
-//         uint16_t num_neg_ones;
-//         valid &= rand_ctx.rand_gen->generate((uint8_t*)&num_neg_ones, sizeof num_neg_ones, &rand_ctx);
-//         num_neg_ones %= N/2;
-//         num_neg_ones %= NTRU_MAX_ONES;
-//         valid &= ntru_rand_tern(N, num_ones, num_neg_ones, &a, &rand_ctx);
-//         valid &= rand_int(N, 11, &b, &rand_ctx);
-//         ntru_tern_to_int(&a, &a_int);
-//         ntru_mult_int_nomod(&a_int, &b, &c_int);
-//         ntru_mult_tern_32(&b, &a, &c_tern, 2048-1);
-//         valid &= equals_int_mod(&c_tern, &c_int, 2048);
-// #ifndef __ARMEL__
-//         ntru_mult_tern_64(&b, &a, &c_tern, 2048-1);
-//         valid &= equals_int_mod(&c_tern, &c_int, 2048);
-// #endif
-// #ifdef __SSSE3__
-//         ntru_mult_tern_sse(&b, &a, &c_tern, 2048-1);
-//         valid &= equals_int_mod(&c_tern, &c_int, 2048);
-// #endif
-//     }
-//
-//     valid &= ntru_rand_release(&rand_ctx) == NTRU_SUCCESS;
-//
-//     print_result("test_mult_tern", valid);
-//     return valid;
+    for _ in 0..10 {
+        let mut n = u8_arr_to_u16(&rand_ctx.get_rand_gen().generate(2, &rand_ctx).unwrap());
+        n = 100 + (n % (NTRU_MAX_DEGREE as u16 - 100));
+        let mut num_ones = u8_arr_to_u16(&rand_ctx.get_rand_gen().generate(2, &rand_ctx)
+                                                                 .unwrap());
+        num_ones %= n/2;
+        num_ones %= NTRU_MAX_ONES as u16;
+
+        let mut num_neg_ones = u8_arr_to_u16(&rand_ctx.get_rand_gen().generate(2, &rand_ctx)
+                                                                     .unwrap());
+        num_neg_ones %= n/2;
+        num_neg_ones %= NTRU_MAX_ONES as u16;
+
+        let a = ntru::rand::tern(n, num_ones, num_neg_ones, &rand_ctx).unwrap();
+        let b = rand_int(n, 11, &rand_ctx);
+        let a_int = a.to_int_poly();
+
+        let c_int = ntru_mult_int_nomod(&a_int, &b);
+        let (c_tern, _) = b.mult_tern_32(&a, 2048-1);
+
+        assert!(c_tern.equals_mod(&c_int, 2048));
+
+        // #ifdef __ARMEL__
+        let (c_tern, _) = b.mult_tern_64(&a, 2048-1);
+        assert!(c_tern.equals_mod(&c_int, 2048));
+        // #endif
+        // #ifdef __SSSE3__
+        let (c_tern, _) = b.mult_tern_sse(&a, 2048-1);
+        assert!(c_tern.equals_mod(&c_int, 2048));
+        // #endif
+    }
 }
 
 #[test]
