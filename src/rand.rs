@@ -1,6 +1,6 @@
 use std::{slice, ptr};
 use libc::{c_void, uint8_t, uint16_t};
-use types::{NtruError, NtruTernPoly};
+use types::{NtruError, NtruTernPoly, NtruProdPoly};
 use super::ffi;
 
 #[repr(C)]
@@ -142,4 +142,32 @@ pub fn tern(n: u16, num_ones: u16, num_neg_ones: u16, rand_ctx: &NtruRandContext
     } else {
         Some(poly)
     }
+}
+
+/// Random product-form polynomial
+///
+/// Generates a random product-form polynomial consisting of 3 random ternary polynomials.
+/// Parameters:
+///
+/// * *N*: the number of coefficients, must be NTRU_MAX_DEGREE or less
+/// * *df1*: number of ones and negative ones in the first ternary polynomial
+/// * *df2*: number of ones and negative ones in the second ternary polynomial
+/// * *df3_ones*: number of ones ones in the third ternary polynomial
+/// * *df3_neg_ones*: number of negative ones in the third ternary polynomial
+/// * *rand_ctx*: a random number generator
+pub fn prod(n: u16, df1: u16, df2: u16, df3_ones: u16, df3_neg_ones: u16,
+            rand_ctx: &NtruRandContext) -> Option<NtruProdPoly> {
+    let f1 = tern(n, df1, df1, rand_ctx);
+    if f1.is_none() { return None }
+    let f1 = f1.unwrap();
+
+    let f2 = tern(n, df2, df2, rand_ctx);
+    if f2.is_none() { return None }
+    let f2 = f2.unwrap();
+
+    let f3 = tern(n, df3_ones, df3_neg_ones, rand_ctx);
+    if f3.is_none() { return None }
+    let f3 = f3.unwrap();
+
+    Some(NtruProdPoly::new(n, f1, f2, f3))
 }

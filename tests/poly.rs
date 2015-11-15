@@ -37,7 +37,7 @@ fn rand_int(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
 
     let mut poly: NtruIntPoly = Default::default();
     poly.set_n(n);
-    let shift = 16-pow2q;
+    let shift = if pow2q < 16 { 16 - pow2q } else { u16::max_value() - pow2q + 16 };
 
     for i in n..0 {
         poly.set_coeff(i as usize, rand_data[i as usize] as i16 >> shift);
@@ -146,30 +146,24 @@ fn test_mult_tern() {
 
 #[test]
 fn test_mult_prod() {
-    // uint8_t valid = 1;
-    // uint16_t i;
-    // NtruRandGen rng = NTRU_RNG_DEFAULT;
-    // NtruRandContext rand_ctx;
-    // valid &= ntru_rand_init(&rand_ctx, &rng) == NTRU_SUCCESS;
-    // uint16_t log_modulus = 11;
-    // uint16_t modulus = 1 << log_modulus;
-    // for (i=0; i<10; i++) {
-    //     NtruProdPoly a;
-    //     valid &= ntru_rand_prod(853, 8, 8, 8, 9, &a, &rand_ctx);
-    //     NtruIntPoly b;
-    //     valid &= rand_int(853, 1<<log_modulus, &b, &rand_ctx);
-    //     NtruIntPoly c_prod;
-    //     ntru_mult_prod(&b, &a, &c_prod, modulus-1);
-    //     NtruIntPoly a_int;
-    //     ntru_prod_to_int(&a, &a_int, modulus);
-    //     NtruIntPoly c_int;
-    //     ntru_mult_int(&a_int, &b, &c_int, modulus-1);
-    //     valid &= equals_int_mod(&c_prod, &c_int, log_modulus);
-    // }
-    // valid &= ntru_rand_release(&rand_ctx) == NTRU_SUCCESS;
-    //
-    // print_result("test_mult_prod", valid);
-    // return valid;
+    let rng = NTRU_RNG_DEFAULT;
+    let rand_ctx = ntru::rand::init(&rng).unwrap();
+
+    let log_modulus = 11u16;
+    let modulus = 1 << log_modulus;
+
+    println!("modulus: {}", 1 << log_modulus);
+
+    for _ in 0..10 {
+        let a = ntru::rand::prod(853, 8, 8, 8, 9, &rand_ctx).unwrap();
+        let b = rand_int(853, 1 << log_modulus, &rand_ctx);
+        let (c_prod, _) = b.mult_prod(&a, modulus-1);
+
+        let a_int = a.to_int_poly(modulus);
+        let (c_int, _) = a_int.mult_int(&b, modulus-1);
+
+        assert!(c_prod.equals_mod(&c_int, log_modulus));
+    }
 }
 
 fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
@@ -185,10 +179,86 @@ fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
 
 #[test]
 fn test_inv() {
-    // TODO
+//     uint8_t valid = 1;
+//
+//     /* Verify a short polynomial */
+//     NtruPrivPoly a1 = {0, {{11, 4, 4, {1, 2, 6, 9}, {0, 3, 4, 10}}}};
+//     NtruIntPoly b1;
+//     uint8_t invertible = ntru_invert_32(&a1, 32-1, &b1);
+//     valid &= invertible;
+//     valid &= verify_inverse(&a1, &b1, 32);
+//     invertible &= ntru_invert_64(&a1, 32-1, &b1);
+//     valid &= invertible;
+//     valid &= verify_inverse(&a1, &b1, 32);
+//
+//     /* test 3 random polynomials */
+//     uint16_t num_invertible = 0;
+//     NtruRandGen rng = NTRU_RNG_DEFAULT;
+//     NtruRandContext rand_ctx;
+//     valid &= ntru_rand_init(&rand_ctx, &rng) == NTRU_SUCCESS;
+//     while (num_invertible < 3) {
+//         NtruPrivPoly a2;
+//         a2.prod_flag = 0;   /* ternary */
+//         valid &= ntru_rand_tern(853, 100, 100, &a2.poly.tern, &rand_ctx);
+//
+//         NtruIntPoly b;
+//         uint8_t invertible = ntru_invert(&a2, 2048-1, &b);
+//         if (invertible) {
+//             valid &= verify_inverse(&a2, &b, 2048);
+//             num_invertible++;
+//         }
+//     }
+// #ifdef NTRU_AVOID_HAMMING_WT_PATENT
+//     num_invertible = 0;
+//     while (num_invertible < 3) {
+//         NtruPrivPoly a3;
+//         a3.prod_flag = 0;   /* ternary */
+//         valid &= ntru_rand_tern(853, 100, 100, &a3.poly.tern, &rand_ctx);
+//
+//         NtruIntPoly b;
+//         uint8_t invertible = ntru_invert(&a3, 2048-1, &b);
+//         if (invertible) {
+//             valid &= verify_inverse(&a3, &b, 2048);
+//             num_invertible++;
+//         }
+//     }
+// #endif   /* NTRU_AVOID_HAMMING_WT_PATENT */
+//     valid &= ntru_rand_release(&rand_ctx) == NTRU_SUCCESS;
+//
+//     /* test a non-invertible polynomial */
+//     NtruPrivPoly a2 = {0, {{11, 2, 3, {3, 10}, {0, 6, 8}}}};
+//     NtruIntPoly b2;
+//     invertible = ntru_invert(&a2, 32-1, &b2);
+//     valid &= !invertible;
+//
+//     print_result("test_inv", valid);
+//     return valid;
 }
 
 #[test]
 fn test_arr() {
-    // TODO
+//     NtruEncParams params = EES1087EP1;
+//     uint8_t a[ntru_enc_len(&params)];
+//     NtruIntPoly p1;
+//     NtruRandGen rng = NTRU_RNG_DEFAULT;
+//     NtruRandContext rand_ctx;
+//     uint8_t valid = ntru_rand_init(&rand_ctx, &rng) == NTRU_SUCCESS;
+//     valid &= rand_int(params.N, 11, &p1, &rand_ctx);
+//     ntru_to_arr_32(&p1, params.q, a);
+//     valid &= ntru_rand_release(&rand_ctx) == NTRU_SUCCESS;
+//     NtruIntPoly p2;
+//     ntru_from_arr(a, params.N, params.q, &p2);
+//     valid &= equals_int(&p1, &p2);
+//
+//     uint8_t b[sizeof(a)];
+//     ntru_to_arr_64(&p1, params.q, b);
+//     valid &= memcmp(a, b, sizeof a) == 0;
+//
+// #ifdef __SSSE3__
+//     ntru_to_arr_sse_2048(&p1, b);
+//     valid &= memcmp(a, b, sizeof a) == 0;
+// #endif
+//
+//     print_result("test_arr", valid);
+//     return valid;
 }

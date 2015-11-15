@@ -264,6 +264,10 @@ impl Default for NtruProdPoly {
 }
 
 impl NtruProdPoly {
+    pub fn new(n: u16, f1: NtruTernPoly, f2: NtruTernPoly, f3: NtruTernPoly) -> NtruProdPoly {
+        NtruProdPoly { n: n, f1: f1, f2: f2, f3: f3}
+    }
+
     pub fn to_int_poly(&self, modulus: u16) -> NtruIntPoly {
         let c = NtruIntPoly {n: self.n, coeffs: [0; NTRU_INT_POLY_SIZE]};
 
