@@ -75,6 +75,13 @@ impl NtruIntPoly {
         NtruIntPoly { n: n, coeffs: coeffs }
     }
 
+    pub fn from_arr(arr: &[u8], n: u16, q: u16) -> NtruIntPoly {
+        let mut p: NtruIntPoly = Default::default();
+        unsafe { ffi::ntru_from_arr(&arr[0], n, q, &mut p) };
+
+        p
+    }
+
     pub fn get_n(&self) -> u16 { self.n }
     pub fn set_n(&mut self, n: u16) { self.n = n }
 
@@ -83,6 +90,27 @@ impl NtruIntPoly {
 
     pub fn mod_mask(&mut self, mod_mask: u16) {
         unsafe {ffi::ntru_mod_mask(self, mod_mask)}
+    }
+
+    pub fn to_arr_32(&self, params: &NtruEncParams) -> Box<[u8]> {
+        let mut a = vec![0u8; params.enc_len() as usize];
+        unsafe { ffi::ntru_to_arr_32(self, params.get_q(), &mut a[0]) };
+
+        a.into_boxed_slice()
+    }
+
+    pub fn to_arr_64(&self, params: &NtruEncParams) -> Box<[u8]> {
+        let mut a = vec![0u8; params.enc_len() as usize];
+        unsafe { ffi::ntru_to_arr_64(self, params.get_q(), &mut a[0]) };
+
+        a.into_boxed_slice()
+    }
+
+    pub fn to_arr_sse_2048(&self, params: &NtruEncParams) -> Box<[u8]> {
+        let mut a = vec![0u8; params.enc_len() as usize];
+        unsafe { ffi::ntru_to_arr_sse_2048(self, &mut a[0]) };
+
+        a.into_boxed_slice()
     }
 
     pub fn mult_tern(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {

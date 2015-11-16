@@ -1,6 +1,6 @@
 extern crate ntru;
 use ntru::types::{NtruIntPoly, NtruPrivPoly};
-use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE, NTRU_MAX_ONES};
+use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE, NTRU_MAX_ONES, ALL_PARAM_SETS};
 use ntru::rand::{NTRU_RNG_DEFAULT, NtruRandContext};
 
 fn ntru_mult_int_nomod(a: &NtruIntPoly, b: &NtruIntPoly) -> NtruIntPoly {
@@ -237,28 +237,29 @@ fn test_inv() {
 
 #[test]
 fn test_arr() {
-//     NtruEncParams params = EES1087EP1;
-//     uint8_t a[ntru_enc_len(&params)];
-//     NtruIntPoly p1;
-//     NtruRandGen rng = NTRU_RNG_DEFAULT;
-//     NtruRandContext rand_ctx;
-//     uint8_t valid = ntru_rand_init(&rand_ctx, &rng) == NTRU_SUCCESS;
-//     valid &= rand_int(params.N, 11, &p1, &rand_ctx);
-//     ntru_to_arr_32(&p1, params.q, a);
-//     valid &= ntru_rand_release(&rand_ctx) == NTRU_SUCCESS;
-//     NtruIntPoly p2;
-//     ntru_from_arr(a, params.N, params.q, &p2);
-//     valid &= equals_int(&p1, &p2);
-//
-//     uint8_t b[sizeof(a)];
-//     ntru_to_arr_64(&p1, params.q, b);
-//     valid &= memcmp(a, b, sizeof a) == 0;
-//
-// #ifdef __SSSE3__
-//     ntru_to_arr_sse_2048(&p1, b);
-//     valid &= memcmp(a, b, sizeof a) == 0;
-// #endif
-//
-//     print_result("test_arr", valid);
-//     return valid;
+    let params = &ALL_PARAM_SETS[10];
+    let rng = NTRU_RNG_DEFAULT;
+    let rand_ctx = ntru::rand::init(&rng).unwrap();
+    let p1 = rand_int(params.get_n(), 11, &rand_ctx);
+    let a = p1.to_arr_32(params);
+
+    let p2 = NtruIntPoly::from_arr(&a, params.get_n(), params.get_q());
+
+    assert_eq!(p1, p2);
+
+    let b = p1.to_arr_64(params);
+
+    assert_eq!(a.len(), b.len());
+    for i in 0..a.len() {
+        assert_eq!(a[i], b[i]);
+    }
+
+    // #ifdef __SSSE3__
+    let b = p1.to_arr_sse_2048(params);
+
+    assert_eq!(a.len(), b.len());
+    for i in 0..a.len() {
+        assert_eq!(a[i], b[i]);
+    }
+    // #endif
 }

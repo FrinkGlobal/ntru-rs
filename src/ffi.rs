@@ -89,6 +89,11 @@ extern {
     pub fn ntru_mult_fac(a: *mut NtruIntPoly, factor: int16_t);
     pub fn ntru_mod_center(p: *mut NtruIntPoly, modulus: uint16_t);
     pub fn ntru_mod3(p: *mut NtruIntPoly);
+    pub fn ntru_to_arr_32(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t) -> c_void;
+    pub fn ntru_to_arr_64(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t) -> c_void;
+    pub fn ntru_to_arr_sse_2048(p: *const NtruIntPoly, a: *mut uint8_t) -> c_void;
+    pub fn ntru_from_arr(arr: *const uint8_t, n: uint16_t, q: uint16_t, p: *mut NtruIntPoly)
+                         -> c_void;
 
     // key.h
     pub fn ntru_export_pub(key: *const NtruEncPubKey, arr: *mut uint8_t);
