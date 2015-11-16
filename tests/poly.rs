@@ -1,5 +1,5 @@
 extern crate ntru;
-use ntru::types::{NtruIntPoly, NtruPrivPoly};
+use ntru::types::{NtruIntPoly, NtruTernPoly, NtruPrivPoly};
 use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE, NTRU_MAX_ONES, ALL_PARAM_SETS};
 use ntru::rand::{NTRU_RNG_DEFAULT, NtruRandContext};
 
@@ -88,7 +88,7 @@ fn it_mult_int() {
 }
 
 #[test]
-fn test_mult_tern() {
+fn it_mult_tern() {
     let rng = NTRU_RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();
 
@@ -145,14 +145,12 @@ fn test_mult_tern() {
 }
 
 #[test]
-fn test_mult_prod() {
+fn it_mult_prod() {
     let rng = NTRU_RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();
 
     let log_modulus = 11u16;
     let modulus = 1 << log_modulus;
-
-    println!("modulus: {}", 1 << log_modulus);
 
     for _ in 0..10 {
         let a = ntru::rand::prod(853, 8, 8, 8, 9, &rand_ctx).unwrap();
@@ -178,65 +176,55 @@ fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
 }
 
 #[test]
-fn test_inv() {
-//     uint8_t valid = 1;
-//
-//     /* Verify a short polynomial */
-//     NtruPrivPoly a1 = {0, {{11, 4, 4, {1, 2, 6, 9}, {0, 3, 4, 10}}}};
-//     NtruIntPoly b1;
-//     uint8_t invertible = ntru_invert_32(&a1, 32-1, &b1);
-//     valid &= invertible;
-//     valid &= verify_inverse(&a1, &b1, 32);
-//     invertible &= ntru_invert_64(&a1, 32-1, &b1);
-//     valid &= invertible;
-//     valid &= verify_inverse(&a1, &b1, 32);
-//
-//     /* test 3 random polynomials */
-//     uint16_t num_invertible = 0;
-//     NtruRandGen rng = NTRU_RNG_DEFAULT;
-//     NtruRandContext rand_ctx;
-//     valid &= ntru_rand_init(&rand_ctx, &rng) == NTRU_SUCCESS;
-//     while (num_invertible < 3) {
-//         NtruPrivPoly a2;
-//         a2.prod_flag = 0;   /* ternary */
-//         valid &= ntru_rand_tern(853, 100, 100, &a2.poly.tern, &rand_ctx);
-//
-//         NtruIntPoly b;
-//         uint8_t invertible = ntru_invert(&a2, 2048-1, &b);
-//         if (invertible) {
-//             valid &= verify_inverse(&a2, &b, 2048);
-//             num_invertible++;
-//         }
-//     }
-// #ifdef NTRU_AVOID_HAMMING_WT_PATENT
-//     num_invertible = 0;
-//     while (num_invertible < 3) {
-//         NtruPrivPoly a3;
-//         a3.prod_flag = 0;   /* ternary */
-//         valid &= ntru_rand_tern(853, 100, 100, &a3.poly.tern, &rand_ctx);
-//
-//         NtruIntPoly b;
-//         uint8_t invertible = ntru_invert(&a3, 2048-1, &b);
-//         if (invertible) {
-//             valid &= verify_inverse(&a3, &b, 2048);
-//             num_invertible++;
-//         }
-//     }
-// #endif   /* NTRU_AVOID_HAMMING_WT_PATENT */
-//     valid &= ntru_rand_release(&rand_ctx) == NTRU_SUCCESS;
-//
-//     /* test a non-invertible polynomial */
-//     NtruPrivPoly a2 = {0, {{11, 2, 3, {3, 10}, {0, 6, 8}}}};
-//     NtruIntPoly b2;
-//     invertible = ntru_invert(&a2, 32-1, &b2);
-//     valid &= !invertible;
-//
-//     print_result("test_inv", valid);
-//     return valid;
+fn it_inv() {
+    let a1 = NtruPrivPoly::new_with_tern_poly(NtruTernPoly::new(11, &[1, 2, 6, 9],
+                                                                &[0, 3, 4, 10]));
+    let (b1, invertible) = a1.invert_32(32-1);
+    assert!(invertible);
+    assert!(verify_inverse(&a1, &b1, 32));
+
+    let (b1, invertible) = a1.invert_64(32-1);
+    assert!(invertible);
+    assert!(verify_inverse(&a1, &b1, 32));
+
+    // Test 3 random polynomials
+    let mut num_invertible = 0u16;
+    let rng = NTRU_RNG_DEFAULT;
+    let rand_ctx = ntru::rand::init(&rng).unwrap();
+
+    while num_invertible < 3 {
+        let a2 = NtruPrivPoly::new_with_tern_poly(ntru::rand::tern(853, 100, 100,
+                                                                   &rand_ctx).unwrap());
+        let (b, invertible) = a2.invert(2048-1);
+
+        if invertible {
+            assert!(verify_inverse(&a2, &b, 2048));
+            num_invertible += 1;
+        }
+    }
+
+    // #ifdef NTRU_AVOID_HAMMING_WT_PATENT
+    num_invertible = 0;
+    while num_invertible < 3 {
+        let a3 = NtruPrivPoly::new_with_tern_poly(ntru::rand::tern(853, 100, 100,
+                                                                   &rand_ctx).unwrap());
+        let (b, invertible) = a3.invert(2048-1);
+
+        if invertible {
+            assert!(verify_inverse(&a3, &b, 2048));
+            num_invertible += 1;
+        }
+    }
+    // #endif
+
+    // test a non-invertible polynomial
+    let a2 = NtruPrivPoly::new_with_tern_poly(NtruTernPoly::new(11, &[3, 10], &[0, 6, 8]));
+    let (_, invertible) = a2.invert(32-1);
+    assert!( ! invertible);
 }
 
 #[test]
-fn test_arr() {
+fn it_arr() {
     let params = &ALL_PARAM_SETS[10];
     let rng = NTRU_RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();

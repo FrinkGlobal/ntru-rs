@@ -250,6 +250,22 @@ impl PartialEq for NtruTernPoly {
 }
 
 impl NtruTernPoly {
+    pub fn new(n: u16, ones: &[u16], neg_ones: &[u16]) -> NtruTernPoly {
+        let mut new_ones = [0; NTRU_MAX_ONES];
+        let mut new_neg_ones = [0; NTRU_MAX_ONES];
+
+        for i in 0..ones.len() {
+            new_ones[i] = ones[i];
+        }
+
+        for i in 0..neg_ones.len() {
+            new_neg_ones[i] = neg_ones[i];
+        }
+
+        NtruTernPoly { n: n, num_ones: ones.len() as u16, num_neg_ones: neg_ones.len() as u16,
+                       ones: new_ones, neg_ones: new_neg_ones }
+    }
+
     pub fn get_n(&self) -> u16 { self.n }
     pub fn get_ones(&self) -> &[u16] { &self.ones[0..self.num_ones as usize] }
     pub fn get_neg_ones(&self) -> &[u16] { &self.neg_ones[0..self.num_neg_ones as usize] }
@@ -326,10 +342,33 @@ impl fmt::Debug for PrivUnion {
 }
 
 impl PrivUnion {
-    unsafe fn tern(&self) -> &NtruTernPoly {
+    unsafe fn new_from_prod(poly: NtruProdPoly) -> PrivUnion {
+        let arr: &[uint16_t; 3004] = mem::transmute(&poly);
+        let mut data = [0; PRIVUNION_SIZE];
+
+        for i in 0..arr.len() {
+            data[i] = arr[i];
+        }
+
+        PrivUnion { data: data }
+    }
+
+    unsafe fn new_from_tern(poly: NtruTernPoly) -> PrivUnion {
+        let arr: &[uint16_t; 1001] = mem::transmute(&poly);
+        let mut data = [0; PRIVUNION_SIZE];
+
+        for i in 0..arr.len() {
+            data[i] = arr[i];
+        }
+
+        PrivUnion { data: data }
+    }
+
+    unsafe fn prod(&self) -> &NtruProdPoly {
         mem::transmute(&self.data)
     }
-    unsafe fn prod(&self) -> &NtruProdPoly {
+
+    unsafe fn tern(&self) -> &NtruTernPoly {
         mem::transmute(&self.data)
     }
 }
@@ -359,6 +398,14 @@ impl PartialEq for NtruPrivPoly {
 }
 
 impl NtruPrivPoly {
+    pub fn new_with_prod_poly(poly: NtruProdPoly) -> NtruPrivPoly {
+        NtruPrivPoly { prod_flag: 0, poly: unsafe { PrivUnion::new_from_prod(poly) } }
+    }
+
+    pub fn new_with_tern_poly(poly: NtruTernPoly) -> NtruPrivPoly {
+        NtruPrivPoly { prod_flag: 0, poly: unsafe { PrivUnion::new_from_tern(poly) } }
+    }
+
     pub fn get_prod_flag(&self) -> u8 { self.prod_flag }
     pub fn get_poly_prod(&self) -> &NtruProdPoly {
         if self.prod_flag != 1 {
@@ -371,6 +418,48 @@ impl NtruPrivPoly {
             panic!("Trying to get NtruTernPoly from an union that is NtruProdPoly.");
         }
         unsafe { &*self.poly.tern() }
+    }
+
+    /// Inverse modulo q
+    ///
+    /// Computes the inverse of 1+3a mod q; q must be a power of 2. It also returns if the
+    /// polynomial is invertible.
+    ///
+    /// The algorithm is described in "Almost Inverses and Fast NTRU Key Generation" at
+    /// http://www.securityinnovation.com/uploads/Crypto/NTRUTech014.pdf
+    pub fn invert(&self, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut fq: NtruIntPoly = Default::default();
+        let result = unsafe { ffi::ntru_invert(self, mod_mask, &mut fq) };
+
+        (fq, result == 1)
+    }
+
+    /// Inverse modulo q
+    ///
+    /// Computes the inverse of 1+3a mod q; q must be a power of 2. This function uses 32-bit
+    /// arithmetic. It also returns if the polynomial is invertible.
+    ///
+    /// The algorithm is described in "Almost Inverses and Fast NTRU Key Generation" at
+    /// http://www.securityinnovation.com/uploads/Crypto/NTRUTech014.pdf
+    pub fn invert_32(&self, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut fq: NtruIntPoly = Default::default();
+        let result = unsafe { ffi::ntru_invert_32(self, mod_mask, &mut fq) };
+
+        (fq, result == 1)
+    }
+
+    /// Inverse modulo q
+    ///
+    /// Computes the inverse of 1+3a mod q; q must be a power of 2. This function uses 64-bit
+    /// arithmetic. It also returns if the polynomial is invertible.
+    ///
+    /// The algorithm is described in "Almost Inverses and Fast NTRU Key Generation" at
+    /// http://www.securityinnovation.com/uploads/Crypto/NTRUTech014.pdf
+    pub fn invert_64(&self, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut fq: NtruIntPoly = Default::default();
+        let result = unsafe { ffi::ntru_invert_64(self, mod_mask, &mut fq) };
+
+        (fq, result == 1)
     }
 }
 

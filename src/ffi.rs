@@ -1,7 +1,7 @@
 use libc::{uint16_t, int16_t, uint8_t, c_void};
 
 use encparams::NtruEncParams;
-use types::{NtruIntPoly, NtruTernPoly, NtruProdPoly, NtruEncKeyPair, NtruEncPubKey};
+use types::{NtruIntPoly, NtruTernPoly, NtruProdPoly, NtruEncKeyPair, NtruPrivPoly, NtruEncPubKey};
 use rand::{NtruRandContext, NtruRandGen};
 
 #[link(name = "ntru")]
@@ -94,6 +94,12 @@ extern {
     pub fn ntru_to_arr_sse_2048(p: *const NtruIntPoly, a: *mut uint8_t) -> c_void;
     pub fn ntru_from_arr(arr: *const uint8_t, n: uint16_t, q: uint16_t, p: *mut NtruIntPoly)
                          -> c_void;
+    pub fn ntru_invert(a: *const NtruPrivPoly, mod_mask: uint16_t, fq: *mut NtruIntPoly)
+                       -> uint8_t;
+    pub fn ntru_invert_32(a: *const NtruPrivPoly, mod_mask: uint16_t, fq: *mut NtruIntPoly)
+                          -> uint8_t;
+    pub fn ntru_invert_64(a: *const NtruPrivPoly, mod_mask: uint16_t, fq: *mut NtruIntPoly)
+                                                -> uint8_t;
 
     // key.h
     pub fn ntru_export_pub(key: *const NtruEncPubKey, arr: *mut uint8_t);
