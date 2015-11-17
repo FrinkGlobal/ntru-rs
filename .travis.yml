@@ -3,10 +3,10 @@ rust:
 - stable
 - beta
 - nightly
-sudo: false
-addons:
-  apt:
-    packages: kcov
+sudo: required
+before_install:
+  - wget http://mirrors.kernel.org/ubuntu/pool/universe/k/kcov/kcov_25+dfsg-1ubuntu2_i386.deb
+  - sudo dpkg -i kcov_25+dfsg-1ubuntu2_i386.deb
 script:
 - cargo build --verbose
 - cargo test --verbose
