@@ -4,6 +4,8 @@ use ntru::encparams::{NtruEncParams, ALL_PARAM_SETS};
 use ntru::rand::{NTRU_RNG_DEFAULT, NTRU_RNG_IGF2};
 use ntru::types::{NtruIntPoly, NtruTernPoly, NtruEncPrivKey, NtruEncPubKey, NtruEncKeyPair};
 
+mod poly;
+
 fn encrypt_poly(m: NtruIntPoly, r: &NtruTernPoly, h: &NtruIntPoly, q: u16) -> NtruIntPoly {
     let (mut e, _) = h.mult_tern(r, q);
     e = e + m;
