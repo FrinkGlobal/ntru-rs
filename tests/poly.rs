@@ -1,6 +1,6 @@
 extern crate ntru;
 use ntru::types::{NtruIntPoly, NtruTernPoly, NtruPrivPoly};
-use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE, NTRU_MAX_ONES, ALL_PARAM_SETS};
+use ntru::encparams::{NTRU_INT_POLY_SIZE, NTRU_MAX_DEGREE, NTRU_MAX_ONES, EES1087EP1};
 use ntru::rand::{NTRU_RNG_DEFAULT, NtruRandContext};
 
 fn ntru_mult_int_nomod(a: &NtruIntPoly, b: &NtruIntPoly) -> NtruIntPoly {
@@ -43,6 +43,17 @@ fn rand_int(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
         poly.set_coeff(i as usize, rand_data[i as usize] as i16 >> shift);
     }
     poly
+}
+
+fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
+    let mut a_int = ntru_priv_to_int(a, modulus);
+    a_int.mult_fac(3);
+    let new_coeff = a_int.get_coeffs()[0] + 1;
+    a_int.set_coeff(0, new_coeff);
+
+    let (mut c, _) = a_int.mult_int(b, modulus-1);
+    c.mod_mask(modulus-1);
+    c.equals1()
 }
 
 #[test]
@@ -164,17 +175,6 @@ fn it_mult_prod() {
     }
 }
 
-fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
-    let mut a_int = ntru_priv_to_int(a, modulus);
-    a_int.mult_fac(3);
-    let new_coeff = a_int.get_coeffs()[0] + 1;
-    a_int.set_coeff(0, new_coeff);
-
-    let (mut c, _) = a_int.mult_int(b, modulus-1);
-    c.mod_mask(modulus-1);
-    c.equals1()
-}
-
 #[test]
 fn it_inv() {
     let a1 = NtruPrivPoly::new_with_tern_poly(NtruTernPoly::new(11, &[1, 2, 6, 9],
@@ -225,17 +225,17 @@ fn it_inv() {
 
 #[test]
 fn it_arr() {
-    let params = &ALL_PARAM_SETS[10];
+    let params = EES1087EP1;
     let rng = NTRU_RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();
     let p1 = rand_int(params.get_n(), 11, &rand_ctx);
-    let a = p1.to_arr_32(params);
+    let a = p1.to_arr_32(&params);
 
     let p2 = NtruIntPoly::from_arr(&a, params.get_n(), params.get_q());
 
     assert_eq!(p1, p2);
 
-    let b = p1.to_arr_64(params);
+    let b = p1.to_arr_64(&params);
 
     assert_eq!(a.len(), b.len());
     for i in 0..a.len() {
@@ -243,7 +243,7 @@ fn it_arr() {
     }
 
     // #ifdef __SSSE3__
-    let b = p1.to_arr_sse_2048(params);
+    let b = p1.to_arr_sse_2048(&params);
 
     assert_eq!(a.len(), b.len());
     for i in 0..a.len() {

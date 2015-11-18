@@ -5,6 +5,7 @@ use ntru::rand::{NTRU_RNG_DEFAULT, NTRU_RNG_IGF2};
 use ntru::types::{NtruIntPoly, NtruTernPoly, NtruEncPrivKey, NtruEncPubKey, NtruEncKeyPair};
 
 mod poly;
+mod key;
 
 fn encrypt_poly(m: NtruIntPoly, r: &NtruTernPoly, h: &NtruIntPoly, q: u16) -> NtruIntPoly {
     let (mut e, _) = h.mult_tern(r, q);
@@ -36,7 +37,7 @@ fn gen_key_pair(seed: &str, params: &NtruEncParams) -> NtruEncKeyPair {
     let mut rand_ctx = ntru::rand::init_det(&rng, seed_u8).ok().unwrap();
     rand_ctx.set_seed(seed_u8);
 
-    ntru::gen_key_pair(params, &rand_ctx).ok().unwrap()
+    ntru::generate_key_pair(params, &rand_ctx).ok().unwrap()
 }
 
 #[test]
@@ -45,7 +46,7 @@ fn it_keygen() {
 
     for params in param_arr {
         let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
-        let mut kp = ntru::gen_key_pair(&params, &rand_ctx).ok().unwrap();
+        let mut kp = ntru::generate_key_pair(&params, &rand_ctx).ok().unwrap();
 
         // Encrypt a random message
         let m = ntru::rand::tern(params.get_n(), params.get_n()/3, params.get_n()/3,
@@ -65,7 +66,7 @@ fn it_keygen() {
         kp = gen_key_pair("my test password", &params);
         let rng = NTRU_RNG_IGF2;
         let rand_ctx2 = ntru::rand::init_det(&rng, b"my test password").ok().unwrap();
-        let kp2 = ntru::gen_key_pair(&params, &rand_ctx2).ok().unwrap();
+        let kp2 = ntru::generate_key_pair(&params, &rand_ctx2).ok().unwrap();
 
         assert_eq!(kp, kp2);
     }
@@ -75,7 +76,7 @@ fn it_keygen() {
 fn test_encr_decr_nondet(params: &NtruEncParams) {
     let rng = NTRU_RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).ok().unwrap();
-    let kp = ntru::gen_key_pair(params, &rand_ctx).ok().unwrap();
+    let kp = ntru::generate_key_pair(params, &rand_ctx).ok().unwrap();
 
     let max_len = params.max_msg_len();
     let plain = ntru::rand::generate(max_len as u16, &rand_ctx).ok().unwrap();

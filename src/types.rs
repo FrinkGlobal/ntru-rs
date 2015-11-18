@@ -480,6 +480,20 @@ impl Default for NtruEncPrivKey {
 impl NtruEncPrivKey {
     pub fn get_q(&self) -> u16 { self.q }
     pub fn get_t(&self) -> &NtruPrivPoly { &self.t }
+
+    pub fn import(arr: &[u8]) -> NtruEncPrivKey {
+        let mut key: NtruEncPrivKey = Default::default();
+        unsafe{ ffi::ntru_import_priv(&arr[0], &mut key) };
+
+        key
+    }
+
+    pub fn export(&self, params: &NtruEncParams) -> Box<[u8]> {
+        let mut arr = vec![0u8; params.private_len() as usize];
+        unsafe { ffi::ntru_export_priv(self, &mut arr[..][0]) };
+
+        arr.into_boxed_slice()
+    }
 }
 
 /// NtruEncrypt public key
@@ -508,7 +522,7 @@ impl NtruEncPubKey {
     }
 
     pub fn export(&self, params: &NtruEncParams) -> Box<[u8]> {
-        let mut arr = vec![0u8; 4 + params.enc_len() as usize];
+        let mut arr = vec![0u8; params.public_len() as usize];
         unsafe { ffi::ntru_export_pub(self, &mut arr[..][0]) };
 
         arr.into_boxed_slice()
