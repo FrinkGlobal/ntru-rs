@@ -240,7 +240,7 @@ impl PartialEq for NtruTernPoly {
     fn eq(&self, other: &NtruTernPoly) -> bool {
         self.n == other.n && self.num_ones == other.num_ones &&
         self.num_neg_ones == other.num_neg_ones && {
-            for i in 0..NTRU_MAX_ONES-1 {
+            for i in 0..NTRU_MAX_ONES {
                 if self.ones[i] != other.ones[i] { return false }
                 if self.neg_ones[i] != other.neg_ones[i] { return false }
             }
@@ -480,6 +480,17 @@ impl Default for NtruEncPrivKey {
 impl NtruEncPrivKey {
     pub fn get_q(&self) -> u16 { self.q }
     pub fn get_t(&self) -> &NtruPrivPoly { &self.t }
+
+    pub fn get_params(&self) -> Result<NtruEncParams, NtruError> {
+        let mut params: NtruEncParams = Default::default();
+        let result = unsafe { ffi::ntru_params_from_priv_key(self, &mut params) };
+
+        if result == 0 {
+            Ok(params)
+        } else {
+            Err(NtruError::from_uint8_t(result))
+        }
+    }
 
     pub fn import(arr: &[u8]) -> NtruEncPrivKey {
         let mut key: NtruEncPrivKey = Default::default();
