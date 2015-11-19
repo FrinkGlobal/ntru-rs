@@ -4,6 +4,7 @@ use std::{fmt, mem};
 use libc::{int16_t, uint8_t, uint16_t};
 use ffi;
 use encparams::{NtruEncParams, NTRU_INT_POLY_SIZE, NTRU_MAX_ONES};
+use rand::NtruRandContext;
 
 /// A polynomial with integer coefficients.
 #[repr(C)]
@@ -53,12 +54,63 @@ impl PartialEq for NtruIntPoly {
 }
 
 impl NtruIntPoly {
+    pub fn new(n: u16, coeffs: &[i16]) -> NtruIntPoly {
+        let mut new_coeffs = [0; NTRU_INT_POLY_SIZE];
+
+        for i in 0..coeffs.len() {
+            new_coeffs[i] = coeffs[i];
+        }
+        NtruIntPoly { n: n, coeffs: new_coeffs }
+    }
+
+    pub fn rand(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
+        let rand_data = rand_ctx.get_rand_gen().generate(n*2, rand_ctx).ok().unwrap();
+
+        let mut coeffs = [0i16; NTRU_INT_POLY_SIZE];
+        let shift = 16 - pow2q;
+        for i in (n as usize)..0usize {
+            coeffs[i] =  rand_data[i] as i16 >> shift;
+        }
+
+        NtruIntPoly { n: n, coeffs: coeffs }
+    }
+
+    pub fn from_arr(arr: &[u8], n: u16, q: u16) -> NtruIntPoly {
+        let mut p: NtruIntPoly = Default::default();
+        unsafe { ffi::ntru_from_arr(&arr[0], n, q, &mut p) };
+
+        p
+    }
+
     pub fn get_n(&self) -> u16 { self.n }
+    pub fn set_n(&mut self, n: u16) { self.n = n }
+
     pub fn get_coeffs(&self) -> &[i16; NTRU_INT_POLY_SIZE] { &self.coeffs }
     pub fn set_coeff(&mut self, index: usize, value: i16) { self.coeffs[index] = value }
 
     pub fn mod_mask(&mut self, mod_mask: u16) {
         unsafe {ffi::ntru_mod_mask(self, mod_mask)}
+    }
+
+    pub fn to_arr_32(&self, params: &NtruEncParams) -> Box<[u8]> {
+        let mut a = vec![0u8; params.enc_len() as usize];
+        unsafe { ffi::ntru_to_arr_32(self, params.get_q(), &mut a[0]) };
+
+        a.into_boxed_slice()
+    }
+
+    pub fn to_arr_64(&self, params: &NtruEncParams) -> Box<[u8]> {
+        let mut a = vec![0u8; params.enc_len() as usize];
+        unsafe { ffi::ntru_to_arr_64(self, params.get_q(), &mut a[0]) };
+
+        a.into_boxed_slice()
+    }
+
+    pub fn to_arr_sse_2048(&self, params: &NtruEncParams) -> Box<[u8]> {
+        let mut a = vec![0u8; params.enc_len() as usize];
+        unsafe { ffi::ntru_to_arr_sse_2048(self, &mut a[0]) };
+
+        a.into_boxed_slice()
     }
 
     pub fn mult_tern(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
@@ -67,9 +119,65 @@ impl NtruIntPoly {
         (c, result == 1)
     }
 
+    pub fn mult_tern_32(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_tern_32(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_tern_64(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_tern_64(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_tern_sse(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_tern_sse(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn add_tern(&self, b: &NtruTernPoly) -> NtruIntPoly {
+        NtruIntPoly {
+            n: self.n,
+            coeffs: {
+                let mut coeffs = [0; NTRU_INT_POLY_SIZE];
+                let tern_ones = b.get_ones();
+                let tern_neg_ones = b.get_neg_ones();
+
+                for i in 0..tern_ones.len() {
+                    coeffs[tern_ones[i] as usize] = self.coeffs[tern_ones[i] as usize] + 1;
+                }
+
+                for i in 0..tern_neg_ones.len() {
+                    coeffs[tern_neg_ones[i] as usize] = self.coeffs[tern_neg_ones[i] as usize] + 1;
+                }
+                coeffs
+            }
+        }
+    }
+
     pub fn mult_prod(&self, b: &NtruProdPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe {ffi::ntru_mult_prod(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_int(&self, b: &NtruIntPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_int(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_int_16(&self, b: &NtruIntPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_int_16(self, b, &mut c, mod_mask)};
+        (c, result == 1)
+    }
+
+    pub fn mult_int_64(&self, b: &NtruIntPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut c: NtruIntPoly = Default::default();
+        let result = unsafe {ffi::ntru_mult_int_64(self, b, &mut c, mod_mask)};
         (c, result == 1)
     }
 
@@ -83,6 +191,22 @@ impl NtruIntPoly {
 
     pub fn mod3(&mut self) {
         unsafe {ffi::ntru_mod3(self)}
+    }
+
+    pub fn equals_mod(&self, other: &NtruIntPoly, modulus: u16) -> bool {
+        self.n == other.n && {
+            for i in 0..self.n as usize {
+                if (self.coeffs[i] - other.coeffs[i]) as i32 % modulus as i32 != 0 { return false }
+            }
+            true
+        }
+    }
+
+    pub fn equals1(&self) -> bool {
+        for i in 1..self.n {
+            if self.coeffs[i as usize] != 0 { return false }
+        }
+        self.coeffs[0] == 1
     }
 }
 
@@ -116,7 +240,7 @@ impl PartialEq for NtruTernPoly {
     fn eq(&self, other: &NtruTernPoly) -> bool {
         self.n == other.n && self.num_ones == other.num_ones &&
         self.num_neg_ones == other.num_neg_ones && {
-            for i in 0..NTRU_MAX_ONES-1 {
+            for i in 0..NTRU_MAX_ONES {
                 if self.ones[i] != other.ones[i] { return false }
                 if self.neg_ones[i] != other.neg_ones[i] { return false }
             }
@@ -126,6 +250,26 @@ impl PartialEq for NtruTernPoly {
 }
 
 impl NtruTernPoly {
+    pub fn new(n: u16, ones: &[u16], neg_ones: &[u16]) -> NtruTernPoly {
+        let mut new_ones = [0; NTRU_MAX_ONES];
+        let mut new_neg_ones = [0; NTRU_MAX_ONES];
+
+        for i in 0..ones.len() {
+            new_ones[i] = ones[i];
+        }
+
+        for i in 0..neg_ones.len() {
+            new_neg_ones[i] = neg_ones[i];
+        }
+
+        NtruTernPoly { n: n, num_ones: ones.len() as u16, num_neg_ones: neg_ones.len() as u16,
+                       ones: new_ones, neg_ones: new_neg_ones }
+    }
+
+    pub fn get_n(&self) -> u16 { self.n }
+    pub fn get_ones(&self) -> &[u16] { &self.ones[0..self.num_ones as usize] }
+    pub fn get_neg_ones(&self) -> &[u16] { &self.neg_ones[0..self.num_neg_ones as usize] }
+
     /// Ternary to general integer polynomial
     ///
     /// Converts a NtruTernPoly to an equivalent NtruIntPoly.
@@ -163,6 +307,20 @@ impl Default for NtruProdPoly {
     }
 }
 
+impl NtruProdPoly {
+    pub fn new(n: u16, f1: NtruTernPoly, f2: NtruTernPoly, f3: NtruTernPoly) -> NtruProdPoly {
+        NtruProdPoly { n: n, f1: f1, f2: f2, f3: f3}
+    }
+
+    pub fn to_int_poly(&self, modulus: u16) -> NtruIntPoly {
+        let c = NtruIntPoly {n: self.n, coeffs: [0; NTRU_INT_POLY_SIZE]};
+
+        let mod_mask = modulus - 1;
+        let (c, _) = c.mult_tern(&self.f2, mod_mask);
+        c.add_tern(&self.f3)
+    }
+}
+
 /// The size of the union in 16 bit words
 const PRIVUNION_SIZE: usize = 3004;
 
@@ -184,10 +342,33 @@ impl fmt::Debug for PrivUnion {
 }
 
 impl PrivUnion {
-    unsafe fn tern(&self) -> &NtruTernPoly {
+    unsafe fn new_from_prod(poly: NtruProdPoly) -> PrivUnion {
+        let arr: &[uint16_t; 3004] = mem::transmute(&poly);
+        let mut data = [0; PRIVUNION_SIZE];
+
+        for i in 0..arr.len() {
+            data[i] = arr[i];
+        }
+
+        PrivUnion { data: data }
+    }
+
+    unsafe fn new_from_tern(poly: NtruTernPoly) -> PrivUnion {
+        let arr: &[uint16_t; 1001] = mem::transmute(&poly);
+        let mut data = [0; PRIVUNION_SIZE];
+
+        for i in 0..arr.len() {
+            data[i] = arr[i];
+        }
+
+        PrivUnion { data: data }
+    }
+
+    unsafe fn prod(&self) -> &NtruProdPoly {
         mem::transmute(&self.data)
     }
-    unsafe fn prod(&self) -> &NtruProdPoly {
+
+    unsafe fn tern(&self) -> &NtruTernPoly {
         mem::transmute(&self.data)
     }
 }
@@ -217,6 +398,14 @@ impl PartialEq for NtruPrivPoly {
 }
 
 impl NtruPrivPoly {
+    pub fn new_with_prod_poly(poly: NtruProdPoly) -> NtruPrivPoly {
+        NtruPrivPoly { prod_flag: 0, poly: unsafe { PrivUnion::new_from_prod(poly) } }
+    }
+
+    pub fn new_with_tern_poly(poly: NtruTernPoly) -> NtruPrivPoly {
+        NtruPrivPoly { prod_flag: 0, poly: unsafe { PrivUnion::new_from_tern(poly) } }
+    }
+
     pub fn get_prod_flag(&self) -> u8 { self.prod_flag }
     pub fn get_poly_prod(&self) -> &NtruProdPoly {
         if self.prod_flag != 1 {
@@ -229,6 +418,48 @@ impl NtruPrivPoly {
             panic!("Trying to get NtruTernPoly from an union that is NtruProdPoly.");
         }
         unsafe { &*self.poly.tern() }
+    }
+
+    /// Inverse modulo q
+    ///
+    /// Computes the inverse of 1+3a mod q; q must be a power of 2. It also returns if the
+    /// polynomial is invertible.
+    ///
+    /// The algorithm is described in "Almost Inverses and Fast NTRU Key Generation" at
+    /// http://www.securityinnovation.com/uploads/Crypto/NTRUTech014.pdf
+    pub fn invert(&self, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut fq: NtruIntPoly = Default::default();
+        let result = unsafe { ffi::ntru_invert(self, mod_mask, &mut fq) };
+
+        (fq, result == 1)
+    }
+
+    /// Inverse modulo q
+    ///
+    /// Computes the inverse of 1+3a mod q; q must be a power of 2. This function uses 32-bit
+    /// arithmetic. It also returns if the polynomial is invertible.
+    ///
+    /// The algorithm is described in "Almost Inverses and Fast NTRU Key Generation" at
+    /// http://www.securityinnovation.com/uploads/Crypto/NTRUTech014.pdf
+    pub fn invert_32(&self, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut fq: NtruIntPoly = Default::default();
+        let result = unsafe { ffi::ntru_invert_32(self, mod_mask, &mut fq) };
+
+        (fq, result == 1)
+    }
+
+    /// Inverse modulo q
+    ///
+    /// Computes the inverse of 1+3a mod q; q must be a power of 2. This function uses 64-bit
+    /// arithmetic. It also returns if the polynomial is invertible.
+    ///
+    /// The algorithm is described in "Almost Inverses and Fast NTRU Key Generation" at
+    /// http://www.securityinnovation.com/uploads/Crypto/NTRUTech014.pdf
+    pub fn invert_64(&self, mod_mask: u16) -> (NtruIntPoly, bool) {
+        let mut fq: NtruIntPoly = Default::default();
+        let result = unsafe { ffi::ntru_invert_64(self, mod_mask, &mut fq) };
+
+        (fq, result == 1)
     }
 }
 
@@ -249,6 +480,31 @@ impl Default for NtruEncPrivKey {
 impl NtruEncPrivKey {
     pub fn get_q(&self) -> u16 { self.q }
     pub fn get_t(&self) -> &NtruPrivPoly { &self.t }
+
+    pub fn get_params(&self) -> Result<NtruEncParams, NtruError> {
+        let mut params: NtruEncParams = Default::default();
+        let result = unsafe { ffi::ntru_params_from_priv_key(self, &mut params) };
+
+        if result == 0 {
+            Ok(params)
+        } else {
+            Err(NtruError::from_uint8_t(result))
+        }
+    }
+
+    pub fn import(arr: &[u8]) -> NtruEncPrivKey {
+        let mut key: NtruEncPrivKey = Default::default();
+        unsafe{ ffi::ntru_import_priv(&arr[0], &mut key) };
+
+        key
+    }
+
+    pub fn export(&self, params: &NtruEncParams) -> Box<[u8]> {
+        let mut arr = vec![0u8; params.private_len() as usize];
+        unsafe { ffi::ntru_export_priv(self, &mut arr[..][0]) };
+
+        arr.into_boxed_slice()
+    }
 }
 
 /// NtruEncrypt public key
@@ -277,7 +533,7 @@ impl NtruEncPubKey {
     }
 
     pub fn export(&self, params: &NtruEncParams) -> Box<[u8]> {
-        let mut arr = vec![0u8; 4 + params.enc_len() as usize];
+        let mut arr = vec![0u8; params.public_len() as usize];
         unsafe { ffi::ntru_export_pub(self, &mut arr[..][0]) };
 
         arr.into_boxed_slice()
