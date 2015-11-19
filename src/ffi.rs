@@ -1,7 +1,7 @@
 use libc::{uint16_t, int16_t, uint8_t, c_void};
 
 use encparams::NtruEncParams;
-use types::{NtruIntPoly, NtruTernPoly, NtruProdPoly, NtruEncKeyPair, NtruPrivPoly, NtruEncPubKey,
+use types::{NtruIntPoly, NtruProdPoly, NtruTernPoly, NtruEncKeyPair, NtruPrivPoly, NtruEncPubKey,
             NtruEncPrivKey};
 use rand::{NtruRandContext, NtruRandGen};
 

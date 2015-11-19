@@ -1,6 +1,6 @@
 use std::{slice, ptr};
 use libc::{c_void, uint8_t, uint16_t};
-use types::{NtruError, NtruTernPoly, NtruProdPoly};
+use types::{NtruError, NtruProdPoly, NtruTernPoly};
 use super::ffi;
 
 #[repr(C)]

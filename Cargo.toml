@@ -15,3 +15,6 @@ keywords = ["libntru", "NTRU", "NTRUEncrypt"]
 
 [dependencies]
 libc = "0.2.2"
+
+[dev-dependencies]
+rust-crypto = "0.2.34"
