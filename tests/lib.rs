@@ -1,4 +1,8 @@
 extern crate ntru;
+extern crate crypto;
+
+use crypto::digest::Digest;
+use crypto::sha1::Sha1;
 
 use ntru::encparams::{NtruEncParams, ALL_PARAM_SETS};
 use ntru::rand::{NTRU_RNG_DEFAULT, NTRU_RNG_IGF2};
@@ -38,6 +42,15 @@ fn gen_key_pair(seed: &str, params: &NtruEncParams) -> NtruEncKeyPair {
     rand_ctx.set_seed(seed_u8);
 
     ntru::generate_key_pair(params, &rand_ctx).ok().unwrap()
+}
+
+fn sha1(input: &[u8]) -> [u8; 20] {
+    let mut hasher = Sha1::new();
+    hasher.input(input);
+
+    let mut digest = [0u8; 20];
+    hasher.result(&mut digest);
+    digest
 }
 
 #[test]
@@ -107,8 +120,6 @@ fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
 
     let rand_ctx_plaintext = ntru::rand::init_det(&rng_plaintext, plain_seed).ok().unwrap();
     let plain = ntru::rand::generate(max_len as u16, &rand_ctx_plaintext).ok().unwrap();
-    // rand_ctx_plaintext.release();
-
     let plain2 = plain.clone();
 
     let seed = b"seed value";
@@ -138,7 +149,7 @@ fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
 
     let encrypted = ntru::encrypt(&plain, kp.get_public(), params,
                                   &rand_ctx).ok().unwrap();
-    let digest = ntru::sha1(&encrypted);
+    let digest = sha1(&encrypted);
     assert_eq!(digest, digest_expected);
 }
 

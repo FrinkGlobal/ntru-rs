@@ -407,6 +407,7 @@ impl NtruPrivPoly {
     }
 
     pub fn get_prod_flag(&self) -> u8 { self.prod_flag }
+
     pub fn get_poly_prod(&self) -> &NtruProdPoly {
         if self.prod_flag != 1 {
             panic!("Trying to get NtruPrivPoly from an union that is NtruTernPoly.");
