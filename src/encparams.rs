@@ -67,12 +67,25 @@ impl Default for NtruEncParams {
 impl PartialEq for NtruEncParams {
     fn eq(&self, other: &NtruEncParams) -> bool {
         self.name == other.name && self.n == other.n && self.q == other.q &&
-        self.prod_flag == other.prod_flag && self.df1 == other.df1 && self.df2 == other.df2 &&
-        self.df3 == other.df3 && self.dg == other.dg && self.dm0 == other.dm0 &&
+        self.prod_flag == other.prod_flag && self.df1 == other.df1 && (
+            self.prod_flag == 0 || (
+                self.df2 == other.df2 &&
+                self.df3 == other.df3
+            )) && self.dm0 == other.dm0 &&
         self.db == other.db && self.c == other.c && self.min_calls_r == other.min_calls_r &&
         self.min_calls_mask == other.min_calls_mask && self.hash_seed == other.hash_seed &&
-        self.oid == other.oid && self.hash == other.hash && self.hash_4way == other.hash_4way &&
-        self.hlen == other.hlen && self.pklen == other.pklen
+        self.oid == other.oid && {
+            let input = [0u8; 100];
+            let mut hash1 = [0u8; 256];
+            let mut hash2 = [0u8; 256];
+            unsafe { (self.hash)(&input[0], 100, &mut hash1[0]) };
+            unsafe { (other.hash)(&input[0], 100, &mut hash2[0]) };
+
+            for i in 0..hash1.len() {
+                if hash1[i] != hash2[i] { return false }
+            }
+            true
+        } && self.hlen == other.hlen && self.pklen == other.pklen
     }
 }
 

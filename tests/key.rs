@@ -51,19 +51,19 @@ fn it_params_from_key() {
         let kp = ntru::generate_key_pair(&params, &rand_ctx).unwrap();
 
         let params2 = kp.get_private().get_params().unwrap();
-        assert_eq!(params, params2);
+        assert_eq!(params, &params2);
     }
 
-    // for i in 0..param_arr.len() {
-    //     let params1 = param_arr[i];
-    //
-    //     for j in 0..param_arr.len() {
-    //         let params2 = param_arr[j];
-    //         if params1 == params2 {
-    //             assert_eq!(i, j);
-    //         } else {
-    //             assert!(i != j);
-    //         }
-    //     }
-    // }
+    for i in 0..param_arr.len() {
+        let params1 = &param_arr[i];
+
+        for j in 0..param_arr.len() {
+            let params2 = &param_arr[j];
+            if params1 == params2 {
+                assert_eq!(i, j);
+            } else {
+                assert!(i != j);
+            }
+        }
+    }
 }
