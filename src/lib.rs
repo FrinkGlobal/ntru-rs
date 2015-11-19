@@ -1,3 +1,44 @@
+//! NTRUEncrypt implementation for Rust
+//!
+//! This library implements the NtruEncrypt library in Rust. It is an interface to libntru, even
+//! though many of the methds are being implemented in pure Rust. The plan is to gradually
+//! implement the library natively. It uses this library since it has proven to be faster than the
+//! original NTRUEncrypt implementation. In any case, it is much faster than usual encryption /
+//! decryption mecanisms, and quantum-proof. More on NTRUEncrypt
+//! [here](https://en.wikipedia.org/wiki/NTRUEncrypt).
+//!
+//! To use it you only need to include the following in your crate:
+//! ```
+//! extern crate ntru;
+//!```
+//!
+//! NTRUEncrypt uses its own keys, that must be generated with the included random key generator,
+//! and must not be used for other applications such as NTRUSign or NTRUNMLS. Here is an example of
+//! use:
+//!
+//! ```
+//! use ntru::rand::NTRU_RNG_DEFAULT;
+//! use ntru::encparams::NTRU_DEFAULT_PARAMS_256_BITS;
+//!
+//! let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
+//! let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).ok().unwrap();
+//! ```
+//!
+//! This creates a key pair that can be uses to encrypt and decrypt messages:
+//! ```
+//! use ntru::rand::NTRU_RNG_DEFAULT;
+//! use ntru::encparams::NTRU_DEFAULT_PARAMS_256_BITS;
+//!
+//! # let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
+//! # let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).ok().unwrap();
+//!
+//! let msg = b"Hello from Rust!";
+//! let encrypted = ntru::encrypt(&msg, kp.get_public(), &NTRU_DEFAULT_PARAMS_256_BITS,
+//!                               &rand_ctx).ok().unwrap();
+//! let decrypted = ntru::decrypt(&encrypted, &kp, &NTRU_DEFAULT_PARAMS_256_BITS).ok().unwrap();
+//!
+//! assert_eq!(msg, decrypted);
+//! ```
 extern crate libc;
 
 pub mod types;
