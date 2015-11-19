@@ -19,7 +19,7 @@ fn encrypt_poly(m: NtruIntPoly, r: &NtruTernPoly, h: &NtruIntPoly, q: u16) -> Nt
 }
 
 fn decrypt_poly(e: NtruIntPoly, private: &NtruEncPrivKey, modulus: u16)  -> NtruIntPoly {
-    let (mut d, _) = if private.get_t().get_prod_flag() > 0 {
+    let (mut d, _) = if private.get_t().is_product() {
         e.mult_prod(private.get_t().get_poly_prod(), modulus-1)
     } else {
         e.mult_tern(private.get_t().get_poly_tern(), modulus-1)

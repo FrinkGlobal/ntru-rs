@@ -101,6 +101,7 @@ impl fmt::Debug for NtruEncParams {
 }
 
 impl NtruEncParams {
+    /// Name of the parameter set
     pub fn get_name(&self) -> String {
         let slice: [u8; 11] = [self.name[0] as u8, self.name[1] as u8, self.name[2] as u8,
                                 self.name[3] as u8, self.name[4] as u8, self.name[5] as u8,
@@ -108,14 +109,19 @@ impl NtruEncParams {
                                 self.name[9] as u8, self.name[10] as u8];
         String::from_utf8_lossy(&slice).into_owned()
     }
+    /// Number of polynomial coefficients
     pub fn get_n(&self) -> u16 { self.n }
+    /// Modulus
     pub fn get_q(&self) -> u16 { self.q }
+    /// Number of random bits to prepend to the message
     pub fn get_db(&self) -> u16 { self.db }
 
+    /// Maximum message length
     pub fn max_msg_len(&self) -> u8 {
         (self.n / 2 * 3 / 8 - 1 - self.db/8) as u8
     }
 
+    /// Encryption length
     pub fn enc_len(&self) -> u16 {
         // Make sure q is a power of 2
         if self.q & (self.q-1) != 0 { 0 }
@@ -133,7 +139,9 @@ impl NtruEncParams {
         }
     }
 
+    /// Public key length
     pub fn public_len(&self) -> u16 { 4 + self.enc_len() }
+    /// Private key length
     pub fn private_len(&self) -> u16 {
         if self.prod_flag == 1 {
             5 + 4 + 4*self.df1 + 4 + 4*self.df2 + 4 + 4*self.df3
@@ -545,6 +553,7 @@ pub const NTRU_DEFAULT_PARAMS_192_BITS: NtruEncParams = EES587EP1;
 /// The default parameter set for 256 bits of security.
 pub const NTRU_DEFAULT_PARAMS_256_BITS: NtruEncParams = EES743EP1;
 
+/// All parameter sets, in an array
 pub const ALL_PARAM_SETS: [NtruEncParams; 18] = [EES401EP1, EES449EP1, EES677EP1, EES1087EP2,
                                                  EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
                                                  EES659EP1, EES761EP1, EES1087EP1, EES1499EP1,

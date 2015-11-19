@@ -25,7 +25,7 @@ fn u8_arr_to_u16(arr: &[u8]) -> u16 {
 }
 
 fn ntru_priv_to_int(a: &NtruPrivPoly, modulus: u16) -> NtruIntPoly {
-    if a.get_prod_flag() != 0 {
+    if a.is_product() {
         a.get_poly_prod().to_int_poly(modulus)
     } else {
         a.get_poly_tern().to_int_poly()

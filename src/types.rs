@@ -54,6 +54,7 @@ impl PartialEq for NtruIntPoly {
 }
 
 impl NtruIntPoly {
+    /// Create a new NtruIntPoly
     pub fn new(n: u16, coeffs: &[i16]) -> NtruIntPoly {
         let mut new_coeffs = [0; NTRU_INT_POLY_SIZE];
 
@@ -63,6 +64,7 @@ impl NtruIntPoly {
         NtruIntPoly { n: n, coeffs: new_coeffs }
     }
 
+    /// Create a new random NtruIntPoly
     pub fn rand(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
         let rand_data = rand_ctx.get_rand_gen().generate(n*2, rand_ctx).ok().unwrap();
 
@@ -75,6 +77,7 @@ impl NtruIntPoly {
         NtruIntPoly { n: n, coeffs: coeffs }
     }
 
+    /// Convert array to NtruIntPoly
     pub fn from_arr(arr: &[u8], n: u16, q: u16) -> NtruIntPoly {
         let mut p: NtruIntPoly = Default::default();
         unsafe { ffi::ntru_from_arr(&arr[0], n, q, &mut p) };
@@ -113,24 +116,40 @@ impl NtruIntPoly {
         a.into_boxed_slice()
     }
 
+    /// General polynomial by ternary polynomial multiplication
+    ///
+    /// Multiplies a NtruIntPoly by a NtruTernPoly. The number of coefficients must be the same for
+    /// both polynomials.
     pub fn mult_tern(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe {ffi::ntru_mult_tern(self, b, &mut c, mod_mask)};
         (c, result == 1)
     }
 
+    /// General polynomial by ternary polynomial multiplication
+    ///
+    /// Multiplies a NtruIntPoly by a NtruTernPoly. The number of coefficients must be the same for
+    /// both polynomials. Uses 32-bit arithmetic.
     pub fn mult_tern_32(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe {ffi::ntru_mult_tern_32(self, b, &mut c, mod_mask)};
         (c, result == 1)
     }
 
+    /// General polynomial by ternary polynomial multiplication
+    ///
+    /// Multiplies a NtruIntPoly by a NtruTernPoly. The number of coefficients must be the same for
+    /// both polynomials. Uses 64-bit arithmetic.
     pub fn mult_tern_64(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe {ffi::ntru_mult_tern_64(self, b, &mut c, mod_mask)};
         (c, result == 1)
     }
 
+    /// General polynomial by ternary polynomial multiplication, SSSE3 version
+    ///
+    /// Multiplies a NtruIntPoly by a NtruTernPoly. The number of coefficients must be the same for
+    /// both polynomials. This variant requires SSSE3 support.
     pub fn mult_tern_sse(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe {ffi::ntru_mult_tern_sse(self, b, &mut c, mod_mask)};
@@ -157,6 +176,10 @@ impl NtruIntPoly {
         }
     }
 
+    /// General polynomial by product-form polynomial multiplication
+    ///
+    /// Multiplies a NtruIntPoly by a NtruProdPoly. The number of coefficients must be the same for
+    /// both polynomials.
     pub fn mult_prod(&self, b: &NtruProdPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe {ffi::ntru_mult_prod(self, b, &mut c, mod_mask)};
@@ -181,6 +204,7 @@ impl NtruIntPoly {
         (c, result == 1)
     }
 
+    /// Multiply by factor
     pub fn mult_fac(&mut self, factor: i16) {
         unsafe {ffi::ntru_mult_fac(self, factor)}
     }
@@ -193,6 +217,7 @@ impl NtruIntPoly {
         unsafe {ffi::ntru_mod3(self)}
     }
 
+    /// Check if both polynomials are equals given a modulus
     pub fn equals_mod(&self, other: &NtruIntPoly, modulus: u16) -> bool {
         self.n == other.n && {
             for i in 0..self.n as usize {
@@ -202,6 +227,7 @@ impl NtruIntPoly {
         }
     }
 
+    // Check if the NtruIntPoly equals 1
     pub fn equals1(&self) -> bool {
         for i in 1..self.n {
             if self.coeffs[i as usize] != 0 { return false }
@@ -398,15 +424,18 @@ impl PartialEq for NtruPrivPoly {
 }
 
 impl NtruPrivPoly {
+    /// Create a new NtruPrivPoly with a NtruProdPoly
     pub fn new_with_prod_poly(poly: NtruProdPoly) -> NtruPrivPoly {
-        NtruPrivPoly { prod_flag: 0, poly: unsafe { PrivUnion::new_from_prod(poly) } }
+        NtruPrivPoly { prod_flag: 1, poly: unsafe { PrivUnion::new_from_prod(poly) } }
     }
 
+    /// Create a new NtruPrivPoly with a NtruTernPoly
     pub fn new_with_tern_poly(poly: NtruTernPoly) -> NtruPrivPoly {
         NtruPrivPoly { prod_flag: 0, poly: unsafe { PrivUnion::new_from_tern(poly) } }
     }
 
-    pub fn get_prod_flag(&self) -> u8 { self.prod_flag }
+    /// If the NtruPrivPoly contains a NtruProdPoly
+    pub fn is_product(&self) -> bool { self.prod_flag == 1 }
 
     pub fn get_poly_prod(&self) -> &NtruProdPoly {
         if self.prod_flag != 1 {
@@ -414,6 +443,7 @@ impl NtruPrivPoly {
         }
         unsafe { &*self.poly.prod() }
     }
+
     pub fn get_poly_tern(&self) -> &NtruTernPoly {
         if self.prod_flag != 0 {
             panic!("Trying to get NtruTernPoly from an union that is NtruProdPoly.");
@@ -482,6 +512,7 @@ impl NtruEncPrivKey {
     pub fn get_q(&self) -> u16 { self.q }
     pub fn get_t(&self) -> &NtruPrivPoly { &self.t }
 
+    /// Get params from the private key
     pub fn get_params(&self) -> Result<NtruEncParams, NtruError> {
         let mut params: NtruEncParams = Default::default();
         let result = unsafe { ffi::ntru_params_from_priv_key(self, &mut params) };
@@ -493,6 +524,7 @@ impl NtruEncPrivKey {
         }
     }
 
+    /// Import private key
     pub fn import(arr: &[u8]) -> NtruEncPrivKey {
         let mut key: NtruEncPrivKey = Default::default();
         unsafe{ ffi::ntru_import_priv(&arr[0], &mut key) };
@@ -500,6 +532,7 @@ impl NtruEncPrivKey {
         key
     }
 
+    /// Export private key
     pub fn export(&self, params: &NtruEncParams) -> Box<[u8]> {
         let mut arr = vec![0u8; params.private_len() as usize];
         unsafe { ffi::ntru_export_priv(self, &mut arr[..][0]) };
@@ -526,6 +559,7 @@ impl NtruEncPubKey {
     pub fn get_q(&self) -> u16 { self.q }
     pub fn get_h(&self) -> &NtruIntPoly { &self.h }
 
+    /// Import a public key
     pub fn import(arr: &[u8]) -> NtruEncPubKey {
         let mut key: NtruEncPubKey = Default::default();
         unsafe{ ffi::ntru_import_pub(&arr[0], &mut key) };
@@ -533,6 +567,7 @@ impl NtruEncPubKey {
         key
     }
 
+    /// Export public key
     pub fn export(&self, params: &NtruEncParams) -> Box<[u8]> {
         let mut arr = vec![0u8; params.public_len() as usize];
         unsafe { ffi::ntru_export_pub(self, &mut arr[..][0]) };
@@ -556,35 +591,42 @@ impl Default for NtruEncKeyPair {
 }
 
 impl NtruEncKeyPair {
+    /// Get params from the key pair
+    pub fn get_params(&self) -> Result<NtruEncParams, NtruError> { self.private.get_params() }
+
+    /// The private key
     pub fn get_private(&self) -> &NtruEncPrivKey { &self.private }
+    /// The public key
     pub fn get_public(&self) -> &NtruEncPubKey { &self.public }
 }
 
+/// The error enum
 #[derive(Debug, PartialEq, Clone)]
 pub enum NtruError {
     /// Out of memory error
     OutOfMemory,
-    /// TODO: Not sure what this error is for
+    /// Error in the random generator
     Prng,
     /// Message is too long
     MessageTooLong,
     /// Invalid maximum length
     InvalidMaxLength,
-    /// TODO: Not sure about this neither
+    /// MD0 violation
     Md0Violation,
-    /// No zero pad TODO: better explanation
+    /// No zero pad
     NoZeroPad,
-    /// Invalid encoding of the message. TODO: Probably not needed in Rust
+    /// Invalid encoding of the message.
     InvalidEncoding,
-    /// Null argument. TODO: probably not needed in Rust
+    /// Null argument.
     NullArgument,
-    /// Unknown parameter set. TODO: better explanation? Needed in Rust?
+    /// Unknown parameter set.
     UnknownParamSet,
-    /// Invalid parameter. TODO: better explanation? Needed in Rust?
+    /// Invalid parameter.
     InvalidParam,
 }
 
 impl NtruError {
+    /// Get NtruError from original uint8_t libntru error
     pub fn from_uint8_t(err: uint8_t) -> NtruError {
         match err {
             1 => NtruError::OutOfMemory,
