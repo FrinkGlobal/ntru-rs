@@ -29,8 +29,8 @@ fn decrypt_poly(e: NtruIntPoly, private: &NtruEncPrivKey, modulus: u16)  -> Ntru
     d = d + e;
     d.mod_center(modulus);
     d.mod3();
-    for i in 0..d.get_n() {
-        if d.get_coeffs()[i as usize] == 2 { d.set_coeff(i as usize, -1)}
+    for i in 0..d.get_coeffs().len() {
+        if d.get_coeffs()[i] == 2 { d.set_coeff(i, -1)}
     }
     d
 }
@@ -62,14 +62,14 @@ fn it_keygen() {
         let mut kp = ntru::generate_key_pair(&params, &rand_ctx).ok().unwrap();
 
         // Encrypt a random message
-        let m = ntru::rand::tern(params.get_n(), params.get_n()/3, params.get_n()/3,
-                                    &rand_ctx).unwrap();
+        let m = NtruTernPoly::rand(params.get_n(), params.get_n()/3, params.get_n()/3,
+                                   &rand_ctx).unwrap();
         let m_int = m.to_int_poly();
 
-        let r = ntru::rand::tern(params.get_n(), params.get_n()/3, params.get_n()/3,
-                                    &rand_ctx).unwrap();
+        let r = NtruTernPoly::rand(params.get_n(), params.get_n()/3, params.get_n()/3,
+                                   &rand_ctx).unwrap();
 
-        let e = encrypt_poly(m_int, &r, &kp.get_public().get_h(), params.get_q());
+        let e = encrypt_poly(m_int.clone(), &r, &kp.get_public().get_h(), params.get_q());
 
         // Decrypt and verify
         let c = decrypt_poly(e, &kp.get_private(), params.get_q());

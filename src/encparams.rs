@@ -1,13 +1,18 @@
+//! NTRUEncrypt Encryption parameters
+//!
+//! This module contains the parameters for NTRUEncrypt. Theese parameters must be used when
+//! encrypting, decrypting and generating key pairs. The recomendation is to use the default
+//! parameters for each level of security, and not use the deprecated parameters. The recommended
+//! parameters are the following:
+//!
+//! * ```NTRU_DEFAULT_PARAMS_112_BITS``` for 112 bits of security.
+//! * ```NTRU_DEFAULT_PARAMS_128_BITS``` for 128 bits of security.
+//! * ```NTRU_DEFAULT_PARAMS_192_BITS``` for 192 bits of security.
+//! * ```NTRU_DEFAULT_PARAMS_256_BITS``` for 256 bits of security.
+//!
 use libc::{c_char, c_void, uint16_t, uint8_t};
 use std::fmt;
 use super::ffi;
-
-/// Max N value for all param sets; +1 for ntru_invert_...()
-pub const NTRU_MAX_DEGREE: usize = (1499+1);
-/// (Max #coefficients + 16) rounded to a multiple of 8
-pub const NTRU_INT_POLY_SIZE: usize = ((NTRU_MAX_DEGREE+16+7)&0xFFF8);
-/// max(df1, df2, df3, dg)
-pub const NTRU_MAX_ONES: usize = 499;
 
 /// A set of parameters for NtruEncrypt
 #[repr(C)]
@@ -101,7 +106,7 @@ impl fmt::Debug for NtruEncParams {
 }
 
 impl NtruEncParams {
-    /// Name of the parameter set
+    /// Get the name of the parameter set
     pub fn get_name(&self) -> String {
         let slice: [u8; 11] = [self.name[0] as u8, self.name[1] as u8, self.name[2] as u8,
                                 self.name[3] as u8, self.name[4] as u8, self.name[5] as u8,
@@ -109,11 +114,11 @@ impl NtruEncParams {
                                 self.name[9] as u8, self.name[10] as u8];
         String::from_utf8_lossy(&slice).into_owned()
     }
-    /// Number of polynomial coefficients
+    /// Get the number of polynomial coefficients
     pub fn get_n(&self) -> u16 { self.n }
-    /// Modulus
+    /// Get the modulus
     pub fn get_q(&self) -> u16 { self.q }
-    /// Number of random bits to prepend to the message
+    /// Get the number of random bits to prepend to the message
     pub fn get_db(&self) -> u16 { self.db }
 
     /// Maximum message length
