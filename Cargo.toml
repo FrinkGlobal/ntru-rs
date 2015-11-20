@@ -1,6 +1,6 @@
 [package]
 name = "ntru"
-version = "0.1.0"
+version = "0.2.0"
 license = "GPL-3.0+/BSD-3-Clause"
 build = "build.rs"
 links = "ntru"
@@ -15,3 +15,6 @@ keywords = ["libntru", "NTRU", "NTRUEncrypt"]
 
 [dependencies]
 libc = "0.2.2"
+
+[dev-dependencies]
+rust-crypto = "0.2.34"

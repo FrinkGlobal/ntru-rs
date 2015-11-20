@@ -1,3 +1,45 @@
+//! NTRUEncrypt implementation for Rust
+//!
+//! This library implements the NtruEncrypt library in Rust. It is an interface to libntru, even
+//! though many of the methds are being implemented in pure Rust. The plan is to gradually
+//! implement the library natively. It uses this library since it has proven to be faster than the
+//! original NTRUEncrypt implementation. In any case, it is much faster than usual encryption /
+//! decryption mecanisms, and quantum-proof. More on NTRUEncrypt
+//! [here](https://en.wikipedia.org/wiki/NTRUEncrypt).
+//!
+//! To use it you only need to include the following in your crate:
+//! ```
+//! extern crate ntru;
+//!```
+//!
+//! NTRUEncrypt uses its own keys, that must be generated with the included random key generator,
+//! and must not be used for other applications such as NTRUSign or NTRUNMLS. Here is an example of
+//! use:
+//!
+//! ```
+//! use ntru::rand::NTRU_RNG_DEFAULT;
+//! use ntru::encparams::NTRU_DEFAULT_PARAMS_256_BITS;
+//!
+//! let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
+//! let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).ok().unwrap();
+//! ```
+//!
+//! This creates a key pair that can be uses to encrypt and decrypt messages:
+//!
+//! ```
+//! use ntru::rand::NTRU_RNG_DEFAULT;
+//! use ntru::encparams::NTRU_DEFAULT_PARAMS_256_BITS;
+//! #
+//! # let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
+//! # let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).ok().unwrap();
+//!
+//! let msg = b"Hello from Rust!";
+//! let encrypted = ntru::encrypt(msg, kp.get_public(), &NTRU_DEFAULT_PARAMS_256_BITS,
+//!                               &rand_ctx).ok().unwrap();
+//! let decrypted = ntru::decrypt(&encrypted, &kp, &NTRU_DEFAULT_PARAMS_256_BITS).ok().unwrap();
+//!
+//! assert_eq!(&msg[..], &decrypted[..]);
+//! ```
 extern crate libc;
 
 pub mod types;
@@ -11,9 +53,8 @@ use rand::NtruRandContext;
 
 /// Key generation
 ///
-/// Generates a NtruEncrypt key pair.
-/// If a deterministic RNG is used, the key pair will be deterministic for a given random seed;
-/// otherwise, the key pair will be completely random.
+/// Generates a NtruEncrypt key pair. If a deterministic RNG is used, the key pair will be
+/// deterministic for a given random seed; otherwise, the key pair will be completely random.
 pub fn generate_key_pair(params: &NtruEncParams, rand_context: &NtruRandContext)
                         -> Result<NtruEncKeyPair, NtruError> {
     let mut kp: NtruEncKeyPair = Default::default();
@@ -30,10 +71,10 @@ pub fn generate_key_pair(params: &NtruEncParams, rand_context: &NtruRandContext)
 /// If a deterministic RNG is used, the encrypted message will also be deterministic for a given
 /// combination of plain text, key, and random seed. See P1363.1 section 9.2.2.
 /// The parameters needed are the following:
-///     - msg: The message to encrypt as an ```u8``` slice.
-///     - public: The public key to encrypt the message with.
-///     - params: The NtruEncrypt parameters to use.
-///     - rand_ctx: An initialized random number generator.
+/// * msg: The message to encrypt as an ```u8``` slice.
+/// * public: The public key to encrypt the message with.
+/// * params: The NtruEncrypt parameters to use.
+/// * and_ctx: An initialized random number generator.
 pub fn encrypt(msg: &[u8], public: &NtruEncPubKey, params: &NtruEncParams,
                 rand_ctx: &NtruRandContext) -> Result<Box<[u8]>, NtruError> {
     let mut enc = vec![0u8; params.enc_len() as usize];
@@ -50,10 +91,10 @@ pub fn encrypt(msg: &[u8], public: &NtruEncPubKey, params: &NtruEncParams,
 /// Decrypts a message.
 ///
 /// See P1363.1 section 9.2.3. The parameters needed are the following:
-///     - enc: The message to decrypt as an ```u8``` slice.
-///     - kp: A key pair that contains the public key the message was encrypted
-///           with, and the corresponding private key.
-///     - params: Parameters the message was encrypted with
+/// * enc: The message to decrypt as an ```u8``` slice.
+/// * kp: A key pair that contains the public key the message was encrypted with, and the
+///       corresponding private key.
+/// * params: Parameters the message was encrypted with
 pub fn decrypt(enc: &[u8], kp: &NtruEncKeyPair, params: &NtruEncParams)
                 -> Result<Box<[u8]>, NtruError> {
     let mut dec = vec![0u8; params.max_msg_len() as usize];
@@ -69,10 +110,4 @@ pub fn decrypt(enc: &[u8], kp: &NtruEncKeyPair, params: &NtruEncParams)
     } else {
         Err(NtruError::from_uint8_t(result))
     }
-}
-
-pub fn sha1(input: &[u8]) -> [u8; 20] {
-    let mut digest = [0u8; 20];
-    unsafe { ffi::ntru_sha1(&input[0], input.len() as u16, &mut digest[0])};
-    digest
 }

@@ -4,7 +4,7 @@ use ntru::rand::NTRU_RNG_DEFAULT;
 use ntru::types::{NtruEncPubKey, NtruEncPrivKey, NtruPrivPoly, NtruIntPoly};
 
 fn ntru_priv_to_int(a: &NtruPrivPoly, modulus: u16) -> NtruIntPoly {
-    if a.get_prod_flag() != 0 {
+    if a.is_product() {
         a.get_poly_prod().to_int_poly(modulus)
     } else {
         a.get_poly_tern().to_int_poly()
@@ -13,11 +13,7 @@ fn ntru_priv_to_int(a: &NtruPrivPoly, modulus: u16) -> NtruIntPoly {
 
 #[test]
 fn it_export_import() {
-    // #ifndef NTRU_AVOID_HAMMING_WT_PATENT
     let param_arr = [EES439EP1, EES1087EP2];
-    // #else
-    // NtruEncParams param_arr[] = {EES1087EP2};
-    // #endif   /* NTRU_AVOID_HAMMING_WT_PATENT */
 
     for params in param_arr.into_iter() {
         let rng = NTRU_RNG_DEFAULT;

@@ -1,13 +1,18 @@
+//! NTRUEncrypt Encryption parameters
+//!
+//! This module contains the parameters for NTRUEncrypt. Theese parameters must be used when
+//! encrypting, decrypting and generating key pairs. The recomendation is to use the default
+//! parameters for each level of security, and not use the deprecated parameters. The recommended
+//! parameters are the following:
+//!
+//! * ```NTRU_DEFAULT_PARAMS_112_BITS``` for 112 bits of security.
+//! * ```NTRU_DEFAULT_PARAMS_128_BITS``` for 128 bits of security.
+//! * ```NTRU_DEFAULT_PARAMS_192_BITS``` for 192 bits of security.
+//! * ```NTRU_DEFAULT_PARAMS_256_BITS``` for 256 bits of security.
+//!
 use libc::{c_char, c_void, uint16_t, uint8_t};
 use std::fmt;
 use super::ffi;
-
-/// Max N value for all param sets; +1 for ntru_invert_...()
-pub const NTRU_MAX_DEGREE: usize = (1499+1);
-/// (Max #coefficients + 16) rounded to a multiple of 8
-pub const NTRU_INT_POLY_SIZE: usize = ((NTRU_MAX_DEGREE+16+7)&0xFFF8);
-/// max(df1, df2, df3, dg)
-pub const NTRU_MAX_ONES: usize = 499;
 
 /// A set of parameters for NtruEncrypt
 #[repr(C)]
@@ -101,6 +106,7 @@ impl fmt::Debug for NtruEncParams {
 }
 
 impl NtruEncParams {
+    /// Get the name of the parameter set
     pub fn get_name(&self) -> String {
         let slice: [u8; 11] = [self.name[0] as u8, self.name[1] as u8, self.name[2] as u8,
                                 self.name[3] as u8, self.name[4] as u8, self.name[5] as u8,
@@ -108,14 +114,19 @@ impl NtruEncParams {
                                 self.name[9] as u8, self.name[10] as u8];
         String::from_utf8_lossy(&slice).into_owned()
     }
+    /// Get the number of polynomial coefficients
     pub fn get_n(&self) -> u16 { self.n }
+    /// Get the modulus
     pub fn get_q(&self) -> u16 { self.q }
+    /// Get the number of random bits to prepend to the message
     pub fn get_db(&self) -> u16 { self.db }
 
+    /// Maximum message length
     pub fn max_msg_len(&self) -> u8 {
         (self.n / 2 * 3 / 8 - 1 - self.db/8) as u8
     }
 
+    /// Encryption length
     pub fn enc_len(&self) -> u16 {
         // Make sure q is a power of 2
         if self.q & (self.q-1) != 0 { 0 }
@@ -133,7 +144,9 @@ impl NtruEncParams {
         }
     }
 
+    /// Public key length
     pub fn public_len(&self) -> u16 { 4 + self.enc_len() }
+    /// Private key length
     pub fn private_len(&self) -> u16 {
         if self.prod_flag == 1 {
             5 + 4 + 4*self.df1 + 4 + 4*self.df2 + 4 + 4*self.df3
@@ -545,6 +558,7 @@ pub const NTRU_DEFAULT_PARAMS_192_BITS: NtruEncParams = EES587EP1;
 /// The default parameter set for 256 bits of security.
 pub const NTRU_DEFAULT_PARAMS_256_BITS: NtruEncParams = EES743EP1;
 
+/// All parameter sets, in an array
 pub const ALL_PARAM_SETS: [NtruEncParams; 18] = [EES401EP1, EES449EP1, EES677EP1, EES1087EP2,
                                                  EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
                                                  EES659EP1, EES761EP1, EES1087EP1, EES1499EP1,
