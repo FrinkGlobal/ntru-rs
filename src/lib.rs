@@ -1,6 +1,6 @@
-//! NTRUEncrypt implementation for Rust
+//! NTRUEncrypt library for Rust
 //!
-//! This library implements the NtruEncrypt library in Rust. It is an interface to libntru, even
+//! This library implements the NTRUEncrypt library in Rust. It is an interface to libntru, even
 //! though many of the methds are being implemented in pure Rust. The plan is to gradually
 //! implement the library natively. It uses this library since it has proven to be faster than the
 //! original NTRUEncrypt implementation. In any case, it is much faster than usual encryption /

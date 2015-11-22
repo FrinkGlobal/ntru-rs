@@ -6,7 +6,8 @@
 This library implements an interface with
 *[libntru](https://tbuktu.github.io/ntru/)* C library. It is currently under
 development, but can be used to encrypt and decrypt data. The documentation can
-be found [here](http://fractal.global/ntru-rs).
+be found [here](http://fractal.global/ntru-rs). This library was selected due to
+its better performance comparing to the reference NTRUEncrypt implementation.
 
 # License #
 
