@@ -369,20 +369,21 @@ impl NtruTernPoly {
                        ones: new_ones, neg_ones: new_neg_ones }
     }
 
-    /// Random ternary polynomial
-    ///
-    /// Generates a random ternary polynomial. If an error occurs, it will return None.
-    pub fn rand(n: u16, num_ones: u16, num_neg_ones: u16, rand_ctx: &NtruRandContext)
-                -> Option<NtruTernPoly> {
-        let mut poly: NtruTernPoly = Default::default();
-        let result = unsafe { ffi::ntru_rand_tern(n, num_ones, num_neg_ones, &mut poly, rand_ctx) };
-
-        if result == 0 {
-            None
-        } else {
-            Some(poly)
-        }
-    }
+    // /// Random ternary polynomial
+    // ///
+    // /// Generates a random ternary polynomial. If an error occurs, it will return None.
+    // pub fn rand(n: u16, num_ones: u16, num_neg_ones: u16, rand_ctx: &NtruRandContext)
+    //             -> Option<NtruTernPoly> {
+    //     let mut poly: NtruTernPoly = Default::default();
+    //     let result = unsafe { ffi::ntru_rand_tern(n, num_ones, num_neg_ones, &mut poly,
+    //                                               &rand_ctx.rand_ctx) };
+    //
+    //     if result == 0 {
+    //         None
+    //     } else {
+    //         Some(poly)
+    //     }
+    // }
 
     pub fn get_n(&self) -> u16 { self.n }
     pub fn get_ones(&self) -> &[u16] { &self.ones[0..self.num_ones as usize] }
