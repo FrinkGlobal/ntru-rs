@@ -670,7 +670,7 @@ impl NtruEncPrivKey {
     /// Export private key
     pub fn export(&self, params: &NtruEncParams) -> Box<[u8]> {
         let mut arr = vec![0u8; params.private_len() as usize];
-        unsafe { ffi::ntru_export_priv(self, &mut arr[..][0]) };
+        let _ = unsafe { ffi::ntru_export_priv(self, &mut arr[..][0]) };
 
         arr.into_boxed_slice()
     }
@@ -697,7 +697,7 @@ impl NtruEncPubKey {
     /// Import a public key
     pub fn import(arr: &[u8]) -> NtruEncPubKey {
         let mut key: NtruEncPubKey = Default::default();
-        unsafe{ ffi::ntru_import_pub(&arr[0], &mut key) };
+        let _ = unsafe{ ffi::ntru_import_pub(&arr[0], &mut key) };
 
         key
     }

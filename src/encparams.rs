@@ -10,7 +10,7 @@
 //! * ```NTRU_DEFAULT_PARAMS_192_BITS``` for 192 bits of security.
 //! * ```NTRU_DEFAULT_PARAMS_256_BITS``` for 256 bits of security.
 //!
-use libc::{c_char, c_void, uint16_t, uint8_t};
+use libc::{c_char, uint16_t, uint8_t};
 use std::fmt;
 use super::ffi;
 
@@ -49,11 +49,10 @@ pub struct NtruEncParams {
     /// Three bytes that uniquely identify the parameter set
     oid: [uint8_t; 3],
     /// Hash function, e.g. ntru_sha256
-    hash: unsafe extern fn(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t)
-                            -> c_void,
+    hash: unsafe extern fn(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t),
     /// Hash function for 4 inputs, e.g. ntru_sha256_4way
     hash_4way: unsafe extern fn(input: *const *const uint8_t, input_len: uint16_t,
-                                digest: *mut *mut uint8_t) -> c_void,
+                                digest: *mut *mut uint8_t),
     /// output length of the hash function
     hlen: uint16_t,
     /// number of bits of the public key to hash

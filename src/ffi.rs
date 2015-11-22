@@ -28,12 +28,12 @@ extern {
                         dec_len: *const uint16_t) -> uint8_t;
 
     // hash.h
-    pub fn ntru_sha1(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t) -> c_void;
+    pub fn ntru_sha1(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t);
     pub fn ntru_sha1_4way(input: *const *const uint8_t, input_len: uint16_t,
-                          digest: *mut *mut uint8_t) -> c_void;
-    pub fn ntru_sha256(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t) -> c_void;
+                          digest: *mut *mut uint8_t);
+    pub fn ntru_sha256(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t);
     pub fn ntru_sha256_4way(input: *const *const uint8_t, input_len: uint16_t,
-                            digest: *mut *mut uint8_t) -> c_void;
+                            digest: *mut *mut uint8_t);
 
     // rand.h
     pub fn ntru_rand_init(rand_ctx: *mut CNtruRandContext, rand_gen: *const NtruRandGen)
@@ -98,30 +98,29 @@ extern {
                             mod_mask: uint16_t) -> uint8_t;
     pub fn ntru_mult_int_64(a: *const NtruIntPoly, b: *const NtruIntPoly, c: *mut NtruIntPoly,
                             mod_mask: uint16_t) -> uint8_t;
-    pub fn ntru_add_int(a: *mut NtruIntPoly, b: *const NtruIntPoly) -> c_void;
-    pub fn ntru_sub_int(a: *mut NtruIntPoly, b: *const NtruIntPoly) -> c_void;
-    pub fn ntru_mod_mask(p: *mut NtruIntPoly, mod_mask: uint16_t) -> c_void;
-    pub fn ntru_mult_fac(a: *mut NtruIntPoly, factor: int16_t) -> c_void;
-    pub fn ntru_mod_center(p: *mut NtruIntPoly, modulus: uint16_t) -> c_void;
-    pub fn ntru_mod3(p: *mut NtruIntPoly) -> c_void;
-    pub fn ntru_to_arr_32(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t) -> c_void;
-    pub fn ntru_to_arr_64(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t) -> c_void;
-    pub fn ntru_to_arr_sse_2048(p: *const NtruIntPoly, a: *mut uint8_t) -> c_void;
-    pub fn ntru_from_arr(arr: *const uint8_t, n: uint16_t, q: uint16_t, p: *mut NtruIntPoly)
-                         -> c_void;
+    pub fn ntru_add_int(a: *mut NtruIntPoly, b: *const NtruIntPoly);
+    pub fn ntru_sub_int(a: *mut NtruIntPoly, b: *const NtruIntPoly);
+    pub fn ntru_mod_mask(p: *mut NtruIntPoly, mod_mask: uint16_t);
+    pub fn ntru_mult_fac(a: *mut NtruIntPoly, factor: int16_t);
+    pub fn ntru_mod_center(p: *mut NtruIntPoly, modulus: uint16_t);
+    pub fn ntru_mod3(p: *mut NtruIntPoly);
+    pub fn ntru_to_arr_32(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t);
+    pub fn ntru_to_arr_64(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t);
+    pub fn ntru_to_arr_sse_2048(p: *const NtruIntPoly, a: *mut uint8_t);
+    pub fn ntru_from_arr(arr: *const uint8_t, n: uint16_t, q: uint16_t, p: *mut NtruIntPoly);
     pub fn ntru_invert(a: *const NtruPrivPoly, mod_mask: uint16_t, fq: *mut NtruIntPoly)
                        -> uint8_t;
     pub fn ntru_invert_32(a: *const NtruPrivPoly, mod_mask: uint16_t, fq: *mut NtruIntPoly)
                           -> uint8_t;
     pub fn ntru_invert_64(a: *const NtruPrivPoly, mod_mask: uint16_t, fq: *mut NtruIntPoly)
-                                                -> uint8_t;
+                          -> uint8_t;
 
     // key.h
-    pub fn ntru_export_pub(key: *const NtruEncPubKey, arr: *mut uint8_t) -> c_void;
+    pub fn ntru_export_pub(key: *const NtruEncPubKey, arr: *mut uint8_t);
     pub fn ntru_import_pub(arr: *const uint8_t, key: *mut NtruEncPubKey) -> uint16_t;
 
     pub fn ntru_export_priv(key: *const NtruEncPrivKey, arr: *mut uint8_t) -> uint16_t;
-    pub fn ntru_import_priv(arr: *const uint8_t, key: *mut NtruEncPrivKey) -> c_void;
+    pub fn ntru_import_priv(arr: *const uint8_t, key: *mut NtruEncPrivKey);
 
     pub fn ntru_params_from_priv_key(key: *const NtruEncPrivKey, params: *mut NtruEncParams)
                                      -> uint8_t;

@@ -7,7 +7,7 @@
 //! ```generate()``` function. Also both random ```NtruTernPoly``` and ```NtruProdPoly``` can be
 //! generated.
 use std::{slice, ptr};
-use libc::{c_void, uint8_t, uint16_t};
+use libc::{uint8_t, uint16_t};
 use types::{NtruError, NtruTernPoly};
 use super::ffi;
 
@@ -21,7 +21,7 @@ impl Default for NtruRandContext {
         NtruRandContext {
             rand_ctx: ffi::CNtruRandContext { rand_gen: &mut NTRU_RNG_DEFAULT,
                                               seed: ptr::null(), seed_len: 0,
-                                              state: &mut 0 as *mut _ as *mut c_void } }
+                                              state: ptr::null() } }
     }
 }
 
@@ -130,8 +130,8 @@ pub fn init(rand_gen: &NtruRandGen) -> Result<NtruRandContext, NtruError> {
 /// Generate a new deterministic rand context
 pub fn init_det(rand_gen: &NtruRandGen, seed: &[u8]) -> Result<NtruRandContext, NtruError> {
     let mut rand_ctx: NtruRandContext = Default::default();
-    let result = unsafe { ffi::ntru_rand_init_det(&mut rand_ctx.rand_ctx, rand_gen,
-                            &seed[0] as *const uint8_t, seed.len() as uint16_t) };
+    let result = unsafe { ffi::ntru_rand_init_det(&mut rand_ctx.rand_ctx, rand_gen, &seed[0],
+                                                  seed.len() as uint16_t) };
     if result == 0 {
         Ok(rand_ctx)
     } else {
