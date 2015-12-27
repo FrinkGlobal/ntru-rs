@@ -13,27 +13,35 @@ use super::ffi;
 
 /// A random context for key generation and encryption
 pub struct NtruRandContext {
-    rand_ctx: ffi::CNtruRandContext
+    rand_ctx: ffi::CNtruRandContext,
 }
 
 impl Default for NtruRandContext {
     fn default() -> NtruRandContext {
         NtruRandContext {
-            rand_ctx: ffi::CNtruRandContext { rand_gen: &mut NTRU_RNG_DEFAULT,
-                                              seed: ptr::null(), seed_len: 0,
-                                              state: ptr::null() } }
+            rand_ctx: ffi::CNtruRandContext {
+                rand_gen: &mut NTRU_RNG_DEFAULT,
+                seed: ptr::null(),
+                seed_len: 0,
+                state: ptr::null(),
+            },
+        }
     }
 }
 
 impl Drop for NtruRandContext {
     fn drop(&mut self) {
         let result = unsafe { ffi::ntru_rand_release(&mut self.rand_ctx) };
-        if result != 0 { panic!() }
+        if result != 0 {
+            panic!()
+        }
     }
 }
 
 impl NtruRandContext {
-    pub unsafe fn get_c_rand_ctx(&self) -> &ffi::CNtruRandContext { &self.rand_ctx }
+    pub unsafe fn get_c_rand_ctx(&self) -> &ffi::CNtruRandContext {
+        &self.rand_ctx
+    }
 
     pub fn get_seed(&self) -> &[u8] {
         unsafe { slice::from_raw_parts(self.rand_ctx.seed, self.rand_ctx.seed_len as usize) }
@@ -44,25 +52,30 @@ impl NtruRandContext {
         self.rand_ctx.seed = &seed[0];
     }
 
-    pub fn get_rng(&self) -> &NtruRandGen { unsafe { &*self.rand_ctx.rand_gen } }
+    pub fn get_rng(&self) -> &NtruRandGen {
+        unsafe { &*self.rand_ctx.rand_gen }
+    }
 }
 
 #[repr(C)]
 pub struct NtruRandGen {
-    init_fn: unsafe extern fn(rand_ctx: *mut ffi::CNtruRandContext, rand_gen: *const NtruRandGen)
-                              -> uint8_t,
+    init_fn: unsafe extern "C" fn(rand_ctx: *mut ffi::CNtruRandContext,
+                                  rand_gen: *const NtruRandGen)
+                                  -> uint8_t,
     /// A pointer to a function that takes an array and an array size, and fills the array with
     /// random data
-    generate_fn: unsafe extern fn(rand_data: *mut uint8_t, len: uint16_t,
-                               rand_ctx: *const ffi::CNtruRandContext) -> uint8_t,
-    release_fn: unsafe extern fn(rand_ctx: *mut ffi::CNtruRandContext) -> uint8_t,
+    generate_fn: unsafe extern "C" fn(rand_data: *mut uint8_t,
+                                          len: uint16_t,
+                                          rand_ctx: *const ffi::CNtruRandContext)
+                                          -> uint8_t,
+    release_fn: unsafe extern "C" fn(rand_ctx: *mut ffi::CNtruRandContext) -> uint8_t,
 }
 
 impl NtruRandGen {
     /// Initialize a new random contex
     pub fn init(&self, rand_gen: &NtruRandGen) -> Result<NtruRandContext, NtruError> {
         let mut rand_ctx: NtruRandContext = Default::default();
-        let result = unsafe {(self.init_fn)(&mut rand_ctx.rand_ctx, rand_gen)};
+        let result = unsafe { (self.init_fn)(&mut rand_ctx.rand_ctx, rand_gen) };
         if result == 1 {
             Ok(rand_ctx)
         } else {
@@ -71,10 +84,12 @@ impl NtruRandGen {
     }
 
     /// Generate random data
-    pub fn generate(&self, length: u16, rand_ctx: &NtruRandContext)
+    pub fn generate(&self,
+                    length: u16,
+                    rand_ctx: &NtruRandContext)
                     -> Result<Box<[u8]>, NtruError> {
         let mut plain = vec![0u8; length as usize];
-        let result = unsafe {(self.generate_fn)(&mut plain[0], length, &rand_ctx.rand_ctx)};
+        let result = unsafe { (self.generate_fn)(&mut plain[0], length, &rand_ctx.rand_ctx) };
 
         if result == 1 {
             Ok(plain.into_boxed_slice())
@@ -86,9 +101,11 @@ impl NtruRandGen {
 
 #[cfg(target_os = "windows")]
 /// Default Windows RNG, CryptGenRandom()
-pub const NTRU_RNG_WINCRYPT: NtruRandGen = NtruRandGen {init: ffi::ntru_rand_wincrypt_init,
-                                                        generate: ffi::ntru_rand_wincrypt_generate,
-                                                        release: ffi::ntru_rand_wincrypt_release};
+pub const NTRU_RNG_WINCRYPT: NtruRandGen = NtruRandGen {
+    init: ffi::ntru_rand_wincrypt_init,
+    generate: ffi::ntru_rand_wincrypt_generate,
+    release: ffi::ntru_rand_wincrypt_release,
+};
 #[cfg(target_os = "windows")]
 /// Default RNG (CryptGenRandom() on Windows)
 pub const NTRU_RNG_DEFAULT: NtruRandGen = NTRU_RNG_WINCRYPT;
@@ -96,25 +113,27 @@ pub const NTRU_RNG_DEFAULT: NtruRandGen = NTRU_RNG_WINCRYPT;
 #[cfg(not(target_os = "windows"))]
 /// Unix default RNG, /dev/urandom
 pub const NTRU_RNG_DEVURANDOM: NtruRandGen = NtruRandGen {
-        init_fn: ffi::ntru_rand_devurandom_init,
-        generate_fn: ffi::ntru_rand_devurandom_generate,
-        release_fn: ffi::ntru_rand_devurandom_release
+    init_fn: ffi::ntru_rand_devurandom_init,
+    generate_fn: ffi::ntru_rand_devurandom_generate,
+    release_fn: ffi::ntru_rand_devurandom_release,
 };
 #[cfg(not(target_os = "windows"))]
 /// Unix RNG, /dev/random
 pub const NTRU_RNG_DEVRANDOM: NtruRandGen = NtruRandGen {
     init_fn: ffi::ntru_rand_devrandom_init,
     generate_fn: ffi::ntru_rand_devrandom_generate,
-    release_fn: ffi::ntru_rand_devrandom_release
+    release_fn: ffi::ntru_rand_devrandom_release,
 };
 #[cfg(not(target_os = "windows"))]
 /// default RNG (/dev/urandom on *nix)
 pub const NTRU_RNG_DEFAULT: NtruRandGen = NTRU_RNG_DEVURANDOM;
 
 /// Deterministic RNG based on IGF-2
-pub const NTRU_RNG_IGF2: NtruRandGen = NtruRandGen {init_fn: ffi::ntru_rand_igf2_init,
-                                                    generate_fn: ffi::ntru_rand_igf2_generate,
-                                                    release_fn: ffi::ntru_rand_igf2_release};
+pub const NTRU_RNG_IGF2: NtruRandGen = NtruRandGen {
+    init_fn: ffi::ntru_rand_igf2_init,
+    generate_fn: ffi::ntru_rand_igf2_generate,
+    release_fn: ffi::ntru_rand_igf2_release,
+};
 
 /// Initialize a new rand context
 pub fn init(rand_gen: &NtruRandGen) -> Result<NtruRandContext, NtruError> {
@@ -130,8 +149,12 @@ pub fn init(rand_gen: &NtruRandGen) -> Result<NtruRandContext, NtruError> {
 /// Generate a new deterministic rand context
 pub fn init_det(rand_gen: &NtruRandGen, seed: &[u8]) -> Result<NtruRandContext, NtruError> {
     let mut rand_ctx: NtruRandContext = Default::default();
-    let result = unsafe { ffi::ntru_rand_init_det(&mut rand_ctx.rand_ctx, rand_gen, &seed[0],
-                                                  seed.len() as uint16_t) };
+    let result = unsafe {
+        ffi::ntru_rand_init_det(&mut rand_ctx.rand_ctx,
+                                rand_gen,
+                                &seed[0],
+                                seed.len() as uint16_t)
+    };
     if result == 0 {
         Ok(rand_ctx)
     } else {
@@ -155,11 +178,15 @@ impl NtruTernPoly {
     /// Random ternary polynomial
     ///
     /// Generates a random ternary polynomial. If an error occurs, it will return None.
-    pub fn rand(n: u16, num_ones: u16, num_neg_ones: u16, rand_ctx: &NtruRandContext)
+    pub fn rand(n: u16,
+                num_ones: u16,
+                num_neg_ones: u16,
+                rand_ctx: &NtruRandContext)
                 -> Option<NtruTernPoly> {
         let mut poly: NtruTernPoly = Default::default();
-        let result = unsafe { ffi::ntru_rand_tern(n, num_ones, num_neg_ones, &mut poly,
-                                                  &rand_ctx.rand_ctx) };
+        let result = unsafe {
+            ffi::ntru_rand_tern(n, num_ones, num_neg_ones, &mut poly, &rand_ctx.rand_ctx)
+        };
 
         if result == 0 {
             None

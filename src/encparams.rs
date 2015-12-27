@@ -49,10 +49,15 @@ pub struct NtruEncParams {
     /// Three bytes that uniquely identify the parameter set
     oid: [uint8_t; 3],
     /// Hash function, e.g. ntru_sha256
-    hash: unsafe extern fn(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t),
+    hash: unsafe extern "C" fn(input: *const uint8_t,
+                                   input_len: uint16_t,
+                                   digest: *mut uint8_t)
+                                  ,
     /// Hash function for 4 inputs, e.g. ntru_sha256_4way
-    hash_4way: unsafe extern fn(input: *const *const uint8_t, input_len: uint16_t,
-                                digest: *mut *mut uint8_t),
+    hash_4way: unsafe extern "C" fn(input: *const *const uint8_t,
+                                        input_len: uint16_t,
+                                        digest: *mut *mut uint8_t)
+                                       ,
     /// output length of the hash function
     hlen: uint16_t,
     /// number of bits of the public key to hash
@@ -61,24 +66,40 @@ pub struct NtruEncParams {
 
 impl Default for NtruEncParams {
     fn default() -> NtruEncParams {
-        NtruEncParams { name: [0; 11], n: 0, q: 0, prod_flag: 0, df1: 0, df2: 0, df3: 0, dg: 0,
-                        dm0: 0, db: 0, c: 0, min_calls_r: 0, min_calls_mask: 0, hash_seed: 0,
-                        oid: [0; 3], hash: ffi::ntru_sha1, hash_4way: ffi::ntru_sha1_4way, hlen: 0,
-                        pklen: 0 }
+        NtruEncParams {
+            name: [0; 11],
+            n: 0,
+            q: 0,
+            prod_flag: 0,
+            df1: 0,
+            df2: 0,
+            df3: 0,
+            dg: 0,
+            dm0: 0,
+            db: 0,
+            c: 0,
+            min_calls_r: 0,
+            min_calls_mask: 0,
+            hash_seed: 0,
+            oid: [0; 3],
+            hash: ffi::ntru_sha1,
+            hash_4way: ffi::ntru_sha1_4way,
+            hlen: 0,
+            pklen: 0,
+        }
     }
 }
 
 impl PartialEq for NtruEncParams {
     fn eq(&self, other: &NtruEncParams) -> bool {
         self.name == other.name && self.n == other.n && self.q == other.q &&
-        self.prod_flag == other.prod_flag && self.df1 == other.df1 && (
-            self.prod_flag == 0 || (
-                self.df2 == other.df2 &&
-                self.df3 == other.df3
-            )) && self.dm0 == other.dm0 &&
-        self.db == other.db && self.c == other.c && self.min_calls_r == other.min_calls_r &&
-        self.min_calls_mask == other.min_calls_mask && self.hash_seed == other.hash_seed &&
-        self.oid == other.oid && {
+        self.prod_flag == other.prod_flag && self.df1 == other.df1 &&
+        (self.prod_flag == 0 || (self.df2 == other.df2 && self.df3 == other.df3)) &&
+        self.dm0 == other.dm0 && self.db == other.db && self.c == other.c &&
+        self.min_calls_r == other.min_calls_r &&
+        self.min_calls_mask == other.min_calls_mask &&
+        self.hash_seed == other.hash_seed && self.oid == other.oid &&
+        {
             let input = [0u8; 100];
             let mut hash1 = [0u8; 256];
             let mut hash2 = [0u8; 256];
@@ -86,7 +107,9 @@ impl PartialEq for NtruEncParams {
             unsafe { (other.hash)(&input[0], 100, &mut hash2[0]) };
 
             for i in 0..hash1.len() {
-                if hash1[i] != hash2[i] { return false }
+                if hash1[i] != hash2[i] {
+                    return false;
+                }
             }
             true
         } && self.hlen == other.hlen && self.pklen == other.pklen
@@ -107,30 +130,45 @@ impl fmt::Debug for NtruEncParams {
 impl NtruEncParams {
     /// Get the name of the parameter set
     pub fn get_name(&self) -> String {
-        let slice: [u8; 11] = [self.name[0] as u8, self.name[1] as u8, self.name[2] as u8,
-                                self.name[3] as u8, self.name[4] as u8, self.name[5] as u8,
-                                self.name[6] as u8, self.name[7] as u8, self.name[8] as u8,
-                                self.name[9] as u8, self.name[10] as u8];
+        let slice: [u8; 11] = [self.name[0] as u8,
+                               self.name[1] as u8,
+                               self.name[2] as u8,
+                               self.name[3] as u8,
+                               self.name[4] as u8,
+                               self.name[5] as u8,
+                               self.name[6] as u8,
+                               self.name[7] as u8,
+                               self.name[8] as u8,
+                               self.name[9] as u8,
+                               self.name[10] as u8];
         String::from_utf8_lossy(&slice).into_owned()
     }
     /// Get the number of polynomial coefficients
-    pub fn get_n(&self) -> u16 { self.n }
+    pub fn get_n(&self) -> u16 {
+        self.n
+    }
     /// Get the modulus
-    pub fn get_q(&self) -> u16 { self.q }
+    pub fn get_q(&self) -> u16 {
+        self.q
+    }
     /// Get the number of random bits to prepend to the message
-    pub fn get_db(&self) -> u16 { self.db }
+    pub fn get_db(&self) -> u16 {
+        self.db
+    }
 
     /// Maximum message length
     pub fn max_msg_len(&self) -> u8 {
-        (self.n / 2 * 3 / 8 - 1 - self.db/8) as u8
+        (self.n / 2 * 3 / 8 - 1 - self.db / 8) as u8
     }
 
     /// Encryption length
     pub fn enc_len(&self) -> u16 {
         // Make sure q is a power of 2
-        if self.q & (self.q-1) != 0 { 0 }
-        else {
-            let len_bits = self.n * {
+        if self.q & (self.q - 1) != 0 {
+            0
+        } else {
+            let len_bits = self.n *
+                           {
                 let mut q = self.q;
                 let mut log = 0;
                 while q > 1 {
@@ -139,18 +177,20 @@ impl NtruEncParams {
                 }
                 log
             };
-            (len_bits+7) / 8
+            (len_bits + 7) / 8
         }
     }
 
     /// Public key length
-    pub fn public_len(&self) -> u16 { 4 + self.enc_len() }
+    pub fn public_len(&self) -> u16 {
+        4 + self.enc_len()
+    }
     /// Private key length
     pub fn private_len(&self) -> u16 {
         if self.prod_flag == 1 {
-            5 + 4 + 4*self.df1 + 4 + 4*self.df2 + 4 + 4*self.df3
+            5 + 4 + 4 * self.df1 + 4 + 4 * self.df2 + 4 + 4 * self.df3
         } else {
-            5 + 4 + 4*self.df1
+            5 + 4 + 4 * self.df1
         }
     }
 }
@@ -161,7 +201,9 @@ pub const EES401EP1: NtruEncParams = NtruEncParams {
     n: 401,
     q: 2048,
     prod_flag: 0,
-    df1: 113, df2: 0, df3: 0,
+    df1: 113,
+    df2: 0,
+    df3: 0,
     dg: 133,
     dm0: 113,
     db: 112,
@@ -182,7 +224,9 @@ pub const EES449EP1: NtruEncParams = NtruEncParams {
     n: 449,
     q: 2048,
     prod_flag: 0,
-    df1: 134, df2: 0, df3: 0,
+    df1: 134,
+    df2: 0,
+    df3: 0,
     dg: 149,
     dm0: 134,
     db: 128,
@@ -203,7 +247,9 @@ pub const EES677EP1: NtruEncParams = NtruEncParams {
     n: 677,
     q: 2048,
     prod_flag: 0,
-    df1: 157, df2: 0, df3: 0,
+    df1: 157,
+    df2: 0,
+    df3: 0,
     dg: 225,
     dm0: 157,
     db: 192,
@@ -224,7 +270,9 @@ pub const EES1087EP2: NtruEncParams = NtruEncParams {
     n: 1087,
     q: 2048,
     prod_flag: 0,
-    df1: 120, df2: 0, df3: 0,
+    df1: 120,
+    df2: 0,
+    df3: 0,
     dg: 362,
     dm0: 120,
     db: 256,
@@ -246,7 +294,9 @@ pub const EES541EP1: NtruEncParams = NtruEncParams {
     n: 541,
     q: 2048,
     prod_flag: 0,
-    df1: 49, df2: 0, df3: 0,
+    df1: 49,
+    df2: 0,
+    df3: 0,
     dg: 180,
     dm0: 49,
     db: 112,
@@ -268,7 +318,9 @@ pub const EES613EP1: NtruEncParams = NtruEncParams {
     n: 613,
     q: 2048,
     prod_flag: 0,
-    df1: 55, df2: 0, df3: 0,
+    df1: 55,
+    df2: 0,
+    df3: 0,
     dg: 204,
     dm0: 55,
     db: 128,
@@ -290,7 +342,9 @@ pub const EES887EP1: NtruEncParams = NtruEncParams {
     n: 887,
     q: 2048,
     prod_flag: 0,
-    df1: 81, df2: 0, df3: 0,
+    df1: 81,
+    df2: 0,
+    df3: 0,
     dg: 295,
     dm0: 81,
     db: 192,
@@ -312,7 +366,9 @@ pub const EES1171EP1: NtruEncParams = NtruEncParams {
     n: 1171,
     q: 2048,
     prod_flag: 0,
-    df1: 106, df2: 0, df3: 0,
+    df1: 106,
+    df2: 0,
+    df3: 0,
     dg: 390,
     dm0: 106,
     db: 256,
@@ -334,7 +390,9 @@ pub const EES659EP1: NtruEncParams = NtruEncParams {
     n: 659,
     q: 2048,
     prod_flag: 0,
-    df1: 38, df2: 0, df3: 0,
+    df1: 38,
+    df2: 0,
+    df3: 0,
     dg: 259,
     dm0: 38,
     db: 112,
@@ -356,7 +414,9 @@ pub const EES761EP1: NtruEncParams = NtruEncParams {
     n: 761,
     q: 2048,
     prod_flag: 0,
-    df1: 42, df2: 0, df3: 0,
+    df1: 42,
+    df2: 0,
+    df3: 0,
     dg: 253,
     dm0: 42,
     db: 128,
@@ -378,7 +438,9 @@ pub const EES1087EP1: NtruEncParams = NtruEncParams {
     n: 1087,
     q: 2048,
     prod_flag: 0,
-    df1: 63, df2: 0, df3: 0,
+    df1: 63,
+    df2: 0,
+    df3: 0,
     dg: 365,
     dm0: 63,
     db: 192,
@@ -400,7 +462,9 @@ pub const EES1499EP1: NtruEncParams = NtruEncParams {
     n: 1499,
     q: 2048,
     prod_flag: 0,
-    df1: 79, df2: 0, df3: 0,
+    df1: 79,
+    df2: 0,
+    df3: 0,
     dg: 499,
     dm0: 79,
     db: 256,
@@ -421,7 +485,9 @@ pub const EES401EP2: NtruEncParams = NtruEncParams {
     n: 401,
     q: 2048,
     prod_flag: 1,
-    df1: 8, df2: 8, df3: 6,
+    df1: 8,
+    df2: 8,
+    df3: 6,
     dg: 133,
     dm0: 101,
     db: 112,
@@ -444,7 +510,9 @@ pub const EES439EP1: NtruEncParams = NtruEncParams {
     n: 439,
     q: 2048,
     prod_flag: 1,
-    df1: 9, df2: 8, df3: 5,
+    df1: 9,
+    df2: 8,
+    df3: 5,
     dg: 146,
     dm0: 112,
     db: 128,
@@ -465,7 +533,9 @@ pub const EES443EP1: NtruEncParams = NtruEncParams {
     n: 443,
     q: 2048,
     prod_flag: 1,
-    df1: 9, df2: 8, df3: 5,
+    df1: 9,
+    df2: 8,
+    df3: 5,
     dg: 148,
     dm0: 115,
     db: 128,
@@ -488,7 +558,9 @@ pub const EES593EP1: NtruEncParams = NtruEncParams {
     n: 593,
     q: 2048,
     prod_flag: 1,
-    df1: 10, df2: 10, df3: 8,
+    df1: 10,
+    df2: 10,
+    df3: 8,
     dg: 197,
     dm0: 158,
     db: 192,
@@ -509,7 +581,9 @@ pub const EES587EP1: NtruEncParams = NtruEncParams {
     n: 587,
     q: 2048,
     prod_flag: 1,
-    df1: 10, df2: 10, df3: 8,
+    df1: 10,
+    df2: 10,
+    df3: 8,
     dg: 196,
     dm0: 157,
     db: 192,
@@ -521,7 +595,7 @@ pub const EES587EP1: NtruEncParams = NtruEncParams {
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
     hlen: 32,
-    pklen: 192
+    pklen: 192,
 };
 
 /// A product-form parameter set that gives 256 bits of security.
@@ -530,7 +604,9 @@ pub const EES743EP1: NtruEncParams = NtruEncParams {
     n: 743,
     q: 2048,
     prod_flag: 1,
-    df1: 11, df2: 11, df3: 15,
+    df1: 11,
+    df2: 11,
+    df3: 15,
     dg: 247,
     dm0: 204,
     db: 256,
