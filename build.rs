@@ -1,5 +1,8 @@
 extern crate gcc;
 
+use std::fs::File;
+use std::path::Path;
+use std::io::Write;
 use std::process::Command;
 use std::env;
 
@@ -45,6 +48,44 @@ fn main() {
           .file("src/c/src/sha2.c");
 
     if sse3 && cfg!(target_pointer_width = "64") {
+        let out = Command::new("perl")
+                      .arg("src/c/src/sha1-mb-x86_64.pl")
+                      .arg("elf")
+                      .output()
+                      .unwrap();
+        let out = std::str::from_utf8(&out.stdout[..]).unwrap().trim();
+
+        let p = Path::new("src/c/src/sha1-mb-x86_64.s");
+        let mut f = File::create(&p).unwrap();
+        f.write(out.as_bytes()).unwrap();
+
+        Command::new("gcc")
+            .arg("-c")
+            .arg("src/c/src/sha1-mb-x86_64.s")
+            .arg("-o")
+            .arg("src/c/src/sha1-mb-x86_64.o")
+            .output()
+            .unwrap();
+
+        let out = Command::new("perl")
+                      .arg("src/c/src/sha256-mb-x86_64.pl")
+                      .arg("elf")
+                      .output()
+                      .unwrap();
+        let out = std::str::from_utf8(&out.stdout[..]).unwrap().trim();
+
+        let p = Path::new("src/c/src/sha256-mb-x86_64.s");
+        let mut f = File::create(&p).unwrap();
+        f.write(out.as_bytes()).unwrap();
+
+        Command::new("gcc")
+            .arg("-c")
+            .arg("src/c/src/sha256-mb-x86_64.s")
+            .arg("-o")
+            .arg("src/c/src/sha256-mb-x86_64.o")
+            .output()
+            .unwrap();
+
         config.object("src/c/src/sha1-mb-x86_64.o").object("src/c/src/sha256-mb-x86_64.o");
     }
 
