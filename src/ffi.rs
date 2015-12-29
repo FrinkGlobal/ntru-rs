@@ -21,6 +21,17 @@ extern "C" {
                              kp: *mut NtruEncKeyPair,
                              rand_ctx: *const CNtruRandContext)
                              -> uint8_t;
+    pub fn ntru_gen_key_pair_multi(params: *const NtruEncParams,
+                                   private: *mut NtruEncPrivKey,
+                                   public: *mut NtruEncPubKey,
+                                   rand_ctx: *const CNtruRandContext,
+                                   num_pub: u32)
+                                   -> uint8_t;
+    pub fn ntru_gen_pub(params: *const NtruEncParams,
+                        private: *const NtruEncPrivKey,
+                        public: *mut NtruEncPubKey,
+                        rand_ctx: *const CNtruRandContext)
+                        -> uint8_t;
     pub fn ntru_encrypt(msg: *const uint8_t,
                         msg_len: uint16_t,
                         public: *const NtruEncPubKey,

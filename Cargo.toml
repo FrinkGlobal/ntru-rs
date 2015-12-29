@@ -1,6 +1,6 @@
 [package]
 name = "ntru"
-version = "0.2.0"
+version = "0.3.0-dev"
 license = "GPL-3.0+/BSD-3-Clause"
 build = "build.rs"
 links = "ntru"
@@ -14,10 +14,11 @@ Implementation of the NTRUEncrypt algorithm. Interface to libntru.
 keywords = ["libntru", "NTRU", "NTRUEncrypt"]
 
 [dependencies]
-libc = "0.2.4"
-
-[dev-dependencies]
-rust-crypto = "0.2.34"
+libc = "0.2"
 
 [build-dependencies]
-gcc = "0.3.21"
+gcc = "0.3"
+
+[dev-dependencies]
+rust-crypto = "0.2"
+rand = "0.3"

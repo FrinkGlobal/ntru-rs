@@ -106,7 +106,7 @@ impl NtruIntPoly {
 
     /// Create a new random NtruIntPoly
     pub fn rand(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
-        let rand_data = rand_ctx.get_rng().generate(n * 2, rand_ctx).ok().unwrap();
+        let rand_data = rand_ctx.get_rng().generate(n * 2, rand_ctx).unwrap();
 
         let mut coeffs = [0i16; NTRU_INT_POLY_SIZE];
         let shift = 16 - pow2q;
@@ -859,6 +859,14 @@ impl Default for NtruEncKeyPair {
 }
 
 impl NtruEncKeyPair {
+    /// Generate a new key pair
+    pub fn new(private: NtruEncPrivKey, public: NtruEncPubKey) -> NtruEncKeyPair {
+        NtruEncKeyPair {
+            private: private,
+            public: public,
+        }
+    }
+
     /// Get params from the key pair
     pub fn get_params(&self) -> Result<NtruEncParams, NtruError> {
         self.private.get_params()
@@ -897,6 +905,8 @@ pub enum NtruError {
     UnknownParamSet,
     /// Invalid parameter.
     InvalidParam,
+    /// Invalid key.
+    InvalidKey,
 }
 
 impl NtruError {
@@ -913,6 +923,7 @@ impl NtruError {
             8 => NtruError::NullArgument,
             9 => NtruError::UnknownParamSet,
             10 => NtruError::InvalidParam,
+            11 => NtruError::InvalidKey,
             _ => unreachable!(),
         }
     }

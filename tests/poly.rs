@@ -85,10 +85,10 @@ fn it_mult_int() {
     assert!(c2_exp.equals_mod(&c2, 2048));
 
     let rng = NTRU_RNG_DEFAULT;
-    let rand_ctx = ntru::rand::init(&rng).ok().unwrap();
+    let rand_ctx = ntru::rand::init(&rng).unwrap();
 
     for _ in 0..10 {
-        let n_arr = rand_ctx.get_rng().generate(2, &rand_ctx).ok().unwrap();
+        let n_arr = rand_ctx.get_rng().generate(2, &rand_ctx).unwrap();
         let mut n = u8_arr_to_u16(&n_arr);
         n = 100 + (n % (NTRU_MAX_DEGREE-100) as u16);
 

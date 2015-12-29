@@ -20,8 +20,8 @@
 //! use ntru::rand::NTRU_RNG_DEFAULT;
 //! use ntru::encparams::NTRU_DEFAULT_PARAMS_256_BITS;
 //!
-//! let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
-//! let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).ok().unwrap();
+//! let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).unwrap();
+//! let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).unwrap();
 //! ```
 //!
 //! This creates a key pair that can be uses to encrypt and decrypt messages:
@@ -30,13 +30,13 @@
 //! # use ntru::rand::NTRU_RNG_DEFAULT;
 //! use ntru::encparams::NTRU_DEFAULT_PARAMS_256_BITS;
 //! #
-//! # let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).ok().unwrap();
-//! # let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).ok().unwrap();
+//! # let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).unwrap();
+//! # let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).unwrap();
 //!
 //! let msg = b"Hello from Rust!";
 //! let encrypted = ntru::encrypt(msg, kp.get_public(), &NTRU_DEFAULT_PARAMS_256_BITS,
-//!                               &rand_ctx).ok().unwrap();
-//! let decrypted = ntru::decrypt(&encrypted, &kp, &NTRU_DEFAULT_PARAMS_256_BITS).ok().unwrap();
+//!                               &rand_ctx).unwrap();
+//! let decrypted = ntru::decrypt(&encrypted, &kp, &NTRU_DEFAULT_PARAMS_256_BITS).unwrap();
 //!
 //! assert_eq!(&msg[..], &decrypted[..]);
 //! ```
@@ -56,7 +56,7 @@ pub mod rand;
 pub mod encparams;
 mod ffi;
 
-use types::{NtruEncKeyPair, NtruEncPubKey, NtruError};
+use types::{NtruEncKeyPair, NtruEncPrivKey, NtruEncPubKey, NtruError};
 use encparams::NtruEncParams;
 use rand::NtruRandContext;
 
@@ -71,6 +71,61 @@ pub fn generate_key_pair(params: &NtruEncParams,
     let result = unsafe { ffi::ntru_gen_key_pair(params, &mut kp, rand_context.get_c_rand_ctx()) };
     if result == 0 {
         Ok(kp)
+    } else {
+        Err(NtruError::from_uint8_t(result))
+    }
+}
+
+/// Key generation with multiple public keys
+///
+/// Generates num_pub NtruEncrypt key pairs. They all share a private key but their public keys
+/// differ. The private key decrypts messages encrypted for any of the public keys. Note that when
+/// decrypting, the public key of the key pair passed into ntru_decrypt() must match the public key
+/// used for encrypting the message. If a deterministic RNG is used, the key pair will be
+/// deterministic for a given random seed; otherwise, the key pair will be completely random.
+pub fn generate_multiple_key_pairs(params: &NtruEncParams,
+                                   rand_context: &NtruRandContext,
+                                   num_pub: usize)
+                                   -> Result<(NtruEncPrivKey, Box<[NtruEncPubKey]>), NtruError> {
+    let mut private: NtruEncPrivKey = Default::default();
+    let mut public: Vec<NtruEncPubKey> = Vec::with_capacity(num_pub);
+    for _ in 0..num_pub {
+        public.push(Default::default());
+    }
+    let result = unsafe {
+        ffi::ntru_gen_key_pair_multi(params,
+                                     &mut private,
+                                     &mut public[0],
+                                     rand_context.get_c_rand_ctx(),
+                                     num_pub as u32)
+    };
+    if result == 0 {
+        Ok((private, public.into_boxed_slice()))
+    } else {
+        Err(NtruError::from_uint8_t(result))
+    }
+}
+
+/// New public key
+///
+/// Generates a new public key for an existing private key. The new public key can be used
+/// interchangeably with the existing public key(s). Generating n keys via
+/// ntru::generate_multiple_key_pairs() is more efficient than generating one and then calling
+/// ntru_gen_pub() n-1 times, so if the number of public keys needed is known beforehand and if
+/// speed matters, ntru_gen_key_pair_multi() should be used. Note that when decrypting, the public
+/// key of the key pair passed into ntru_decrypt() must match the public key used for encrypting
+/// the message. If a deterministic RNG is used, the key will be deterministic for a given random
+/// seed; otherwise, the key will be completely random.
+pub fn generate_public(params: &NtruEncParams,
+                       private: &NtruEncPrivKey,
+                       rand_context: &NtruRandContext)
+                       -> Result<NtruEncPubKey, NtruError> {
+    let mut public: NtruEncPubKey = Default::default();
+    let result = unsafe {
+        ffi::ntru_gen_pub(params, private, &mut public, rand_context.get_c_rand_ctx())
+    };
+    if result == 0 {
+        Ok(public)
     } else {
         Err(NtruError::from_uint8_t(result))
     }
