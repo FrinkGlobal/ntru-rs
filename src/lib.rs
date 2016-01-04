@@ -40,7 +40,8 @@
 //!
 //! assert_eq!(&msg[..], &decrypted[..]);
 //! ```
-//! #![forbid(missing_docs, warnings)]
+
+// #![forbid(missing_docs, warnings)]
 #![deny(deprecated, drop_with_repr_extern, improper_ctypes,
         non_shorthand_field_patterns, overflowing_literals, plugin_as_library,
         private_no_mangle_fns, private_no_mangle_statics, stable_features, unconditional_recursion,
