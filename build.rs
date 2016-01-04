@@ -8,21 +8,43 @@ use std::env;
 
 // Only Linux yet
 fn main() {
-    env::set_var("CC", "gcc");
-    env::set_var("AS", "gcc -c");
+    if cfg!(target_os = "linux") {
+        env::set_var("CC", "gcc");
+        env::set_var("AS", "gcc -c");
+    } else if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
+        env::set_var("CC", "cc");
+        env::set_var("AS", "cc -c");
+    }
     env::set_var("AR", "ar");
 
     // /bin/grep -m 1 -o ssse3 /proc/cpuinfo
-    let output = Command::new("grep")
-                     .arg("-m")
-                     .arg("1")
-                     .arg("-o")
-                     .arg("sse3")
-                     .arg("/proc/cpuinfo")
-                     .output()
-                     .unwrap();
+    let output = if cfg!(target_os = "linux") {
+        Command::new("grep")
+            .arg("-m")
+            .arg("1")
+            .arg("-o")
+            .arg("sse3")
+            .arg("/proc/cpuinfo")
+            .output()
+            .unwrap()
+    } else {
+        // if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
+        Command::new("grep")
+            .arg("-o")
+            .arg("SSE3")
+            .arg("/var/run/dmesg.boot")
+            .arg("|")
+            .arg("/usr/bin/head")
+            .output()
+            .unwrap()
+    };
     let output = std::str::from_utf8(&output.stdout[..]).unwrap().trim();
-    let sse3 = output == "sse3";
+    let sse3 = if cfg!(target_os = "linux") {
+        output == "sse3"
+    } else {
+        // if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
+        output == "SSE3"
+    };
 
     let mut cflags = "-g -Wall -Wextra -Wno-unused-parameter".to_owned();
     if sse3 {
