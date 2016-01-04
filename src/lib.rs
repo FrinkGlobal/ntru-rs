@@ -8,6 +8,7 @@
 //! [here](https://en.wikipedia.org/wiki/NTRUEncrypt).
 //!
 //! To use it you only need to include the following in your crate:
+//!
 //! ```
 //! extern crate ntru;
 //! ```
