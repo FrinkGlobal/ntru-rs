@@ -8,7 +8,7 @@ use std::env;
 
 // Only Linux yet
 fn main() {
-    if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
+    if cfg!(target_os = "linux") || cfg!(target_os = "macos") || cfg!(target_os = "windows") {
         env::set_var("CC", "gcc");
         env::set_var("AS", "gcc -c");
         if cfg!(target_os = "linux") {
@@ -20,47 +20,50 @@ fn main() {
         env::set_var("AR", "ar");
     }
 
+    let sse3 = if cfg!(target_os = "windows") {
+        cfg!(feature = "sse")
+    } else {
+        let output = if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
+            // /usr/bin/grep -o SSSE3 /var/run/dmesg.boot | /usr/bin/head -1
+            Command::new("/usr/bin/grep")
+                .arg("-o")
+                .arg("SSE3")
+                .arg("/var/run/dmesg.boot")
+                .arg("|")
+                .arg("/usr/bin/head")
+                .arg("-1")
+                .output()
+                .unwrap()
+        } else if cfg!(target_os = "macos") {
+            // /usr/sbin/sysctl machdep.cpu.features | grep -m 1 -ow SSSE3
+            Command::new("/usr/sbin/sysctl")
+                .arg("machdep.cpu.features")
+                .arg("|")
+                .arg("grep")
+                .arg("-m")
+                .arg("1")
+                .arg("-ow")
+                .arg("SSE3")
+                .output()
+                .unwrap()
+        } else {
+            // /bin/grep -m 1 -o ssse3 /proc/cpuinfo
+            Command::new("/bin/grep")
+                .arg("-m")
+                .arg("1")
+                .arg("-o")
+                .arg("sse3")
+                .arg("/proc/cpuinfo")
+                .output()
+                .unwrap()
+        };
+        let output = std::str::from_utf8(&output.stdout[..]).unwrap().trim();
 
-    let output = if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
-        // /usr/bin/grep -o SSSE3 /var/run/dmesg.boot | /usr/bin/head -1
-        Command::new("/usr/bin/grep")
-            .arg("-o")
-            .arg("SSE3")
-            .arg("/var/run/dmesg.boot")
-            .arg("|")
-            .arg("/usr/bin/head")
-            .arg("-1")
-            .output()
-            .unwrap()
-    } else if cfg!(target_os = "macos") {
-        // /usr/sbin/sysctl machdep.cpu.features | grep -m 1 -ow SSSE3
-        Command::new("/usr/sbin/sysctl")
-            .arg("machdep.cpu.features")
-            .arg("|")
-            .arg("grep")
-            .arg("-m")
-            .arg("1")
-            .arg("-ow")
-            .arg("SSE3")
-            .output()
-            .unwrap()
-    } else {
-        // /bin/grep -m 1 -o ssse3 /proc/cpuinfo
-        Command::new("/bin/grep")
-            .arg("-m")
-            .arg("1")
-            .arg("-o")
-            .arg("sse3")
-            .arg("/proc/cpuinfo")
-            .output()
-            .unwrap()
-    };
-    let output = std::str::from_utf8(&output.stdout[..]).unwrap().trim();
-    let sse3 = if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") ||
-                  cfg!(target_os = "macos") {
-        output == "SSE3"
-    } else {
-        output == "sse3"
+        if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") || cfg!(target_os = "macos") {
+            output == "SSE3"
+        } else {
+            output == "sse3"
+        }
     };
 
     let mut cflags = "-g -Wall -Wextra -Wno-unused-parameter".to_owned();
@@ -88,12 +91,22 @@ fn main() {
           .file("src/c/src/sha1.c")
           .file("src/c/src/sha2.c");
 
-    if sse3 && (cfg!(target_pointer_width = "64") || cfg!(target_os = "macos")) {
-        let out = Command::new("/usr/bin/perl")
-                      .arg("src/c/src/sha1-mb-x86_64.pl")
-                      .arg("elf")
-                      .output()
-                      .unwrap();
+    if sse3 &&
+       (cfg!(target_pointer_width = "64") || cfg!(target_os = "macos") ||
+        cfg!(target_os = "windows")) {
+        let out = if cfg!(target_os = "windows") {
+            Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
+                .arg("src/c/src/sha1-mb-x86_64.pl")
+                .arg("elf")
+                .output()
+                .unwrap()
+        } else {
+            Command::new("/usr/bin/perl")
+                .arg("src/c/src/sha1-mb-x86_64.pl")
+                .arg("elf")
+                .output()
+                .unwrap()
+        };
         let out = std::str::from_utf8(&out.stdout[..]).unwrap().trim();
 
         let p = Path::new("src/c/src/sha1-mb-x86_64.s");
@@ -118,11 +131,19 @@ fn main() {
                 .unwrap();
         }
 
-        let out = Command::new("/usr/bin/perl")
-                      .arg("src/c/src/sha256-mb-x86_64.pl")
-                      .arg("elf")
-                      .output()
-                      .unwrap();
+        let out = if cfg!(target_os = "windows") {
+            Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
+                .arg("src/c/src/sha256-mb-x86_64.pl")
+                .arg("elf")
+                .output()
+                .unwrap()
+        } else {
+            Command::new("/usr/bin/perl")
+                .arg("src/c/src/sha256-mb-x86_64.pl")
+                .arg("elf")
+                .output()
+                .unwrap()
+        };
         let out = std::str::from_utf8(&out.stdout[..]).unwrap().trim();
 
         let p = Path::new("src/c/src/sha256-mb-x86_64.s");
