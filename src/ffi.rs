@@ -168,8 +168,8 @@ extern "C" {
                             c: *mut NtruIntPoly,
                             mod_mask: uint16_t)
                             -> uint8_t;
-    pub fn ntru_add_int(a: *mut NtruIntPoly, b: *const NtruIntPoly);
-    pub fn ntru_sub_int(a: *mut NtruIntPoly, b: *const NtruIntPoly);
+    pub fn ntru_add(a: *mut NtruIntPoly, b: *const NtruIntPoly);
+    pub fn ntru_sub(a: *mut NtruIntPoly, b: *const NtruIntPoly);
     pub fn ntru_mod_mask(p: *mut NtruIntPoly, mod_mask: uint16_t);
     pub fn ntru_mult_fac(a: *mut NtruIntPoly, factor: int16_t);
     pub fn ntru_mod_center(p: *mut NtruIntPoly, modulus: uint16_t);

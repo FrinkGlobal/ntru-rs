@@ -26,23 +26,25 @@ mod key;
 fn encrypt_poly(m: NtruIntPoly, r: &NtruTernPoly, h: &NtruIntPoly, q: u16) -> NtruIntPoly {
     let (mut e, _) = h.mult_tern(r, q);
     e = e + m;
-    e.mod_mask(q-1);
+    e.mod_mask(q - 1);
     e
 }
 
-fn decrypt_poly(e: NtruIntPoly, private: &NtruEncPrivKey, modulus: u16)  -> NtruIntPoly {
+fn decrypt_poly(e: NtruIntPoly, private: &NtruEncPrivKey, modulus: u16) -> NtruIntPoly {
     let (mut d, _) = if private.get_t().is_product() {
-        e.mult_prod(private.get_t().get_poly_prod(), modulus-1)
+        e.mult_prod(private.get_t().get_poly_prod(), modulus - 1)
     } else {
-        e.mult_tern(private.get_t().get_poly_tern(), modulus-1)
+        e.mult_tern(private.get_t().get_poly_tern(), modulus - 1)
     };
-    d.mod_mask(modulus-1);
+    d.mod_mask(modulus - 1);
     d.mult_fac(3);
     d = d + e;
     d.mod_center(modulus);
     d.mod3();
     for i in 0..d.get_coeffs().len() {
-        if d.get_coeffs()[i] == 2 { d.set_coeff(i, -1)}
+        if d.get_coeffs()[i] == 2 {
+            d.set_coeff(i, -1)
+        }
     }
     d
 }
@@ -74,12 +76,18 @@ fn it_keygen() {
         let mut kp = ntru::generate_key_pair(&params, &rand_ctx).unwrap();
 
         // Encrypt a random message
-        let m = NtruTernPoly::rand(params.get_n(), params.get_n()/3, params.get_n()/3,
-                                   &rand_ctx).unwrap();
+        let m = NtruTernPoly::rand(params.get_n(),
+                                   params.get_n() / 3,
+                                   params.get_n() / 3,
+                                   &rand_ctx)
+                    .unwrap();
         let m_int = m.to_int_poly();
 
-        let r = NtruTernPoly::rand(params.get_n(), params.get_n()/3, params.get_n()/3,
-                                   &rand_ctx).unwrap();
+        let r = NtruTernPoly::rand(params.get_n(),
+                                   params.get_n() / 3,
+                                   params.get_n() / 3,
+                                   &rand_ctx)
+                    .unwrap();
 
         let e = encrypt_poly(m_int.clone(), &r, &kp.get_public().get_h(), params.get_q());
 
@@ -110,24 +118,26 @@ fn test_encr_decr_nondet(params: &NtruEncParams) {
     // Create a key pair with multiple public keys (using ntru_gen_key_pair_multi)
     let (priv_multi1, pub_multi1) = ntru::generate_multiple_key_pairs(params,
                                                                       &rand_ctx,
-                                                                      num_pub_keys).unwrap();
+                                                                      num_pub_keys)
+                                        .unwrap();
 
     // Create a key pair with multiple public keys (using ntru::generate_public)
     let kp_multi2 = ntru::generate_key_pair(params, &rand_ctx).unwrap();
     let mut pub_multi2 = Vec::with_capacity(num_pub_keys);
     for _ in 0..num_pub_keys {
-        pub_multi2.push(ntru::generate_public(params,
-                                              kp_multi2.get_private(),
-                                              &rand_ctx).unwrap());
+        pub_multi2.push(ntru::generate_public(params, kp_multi2.get_private(), &rand_ctx).unwrap());
     }
 
     let max_len = params.max_msg_len();
     let plain = ntru::rand::generate(max_len as u16, &rand_ctx).unwrap();
 
-    for plain_len in 0..max_len+1 {
+    for plain_len in 0..max_len + 1 {
         // Test single public key
-        let encrypted = ntru::encrypt(&plain[0..plain_len as usize], kp.get_public(), params,
-                                        &rand_ctx).unwrap();
+        let encrypted = ntru::encrypt(&plain[0..plain_len as usize],
+                                      kp.get_public(),
+                                      params,
+                                      &rand_ctx)
+                            .unwrap();
         let decrypted = ntru::decrypt(&encrypted, &kp, params).unwrap();
 
         for i in 0..plain_len {
@@ -137,11 +147,16 @@ fn test_encr_decr_nondet(params: &NtruEncParams) {
         // Test multiple public keys
         for i in 0..num_pub_keys {
             let rand_value = rand::thread_rng().gen_range(1, 100);
-            if rand_value % 100 != 0 { continue }
+            if rand_value % 100 != 0 {
+                continue;
+            }
 
             // Test priv_multi1/pub_multi1
-            let encrypted = ntru::encrypt(&plain[0..plain_len as usize], &pub_multi1[i], params,
-                                          &rand_ctx).unwrap();
+            let encrypted = ntru::encrypt(&plain[0..plain_len as usize],
+                                          &pub_multi1[i],
+                                          params,
+                                          &rand_ctx)
+                                .unwrap();
 
             let kp_decrypt1 = NtruEncKeyPair::new(priv_multi1.clone(), pub_multi1[i].clone());
             let decrypted = ntru::decrypt(&encrypted, &kp_decrypt1, params).unwrap();
@@ -150,16 +165,20 @@ fn test_encr_decr_nondet(params: &NtruEncParams) {
             }
 
             // Test kp_multi2 + pub_multi2
-            let public = if i==0 { kp_multi2.get_public() } else { &pub_multi2[i-1] };
-            let encrypted = ntru::encrypt(&plain[0..plain_len as usize], public, params,
-                                          &rand_ctx).unwrap();
+            let public = if i == 0 {
+                kp_multi2.get_public()
+            } else {
+                &pub_multi2[i - 1]
+            };
+            let encrypted = ntru::encrypt(&plain[0..plain_len as usize], public, params, &rand_ctx)
+                                .unwrap();
 
             let kp_decrypt2 = NtruEncKeyPair::new(kp_multi2.get_private().clone(), public.clone());
             let decrypted = ntru::decrypt(&encrypted, &kp_decrypt2, params).unwrap();
             for i in 0..plain_len {
                 assert_eq!(plain[i as usize], decrypted[i as usize]);
             }
-       }
+        }
     }
 }
 
@@ -189,10 +208,9 @@ fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
     let rand_ctx2 = ntru::rand::init_det(&rng2, seed2).unwrap();
 
     for plain_len in 0..max_len as usize {
-        let encrypted = ntru::encrypt(&plain[0..plain_len], kp.get_public(), params,
-                                      &rand_ctx).unwrap();
-        let encrypted2 = ntru::encrypt(&plain2[0..plain_len], &pub2, params,
-                                       &rand_ctx2).unwrap();
+        let encrypted = ntru::encrypt(&plain[0..plain_len], kp.get_public(), params, &rand_ctx)
+                            .unwrap();
+        let encrypted2 = ntru::encrypt(&plain2[0..plain_len], &pub2, params, &rand_ctx2).unwrap();
 
         for i in 0..encrypted.len() {
             assert_eq!(encrypted[i], encrypted2[i]);
@@ -205,8 +223,7 @@ fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
         }
     }
 
-    let encrypted = ntru::encrypt(&plain, kp.get_public(), params,
-                                  &rand_ctx).unwrap();
+    let encrypted = ntru::encrypt(&plain, kp.get_public(), params, &rand_ctx).unwrap();
     let digest = sha1(&encrypted);
     assert_eq!(digest, digest_expected);
 }
@@ -241,19 +258,19 @@ fn it_encr_decr() {
          0x2e, 0x1a, 0x64, 0x8c, 0x68, 0x02, 0xb3, 0xaf, 0x18, 0xa7],
         [0xf3, 0x16, 0xdf, 0x16, 0xe9, 0xa3, 0x4c, 0x40, 0x30, 0xff, // EES1499EP1
          0x5d, 0x66, 0xd8, 0x53, 0x2b, 0x07, 0x8a, 0x17, 0x48, 0xb4],
-        [0x7f, 0xbb, 0x91, 0x11, 0xea, 0x2e, 0x59, 0x5d, 0x25, 0x42, // EES401EP2
-         0xea, 0x07, 0x88, 0x05, 0x1a, 0xab, 0x37, 0xda, 0x9b, 0x33],
-        [0x55, 0x76, 0x32, 0x9f, 0x18, 0x0a, 0xbb, 0x14, 0x63, 0xd9, // EES439EP1
-         0x23, 0xc3, 0x5d, 0xd0, 0x8e, 0x17, 0xa5, 0xa2, 0x61, 0x75],
-        [0x5e, 0xe5, 0x6c, 0x47, 0xde, 0x6e, 0x2f, 0x9c, 0x5f, 0x47, // EES443EP1
-         0x7, 0x46, 0xe9, 0x1f, 0x90, 0xb3, 0x47, 0x7d, 0x40, 0x38],
-        [0xb9, 0x40, 0x15, 0xbe, 0x43, 0xb9, 0x0f, 0xb3, 0x27, 0xfe, // EES593EP1
-         0x41, 0x8a, 0x44, 0x76, 0x9e, 0xfe, 0xbe, 0xe5, 0x82, 0xae],
-        [0xbd, 0xa1, 0xf5, 0x07, 0x48, 0x9e, 0x49, 0x94, 0xca, 0x18, // EES587EP1
-         0x3e, 0x4d, 0xa5, 0xf7, 0xee, 0x8a, 0x23, 0x67, 0x62, 0xf9],
-        [0xbd, 0xd9, 0x2a, 0x79, 0x89, 0x07, 0x9f, 0x64, 0xf9, 0x35, // EES743EP1
-         0xb6, 0x90, 0x4f, 0xd3, 0xfa, 0x70, 0xc9, 0xf9, 0x30, 0xb0],
-    ];
+        [0xb0, 0x50, 0x79, 0xd8, 0x43, 0x8b, 0xaf, 0x42, 0x74, 0x21, // EES401EP2
+         0x45, 0x7b, 0x7a, 0xc6, 0x35, 0x0a, 0x85, 0xfa, 0x92, 0xdf],
+        [0x54, 0x5b, 0x8e, 0x77, 0x5d, 0x75, 0x33, 0x9d, 0xc4, 0x41, // EES439EP1
+         0x47, 0xa7, 0x1a, 0x1e, 0x77, 0x20, 0xa0, 0x22, 0xeb, 0xc6],
+        [0x91, 0xe8, 0x84, 0xd7, 0xc0, 0xec, 0xc2, 0x65, 0x94, 0x80, // EES443EP1
+         0x4b, 0xf3, 0x1b, 0x51, 0x68, 0x8d, 0xb4, 0x0f, 0xc2, 0x69],
+        [0xc3, 0x24, 0xc2, 0xe8, 0x31, 0xdb, 0xdf, 0x43, 0xdf, 0x0f, // EES593EP1
+         0xc7, 0x45, 0x58, 0x23, 0x8a, 0x25, 0x3e, 0x0e, 0xce, 0xce],
+        [0x03, 0x64, 0x39, 0xf6, 0x63, 0xd7, 0xd6, 0x4c, 0x4c, 0xe0, // EES587EP1
+         0x35, 0x4a, 0xcb, 0x45, 0xf4, 0xfd, 0x86, 0xd2, 0xa2, 0xe0],
+        [0x8d, 0xc2, 0x6a, 0x90, 0x0b, 0x6c, 0x32, 0xe0, 0x9d, 0x02, // EES743EP1
+         0x30, 0xaf, 0xe4, 0xe7, 0x2a, 0x74, 0xaa, 0xf8, 0x3d, 0xb1],
+     ];
 
     for i in 0..param_arr.len() {
         test_encr_decr_nondet(&param_arr[i]);

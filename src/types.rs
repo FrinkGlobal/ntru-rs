@@ -52,7 +52,7 @@ impl Add for NtruIntPoly {
     type Output = NtruIntPoly;
     fn add(self, rhs: NtruIntPoly) -> Self::Output {
         let mut out = self.clone();
-        unsafe { ffi::ntru_add_int(&mut out, &rhs) };
+        unsafe { ffi::ntru_add(&mut out, &rhs) };
         out
     }
 }
@@ -61,7 +61,7 @@ impl Sub for NtruIntPoly {
     type Output = NtruIntPoly;
     fn sub(self, rhs: NtruIntPoly) -> Self::Output {
         let mut out = self.clone();
-        unsafe { ffi::ntru_sub_int(&mut out, &rhs) };
+        unsafe { ffi::ntru_sub(&mut out, &rhs) };
         out
     }
 }
