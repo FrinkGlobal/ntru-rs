@@ -1,3 +1,12 @@
+#![forbid(missing_docs, warnings)]
+#![deny(deprecated, drop_with_repr_extern, improper_ctypes,
+        non_shorthand_field_patterns, overflowing_literals, plugin_as_library,
+        private_no_mangle_fns, private_no_mangle_statics, stable_features, unconditional_recursion,
+        unknown_lints, unsafe_code, unused, unused_allocation, unused_attributes,
+        unused_comparisons, unused_features, unused_parens, while_true)]
+#![warn(trivial_casts, trivial_numeric_casts, unused, unused_extern_crates, unused_import_braces,
+        unused_qualifications, unused_results, variant_size_differences)]
+
 extern crate ntru;
 use ntru::types::{NTRU_MAX_DEGREE, NTRU_MAX_ONES, NtruIntPoly, NtruTernPoly,
                   NtruProdPoly, NtruPrivPoly};
@@ -76,10 +85,10 @@ fn it_mult_int() {
     assert!(c2_exp.equals_mod(&c2, 2048));
 
     let rng = NTRU_RNG_DEFAULT;
-    let rand_ctx = ntru::rand::init(&rng).ok().unwrap();
+    let rand_ctx = ntru::rand::init(&rng).unwrap();
 
     for _ in 0..10 {
-        let n_arr = rand_ctx.get_rng().generate(2, &rand_ctx).ok().unwrap();
+        let n_arr = rand_ctx.get_rng().generate(2, &rand_ctx).unwrap();
         let mut n = u8_arr_to_u16(&n_arr);
         n = 100 + (n % (NTRU_MAX_DEGREE-100) as u16);
 

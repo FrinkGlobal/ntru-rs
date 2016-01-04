@@ -11,9 +11,9 @@ use encparams::NtruEncParams;
 use rand::NtruRandContext;
 
 /// Max N value for all param sets; +1 for ntru_invert_...()
-pub const NTRU_MAX_DEGREE: usize = (1499+1);
+pub const NTRU_MAX_DEGREE: usize = (1499 + 1);
 /// (Max #coefficients + 16) rounded to a multiple of 8
-const NTRU_INT_POLY_SIZE: usize = ((NTRU_MAX_DEGREE+16+7)&0xFFF8);
+const NTRU_INT_POLY_SIZE: usize = ((NTRU_MAX_DEGREE + 16 + 7) & 0xFFF8);
 /// max(df1, df2, df3, dg)
 pub const NTRU_MAX_ONES: usize = 499;
 
@@ -28,7 +28,10 @@ pub struct NtruIntPoly {
 
 impl Default for NtruIntPoly {
     fn default() -> NtruIntPoly {
-        NtruIntPoly { n: 0, coeffs: [0; NTRU_INT_POLY_SIZE] }
+        NtruIntPoly {
+            n: 0,
+            coeffs: [0; NTRU_INT_POLY_SIZE],
+        }
     }
 }
 
@@ -38,7 +41,10 @@ impl Clone for NtruIntPoly {
         for i in 0..self.n as usize {
             new_coeffs[i] = self.coeffs[i];
         }
-        NtruIntPoly { n: self.n, coeffs: new_coeffs }
+        NtruIntPoly {
+            n: self.n,
+            coeffs: new_coeffs,
+        }
     }
 }
 
@@ -62,16 +68,22 @@ impl Sub for NtruIntPoly {
 
 impl fmt::Debug for NtruIntPoly {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{{ n: {}, coeffs: [{}...{}] }}", self.n, self.coeffs[0],
-                self.coeffs[NTRU_INT_POLY_SIZE-1])
+        write!(f,
+               "{{ n: {}, coeffs: [{}...{}] }}",
+               self.n,
+               self.coeffs[0],
+               self.coeffs[NTRU_INT_POLY_SIZE - 1])
     }
 }
 
 impl PartialEq for NtruIntPoly {
     fn eq(&self, other: &NtruIntPoly) -> bool {
-        self.n == other.n && {
+        self.n == other.n &&
+        {
             for i in 0..self.n as usize {
-                if self.coeffs[i] != other.coeffs[i] { return false }
+                if self.coeffs[i] != other.coeffs[i] {
+                    return false;
+                }
             }
             true
         }
@@ -86,20 +98,26 @@ impl NtruIntPoly {
         for i in 0..coeffs.len() {
             new_coeffs[i] = coeffs[i];
         }
-        NtruIntPoly { n: coeffs.len() as u16, coeffs: new_coeffs }
+        NtruIntPoly {
+            n: coeffs.len() as u16,
+            coeffs: new_coeffs,
+        }
     }
 
     /// Create a new random NtruIntPoly
     pub fn rand(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
-        let rand_data = rand_ctx.get_rng().generate(n*2, rand_ctx).ok().unwrap();
+        let rand_data = rand_ctx.get_rng().generate(n * 2, rand_ctx).unwrap();
 
         let mut coeffs = [0i16; NTRU_INT_POLY_SIZE];
         let shift = 16 - pow2q;
         for i in (n as usize)..0usize {
-            coeffs[i] =  rand_data[i] as i16 >> shift;
+            coeffs[i] = rand_data[i] as i16 >> shift;
         }
 
-        NtruIntPoly { n: n, coeffs: coeffs }
+        NtruIntPoly {
+            n: n,
+            coeffs: coeffs,
+        }
     }
 
     /// Convert array to NtruIntPoly
@@ -111,7 +129,9 @@ impl NtruIntPoly {
     }
 
     /// Get the coefficients
-    pub fn get_coeffs(&self) -> &[i16] { &self.coeffs[0..self.n as usize] }
+    pub fn get_coeffs(&self) -> &[i16] {
+        &self.coeffs[0..self.n as usize]
+    }
     /// Set the coefficients
     pub fn set_coeffs(&mut self, coeffs: &[i16]) {
         self.coeffs = [0; NTRU_INT_POLY_SIZE];
@@ -120,7 +140,9 @@ impl NtruIntPoly {
         }
     }
     /// Set a coefficient
-    pub fn set_coeff(&mut self, index: usize, value: i16) { self.coeffs[index] = value }
+    pub fn set_coeff(&mut self, index: usize, value: i16) {
+        self.coeffs[index] = value
+    }
 
     pub fn mod_mask(&mut self, mod_mask: u16) {
         unsafe { ffi::ntru_mod_mask(self, mod_mask) };
@@ -152,8 +174,10 @@ impl NtruIntPoly {
     /// Multiplies a NtruIntPoly by a NtruTernPoly. The number of coefficients must be the same for
     /// both polynomials. It also returns if the number of coefficients differ or not.
     pub fn mult_tern(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
-        if self.n != b.n { panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of \
-                                   coefficients must be the same for both polynomials") }
+        if self.n != b.n {
+            panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of coefficients must \
+                    be the same for both polynomials")
+        }
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_tern(self, b, &mut c, mod_mask) };
         (c, result == 1)
@@ -165,8 +189,10 @@ impl NtruIntPoly {
     /// both polynomials. Uses 32-bit arithmetic. It also returns if the number of coefficients
     /// differ or not.
     pub fn mult_tern_32(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
-        if self.n != b.n { panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of \
-                                   coefficients must be the same for both polynomials") }
+        if self.n != b.n {
+            panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of coefficients must \
+                    be the same for both polynomials")
+        }
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_tern_32(self, b, &mut c, mod_mask) };
         (c, result == 1)
@@ -178,8 +204,10 @@ impl NtruIntPoly {
     /// both polynomials. Uses 64-bit arithmetic. It also returns if the number of coefficients
     /// differ or not.
     pub fn mult_tern_64(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
-        if self.n != b.n { panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of \
-                                   coefficients must be the same for both polynomials") }
+        if self.n != b.n {
+            panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of coefficients must \
+                    be the same for both polynomials")
+        }
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_tern_64(self, b, &mut c, mod_mask) };
         (c, result == 1)
@@ -191,8 +219,10 @@ impl NtruIntPoly {
     /// both polynomials. This variant requires SSSE3 support. It also returns if the number of
     /// coefficients differ or not.
     pub fn mult_tern_sse(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
-        if self.n != b.n { panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of \
-                                   coefficients must be the same for both polynomials") }
+        if self.n != b.n {
+            panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of coefficients must \
+                    be the same for both polynomials")
+        }
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_tern_sse(self, b, &mut c, mod_mask) };
         (c, result == 1)
@@ -214,7 +244,7 @@ impl NtruIntPoly {
                     coeffs[tern_neg_ones[i] as usize] = self.coeffs[tern_neg_ones[i] as usize] + 1;
                 }
                 coeffs
-            }
+            },
         }
     }
 
@@ -223,8 +253,10 @@ impl NtruIntPoly {
     /// Multiplies a NtruIntPoly by a NtruProdPoly. The number of coefficients must be the same for
     /// both polynomials. It also returns if the number of coefficients differ or not.
     pub fn mult_prod(&self, b: &NtruProdPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
-        if self.n != b.n { panic!("To multiply a NtruIntPoly by a NtruProdPoly the number of \
-                                   coefficients must be the same for both polynomials") }
+        if self.n != b.n {
+            panic!("To multiply a NtruIntPoly by a NtruProdPoly the number of coefficients must \
+                    be the same for both polynomials")
+        }
         let mut c: NtruIntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_prod(self, b, &mut c, mod_mask) };
         (c, result == 1)
@@ -236,8 +268,8 @@ impl NtruIntPoly {
     /// number of coefficients must be the same for both polynomials. It also returns if the number
     /// of coefficients differ or not.
     pub fn mult_priv(&self, b: &NtruPrivPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
-        if (b.is_product() && self.n != b.get_poly_prod().n) || ( ! b.is_product() &&
-            self.n != b.get_poly_tern().n) {
+        if (b.is_product() && self.n != b.get_poly_prod().n) ||
+           (!b.is_product() && self.n != b.get_poly_tern().n) {
             panic!("To multiply a NtruIntPoly by a NtruProdPoly the number of coefficients must \
                     be the same for both polynomials")
         }
@@ -279,9 +311,12 @@ impl NtruIntPoly {
 
     /// Check if both polynomials are equals given a modulus
     pub fn equals_mod(&self, other: &NtruIntPoly, modulus: u16) -> bool {
-        self.n == other.n && {
+        self.n == other.n &&
+        {
             for i in 0..self.n as usize {
-                if (self.coeffs[i] - other.coeffs[i]) as i32 % modulus as i32 != 0 { return false }
+                if (self.coeffs[i] - other.coeffs[i]) as i32 % modulus as i32 != 0 {
+                    return false;
+                }
             }
             true
         }
@@ -290,7 +325,9 @@ impl NtruIntPoly {
     // Check if the NtruIntPoly equals 1
     pub fn equals1(&self) -> bool {
         for i in 1..self.n {
-            if self.coeffs[i as usize] != 0 { return false }
+            if self.coeffs[i as usize] != 0 {
+                return false;
+            }
         }
         self.coeffs[0] == 1
     }
@@ -308,8 +345,13 @@ pub struct NtruTernPoly {
 
 impl Default for NtruTernPoly {
     fn default() -> NtruTernPoly {
-        NtruTernPoly { n: 0, num_ones: 0, num_neg_ones: 0, ones: [0; NTRU_MAX_ONES],
-                    neg_ones: [0; NTRU_MAX_ONES] }
+        NtruTernPoly {
+            n: 0,
+            num_ones: 0,
+            num_neg_ones: 0,
+            ones: [0; NTRU_MAX_ONES],
+            neg_ones: [0; NTRU_MAX_ONES],
+        }
     }
 }
 
@@ -325,27 +367,42 @@ impl Clone for NtruTernPoly {
             new_neg_ones[i] = self.neg_ones[i]
         }
 
-        NtruTernPoly { n: self.n, num_ones: self.num_ones, num_neg_ones: self.num_neg_ones,
-                       ones: new_ones, neg_ones: new_neg_ones }
+        NtruTernPoly {
+            n: self.n,
+            num_ones: self.num_ones,
+            num_neg_ones: self.num_neg_ones,
+            ones: new_ones,
+            neg_ones: new_neg_ones,
+        }
     }
 }
 
 impl fmt::Debug for NtruTernPoly {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{{ n: {}, num_ones: {}, num_neg_ones: {}, ones: [{}...{}], \
-                      neg_ones: [{}...{}] }}", self.n, self.num_ones, self.num_neg_ones,
-                                               self.ones[0], self.ones[NTRU_MAX_ONES-1],
-                                               self.neg_ones[0], self.neg_ones[NTRU_MAX_ONES-1])
+        write!(f,
+               "{{ n: {}, num_ones: {}, num_neg_ones: {}, ones: [{}...{}], neg_ones: [{}...{}] }}",
+               self.n,
+               self.num_ones,
+               self.num_neg_ones,
+               self.ones[0],
+               self.ones[NTRU_MAX_ONES - 1],
+               self.neg_ones[0],
+               self.neg_ones[NTRU_MAX_ONES - 1])
     }
 }
 
 impl PartialEq for NtruTernPoly {
     fn eq(&self, other: &NtruTernPoly) -> bool {
         self.n == other.n && self.num_ones == other.num_ones &&
-        self.num_neg_ones == other.num_neg_ones && {
+        self.num_neg_ones == other.num_neg_ones &&
+        {
             for i in 0..NTRU_MAX_ONES {
-                if self.ones[i] != other.ones[i] { return false }
-                if self.neg_ones[i] != other.neg_ones[i] { return false }
+                if self.ones[i] != other.ones[i] {
+                    return false;
+                }
+                if self.neg_ones[i] != other.neg_ones[i] {
+                    return false;
+                }
             }
             true
         }
@@ -365,46 +422,60 @@ impl NtruTernPoly {
             new_neg_ones[i] = neg_ones[i];
         }
 
-        NtruTernPoly { n: n, num_ones: ones.len() as u16, num_neg_ones: neg_ones.len() as u16,
-                       ones: new_ones, neg_ones: new_neg_ones }
-    }
-
-    /// Random ternary polynomial
-    ///
-    /// Generates a random ternary polynomial. If an error occurs, it will return None.
-    pub fn rand(n: u16, num_ones: u16, num_neg_ones: u16, rand_ctx: &NtruRandContext)
-                -> Option<NtruTernPoly> {
-        let mut poly: NtruTernPoly = Default::default();
-        let result = unsafe { ffi::ntru_rand_tern(n, num_ones, num_neg_ones, &mut poly, rand_ctx) };
-
-        if result == 0 {
-            None
-        } else {
-            Some(poly)
+        NtruTernPoly {
+            n: n,
+            num_ones: ones.len() as u16,
+            num_neg_ones: neg_ones.len() as u16,
+            ones: new_ones,
+            neg_ones: new_neg_ones,
         }
     }
 
-    pub fn get_n(&self) -> u16 { self.n }
-    pub fn get_ones(&self) -> &[u16] { &self.ones[0..self.num_ones as usize] }
-    pub fn get_neg_ones(&self) -> &[u16] { &self.neg_ones[0..self.num_neg_ones as usize] }
+    // /// Random ternary polynomial
+    // ///
+    // /// Generates a random ternary polynomial. If an error occurs, it will return None.
+    // pub fn rand(n: u16, num_ones: u16, num_neg_ones: u16, rand_ctx: &NtruRandContext)
+    //             -> Option<NtruTernPoly> {
+    //     let mut poly: NtruTernPoly = Default::default();
+    //     let result = unsafe { ffi::ntru_rand_tern(n, num_ones, num_neg_ones, &mut poly,
+    //                                               &rand_ctx.rand_ctx) };
+    //
+    //     if result == 0 {
+    //         None
+    //     } else {
+    //         Some(poly)
+    //     }
+    // }
+
+    pub fn get_n(&self) -> u16 {
+        self.n
+    }
+    pub fn get_ones(&self) -> &[u16] {
+        &self.ones[0..self.num_ones as usize]
+    }
+    pub fn get_neg_ones(&self) -> &[u16] {
+        &self.neg_ones[0..self.num_neg_ones as usize]
+    }
 
     /// Ternary to general integer polynomial
     ///
     /// Converts a NtruTernPoly to an equivalent NtruIntPoly.
     pub fn to_int_poly(&self) -> NtruIntPoly {
-        NtruIntPoly {n: self.n,
-        coeffs: {
-            let mut coeffs = [0; NTRU_INT_POLY_SIZE];
+        NtruIntPoly {
+            n: self.n,
+            coeffs: {
+                let mut coeffs = [0; NTRU_INT_POLY_SIZE];
 
-            for i in 0..self.num_ones {
-                coeffs[self.ones[i as usize] as usize] = 1;
-            }
-            for i in 0..self.num_neg_ones {
-                coeffs[self.neg_ones[i as usize] as usize] = -1;
-            }
+                for i in 0..self.num_ones {
+                    coeffs[self.ones[i as usize] as usize] = 1;
+                }
+                for i in 0..self.num_neg_ones {
+                    coeffs[self.neg_ones[i as usize] as usize] = -1;
+                }
 
-            coeffs
-        }}
+                coeffs
+            },
+        }
     }
 }
 
@@ -421,13 +492,23 @@ pub struct NtruProdPoly {
 
 impl Default for NtruProdPoly {
     fn default() -> NtruProdPoly {
-        NtruProdPoly {n: 0, f1: Default::default(), f2: Default::default(), f3: Default::default()}
+        NtruProdPoly {
+            n: 0,
+            f1: Default::default(),
+            f2: Default::default(),
+            f3: Default::default(),
+        }
     }
 }
 
 impl NtruProdPoly {
     pub fn new(n: u16, f1: NtruTernPoly, f2: NtruTernPoly, f3: NtruTernPoly) -> NtruProdPoly {
-        NtruProdPoly { n: n, f1: f1, f2: f2, f3: f3}
+        NtruProdPoly {
+            n: n,
+            f1: f1,
+            f2: f2,
+            f3: f3,
+        }
     }
 
     /// Random product-form polynomial
@@ -441,25 +522,39 @@ impl NtruProdPoly {
     /// * *df3_ones*: number of ones ones in the third ternary polynomial
     /// * *df3_neg_ones*: number of negative ones in the third ternary polynomial
     /// * *rand_ctx*: a random number generator
-    pub fn rand(n: u16, df1: u16, df2: u16, df3_ones: u16, df3_neg_ones: u16,
-                rand_ctx: &NtruRandContext) -> Option<NtruProdPoly> {
+    pub fn rand(n: u16,
+                df1: u16,
+                df2: u16,
+                df3_ones: u16,
+                df3_neg_ones: u16,
+                rand_ctx: &NtruRandContext)
+                -> Option<NtruProdPoly> {
         let f1 = NtruTernPoly::rand(n, df1, df1, rand_ctx);
-        if f1.is_none() { return None }
+        if f1.is_none() {
+            return None;
+        }
         let f1 = f1.unwrap();
 
         let f2 = NtruTernPoly::rand(n, df2, df2, rand_ctx);
-        if f2.is_none() { return None }
+        if f2.is_none() {
+            return None;
+        }
         let f2 = f2.unwrap();
 
         let f3 = NtruTernPoly::rand(n, df3_ones, df3_neg_ones, rand_ctx);
-        if f3.is_none() { return None }
+        if f3.is_none() {
+            return None;
+        }
         let f3 = f3.unwrap();
 
         Some(NtruProdPoly::new(n, f1, f2, f3))
     }
 
     pub fn to_int_poly(&self, modulus: u16) -> NtruIntPoly {
-        let c = NtruIntPoly {n: self.n, coeffs: [0; NTRU_INT_POLY_SIZE]};
+        let c = NtruIntPoly {
+            n: self.n,
+            coeffs: [0; NTRU_INT_POLY_SIZE],
+        };
 
         let mod_mask = modulus - 1;
         let (c, _) = c.mult_tern(&self.f2, mod_mask);
@@ -526,7 +621,8 @@ impl PrivUnion {
 /// Private polynomial, can be ternary or product-form
 #[repr(C)]
 #[derive(Clone)]
-pub struct NtruPrivPoly { // maybe we could do conditional compilation?
+pub struct NtruPrivPoly {
+    // maybe we could do conditional compilation?
     /// Whether the polynomial is in product form
     prod_flag: uint8_t,
     poly: PrivUnion,
@@ -534,25 +630,36 @@ pub struct NtruPrivPoly { // maybe we could do conditional compilation?
 
 impl Default for NtruPrivPoly {
     fn default() -> NtruPrivPoly {
-        NtruPrivPoly {prod_flag: 0, poly: Default::default()}
+        NtruPrivPoly {
+            prod_flag: 0,
+            poly: Default::default(),
+        }
     }
 }
 
 impl fmt::Debug for NtruPrivPoly {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.is_product() {
-            write!(f, "NtruPrivPoly {{ prod_poly: {:?} }}", self.get_poly_prod())
+            write!(f,
+                   "NtruPrivPoly {{ prod_poly: {:?} }}",
+                   self.get_poly_prod())
         } else {
-            write!(f, "NtruPrivPoly {{ tern_poly: {:?} }}", self.get_poly_tern())
+            write!(f,
+                   "NtruPrivPoly {{ tern_poly: {:?} }}",
+                   self.get_poly_tern())
         }
     }
 }
 
 impl PartialEq for NtruPrivPoly {
     fn eq(&self, other: &NtruPrivPoly) -> bool {
-        self.prod_flag == other.prod_flag && {
-            if self.prod_flag > 0 { self.get_poly_prod() == other.get_poly_prod() }
-            else { self.get_poly_tern() == other.get_poly_tern() }
+        self.prod_flag == other.prod_flag &&
+        {
+            if self.prod_flag > 0 {
+                self.get_poly_prod() == other.get_poly_prod()
+            } else {
+                self.get_poly_tern() == other.get_poly_tern()
+            }
         }
     }
 }
@@ -560,16 +667,24 @@ impl PartialEq for NtruPrivPoly {
 impl NtruPrivPoly {
     /// Create a new NtruPrivPoly with a NtruProdPoly
     pub fn new_with_prod_poly(poly: NtruProdPoly) -> NtruPrivPoly {
-        NtruPrivPoly { prod_flag: 1, poly: unsafe { PrivUnion::new_from_prod(poly) } }
+        NtruPrivPoly {
+            prod_flag: 1,
+            poly: unsafe { PrivUnion::new_from_prod(poly) },
+        }
     }
 
     /// Create a new NtruPrivPoly with a NtruTernPoly
     pub fn new_with_tern_poly(poly: NtruTernPoly) -> NtruPrivPoly {
-        NtruPrivPoly { prod_flag: 0, poly: unsafe { PrivUnion::new_from_tern(poly) } }
+        NtruPrivPoly {
+            prod_flag: 0,
+            poly: unsafe { PrivUnion::new_from_tern(poly) },
+        }
     }
 
     /// If the NtruPrivPoly contains a NtruProdPoly
-    pub fn is_product(&self) -> bool { self.prod_flag == 1 }
+    pub fn is_product(&self) -> bool {
+        self.prod_flag == 1
+    }
 
     pub fn get_poly_prod(&self) -> &NtruProdPoly {
         if self.prod_flag != 1 {
@@ -638,13 +753,20 @@ pub struct NtruEncPrivKey {
 
 impl Default for NtruEncPrivKey {
     fn default() -> NtruEncPrivKey {
-        NtruEncPrivKey {q: 0, t: Default::default()}
+        NtruEncPrivKey {
+            q: 0,
+            t: Default::default(),
+        }
     }
 }
 
 impl NtruEncPrivKey {
-    pub fn get_q(&self) -> u16 { self.q }
-    pub fn get_t(&self) -> &NtruPrivPoly { &self.t }
+    pub fn get_q(&self) -> u16 {
+        self.q
+    }
+    pub fn get_t(&self) -> &NtruPrivPoly {
+        &self.t
+    }
 
     /// Get params from the private key
     pub fn get_params(&self) -> Result<NtruEncParams, NtruError> {
@@ -661,7 +783,7 @@ impl NtruEncPrivKey {
     /// Import private key
     pub fn import(arr: &[u8]) -> NtruEncPrivKey {
         let mut key: NtruEncPrivKey = Default::default();
-        unsafe{ ffi::ntru_import_priv(&arr[0], &mut key) };
+        unsafe { ffi::ntru_import_priv(&arr[0], &mut key) };
 
         key
     }
@@ -669,7 +791,7 @@ impl NtruEncPrivKey {
     /// Export private key
     pub fn export(&self, params: &NtruEncParams) -> Box<[u8]> {
         let mut arr = vec![0u8; params.private_len() as usize];
-        unsafe { ffi::ntru_export_priv(self, &mut arr[..][0]) };
+        let _ = unsafe { ffi::ntru_export_priv(self, &mut arr[..][0]) };
 
         arr.into_boxed_slice()
     }
@@ -685,18 +807,25 @@ pub struct NtruEncPubKey {
 
 impl Default for NtruEncPubKey {
     fn default() -> NtruEncPubKey {
-        NtruEncPubKey {q: 0, h: Default::default()}
+        NtruEncPubKey {
+            q: 0,
+            h: Default::default(),
+        }
     }
 }
 
 impl NtruEncPubKey {
-    pub fn get_q(&self) -> u16 { self.q }
-    pub fn get_h(&self) -> &NtruIntPoly { &self.h }
+    pub fn get_q(&self) -> u16 {
+        self.q
+    }
+    pub fn get_h(&self) -> &NtruIntPoly {
+        &self.h
+    }
 
     /// Import a public key
     pub fn import(arr: &[u8]) -> NtruEncPubKey {
         let mut key: NtruEncPubKey = Default::default();
-        unsafe{ ffi::ntru_import_pub(&arr[0], &mut key) };
+        let _ = unsafe { ffi::ntru_import_pub(&arr[0], &mut key) };
 
         key
     }
@@ -722,18 +851,35 @@ pub struct NtruEncKeyPair {
 
 impl Default for NtruEncKeyPair {
     fn default() -> NtruEncKeyPair {
-        NtruEncKeyPair {private: Default::default(), public: Default::default()}
+        NtruEncKeyPair {
+            private: Default::default(),
+            public: Default::default(),
+        }
     }
 }
 
 impl NtruEncKeyPair {
+    /// Generate a new key pair
+    pub fn new(private: NtruEncPrivKey, public: NtruEncPubKey) -> NtruEncKeyPair {
+        NtruEncKeyPair {
+            private: private,
+            public: public,
+        }
+    }
+
     /// Get params from the key pair
-    pub fn get_params(&self) -> Result<NtruEncParams, NtruError> { self.private.get_params() }
+    pub fn get_params(&self) -> Result<NtruEncParams, NtruError> {
+        self.private.get_params()
+    }
 
     /// The private key
-    pub fn get_private(&self) -> &NtruEncPrivKey { &self.private }
+    pub fn get_private(&self) -> &NtruEncPrivKey {
+        &self.private
+    }
     /// The public key
-    pub fn get_public(&self) -> &NtruEncPubKey { &self.public }
+    pub fn get_public(&self) -> &NtruEncPubKey {
+        &self.public
+    }
 }
 
 /// The error enum
@@ -759,6 +905,8 @@ pub enum NtruError {
     UnknownParamSet,
     /// Invalid parameter.
     InvalidParam,
+    /// Invalid key.
+    InvalidKey,
 }
 
 impl NtruError {
@@ -775,6 +923,7 @@ impl NtruError {
             8 => NtruError::NullArgument,
             9 => NtruError::UnknownParamSet,
             10 => NtruError::InvalidParam,
+            11 => NtruError::InvalidKey,
             _ => unreachable!(),
         }
     }
