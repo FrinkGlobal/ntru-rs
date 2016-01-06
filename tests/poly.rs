@@ -256,7 +256,7 @@ fn it_arr() {
 
     assert_eq!(a.len(), b.len());
     for (i, val) in a.iter().enumerate() {
-        assert_eq!(val, b[i]);
+        assert_eq!(*val, b[i]);
     }
 
     // #ifdef __SSSE3__
@@ -264,7 +264,7 @@ fn it_arr() {
 
     assert_eq!(a.len(), b.len());
     for (i, val) in a.iter().enumerate() {
-        assert_eq!(val, b[i]);
+        assert_eq!(*val, b[i]);
     }
     // #endif
 }
