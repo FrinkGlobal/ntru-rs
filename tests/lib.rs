@@ -212,8 +212,8 @@ fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
                             .unwrap();
         let encrypted2 = ntru::encrypt(&plain2[0..plain_len], &pub2, params, &rand_ctx2).unwrap();
 
-        for i in 0..encrypted.len() {
-            assert_eq!(encrypted[i], encrypted2[i]);
+        for (i, c) in encrypted.iter().enumerate() {
+            assert_eq!(*c, encrypted2[i]);
         }
 
         let decrypted = ntru::decrypt(&encrypted, &kp, params).unwrap();
@@ -272,8 +272,8 @@ fn it_encr_decr() {
          0x30, 0xaf, 0xe4, 0xe7, 0x2a, 0x74, 0xaa, 0xf8, 0x3d, 0xb1],
      ];
 
-    for i in 0..param_arr.len() {
-        test_encr_decr_nondet(&param_arr[i]);
-        test_encr_decr_det(&param_arr[i], &digests_expected[i]);
+    for (i, param) in param_arr.iter().enumerate() {
+        test_encr_decr_nondet(param);
+        test_encr_decr_det(param, &digests_expected[i]);
     }
 }

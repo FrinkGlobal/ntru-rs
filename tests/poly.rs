@@ -255,16 +255,16 @@ fn it_arr() {
     let b = p1.to_arr_64(&params);
 
     assert_eq!(a.len(), b.len());
-    for i in 0..a.len() {
-        assert_eq!(a[i], b[i]);
+    for (i, val) in a.iter().enumerate() {
+        assert_eq!(val, b[i]);
     }
 
     // #ifdef __SSSE3__
     let b = p1.to_arr_sse_2048(&params);
 
     assert_eq!(a.len(), b.len());
-    for i in 0..a.len() {
-        assert_eq!(a[i], b[i]);
+    for (i, val) in a.iter().enumerate() {
+        assert_eq!(val, b[i]);
     }
     // #endif
 }

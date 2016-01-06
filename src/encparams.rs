@@ -106,8 +106,8 @@ impl PartialEq for NtruEncParams {
             unsafe { (self.hash)(&input[0], 100, &mut hash1[0]) };
             unsafe { (other.hash)(&input[0], 100, &mut hash2[0]) };
 
-            for i in 0..hash1.len() {
-                if hash1[i] != hash2[i] {
+            for (i, b) in hash1.iter().enumerate() {
+                if *b != hash2[i] {
                     return false;
                 }
             }
@@ -120,8 +120,8 @@ impl PartialEq for NtruEncParams {
 impl fmt::Debug for NtruEncParams {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut name = String::with_capacity(10);
-        for i in 0..self.name.len() {
-            name.push(self.name[i] as u8 as char);
+        for c in self.name.iter() {
+            name.push(*c as u8 as char);
         }
         write!(f, "param: {}", name)
     }
