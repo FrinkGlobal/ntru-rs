@@ -138,6 +138,7 @@ extern "C" {
                              c: *mut NtruIntPoly,
                              mod_mask: uint16_t)
                              -> uint8_t;
+    #[cfg(SSE3)]
     pub fn ntru_mult_tern_sse(a: *const NtruIntPoly,
                               b: *const NtruTernPoly,
                               c: *mut NtruIntPoly,
@@ -176,6 +177,7 @@ extern "C" {
     pub fn ntru_mod3(p: *mut NtruIntPoly);
     pub fn ntru_to_arr_32(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t);
     pub fn ntru_to_arr_64(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t);
+    #[cfg(SSE3)]
     pub fn ntru_to_arr_sse_2048(p: *const NtruIntPoly, a: *mut uint8_t);
     pub fn ntru_from_arr(arr: *const uint8_t, n: uint16_t, q: uint16_t, p: *mut NtruIntPoly);
     pub fn ntru_invert(a: *const NtruPrivPoly,

@@ -162,6 +162,7 @@ impl NtruIntPoly {
         a.into_boxed_slice()
     }
 
+    #[cfg(SSE3)]
     pub fn to_arr_sse_2048(&self, params: &NtruEncParams) -> Box<[u8]> {
         let mut a = vec![0u8; params.enc_len() as usize];
         unsafe { ffi::ntru_to_arr_sse_2048(self, &mut a[0]) };
@@ -218,6 +219,7 @@ impl NtruIntPoly {
     /// Multiplies a NtruIntPoly by a NtruTernPoly. The number of coefficients must be the same for
     /// both polynomials. This variant requires SSSE3 support. It also returns if the number of
     /// coefficients differ or not.
+    #[cfg(SSE3)]
     pub fn mult_tern_sse(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         if self.n != b.n {
             panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of coefficients must \

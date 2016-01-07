@@ -7,6 +7,7 @@
 #![warn(trivial_casts, trivial_numeric_casts, unused, unused_extern_crates, unused_import_braces,
         unused_qualifications, unused_results, variant_size_differences)]
 
+#[macro_use]
 extern crate ntru;
 use ntru::types::{NTRU_MAX_DEGREE, NTRU_MAX_ONES, NtruIntPoly, NtruTernPoly, NtruProdPoly,
                   NtruPrivPoly};
@@ -133,10 +134,10 @@ fn it_mult_tern() {
     assert!(c_tern.equals_mod(&c_int, 32));
     // #endif
 
-    // #ifdef __SSSE3__
-    let (c_tern, _) = b.mult_tern_sse(&a, 32 - 1);
-    assert!(c_tern.equals_mod(&c_int, 32));
-    // #endif
+    if_ntru_sse3!({
+        let (c_tern, _) = b.mult_tern_sse(&a, 32 - 1);
+        assert!(c_tern.equals_mod(&c_int, 32));
+    });
 
     for _ in 0..10 {
         let mut n = u8_arr_to_u16(&rand_ctx.get_rng().generate(2, &rand_ctx).unwrap());
@@ -166,10 +167,11 @@ fn it_mult_tern() {
         let (c_tern, _) = b.mult_tern_64(&a, 2048 - 1);
         assert!(c_tern.equals_mod(&c_int, 2048));
         // #endif
-        // #ifdef __SSSE3__
-        let (c_tern, _) = b.mult_tern_sse(&a, 2048 - 1);
-        assert!(c_tern.equals_mod(&c_int, 2048));
-        // #endif
+
+        if_ntru_sse3!({
+            let (c_tern, _) = b.mult_tern_sse(&a, 2048 - 1);
+            assert!(c_tern.equals_mod(&c_int, 2048));
+        });
     }
 }
 
@@ -259,12 +261,12 @@ fn it_arr() {
         assert_eq!(*val, b[i]);
     }
 
-    // #ifdef __SSSE3__
-    let b = p1.to_arr_sse_2048(&params);
+    if_ntru_sse3!({
+        let b = p1.to_arr_sse_2048(&params);
 
-    assert_eq!(a.len(), b.len());
-    for (i, val) in a.iter().enumerate() {
-        assert_eq!(*val, b[i]);
-    }
-    // #endif
+        assert_eq!(a.len(), b.len());
+        for (i, val) in a.iter().enumerate() {
+            assert_eq!(*val, b[i]);
+        }
+    });
 }
