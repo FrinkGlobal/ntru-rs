@@ -29,8 +29,8 @@ script:
   - |
       travis-cargo build &&
       travis-cargo test &&
-      travis-cargo build --features="no-sse" &&
-      travis-cargo test --features="no-sse" &&
+      travis-cargo build -- --features="no-sse" &&
+      travis-cargo test -- --features="no-sse" &&
       travis-cargo --only stable doc
 after_success:
   - travis-cargo --only stable doc-upload
