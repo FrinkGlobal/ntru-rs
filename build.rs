@@ -172,4 +172,8 @@ fn main() {
     }
 
     config.include("src/c/src").compile("libntru.a");
+
+    if !cfg!(feature = "no-sse") && sse3 {
+        println!("cargo:rustc-cfg=SSE3")
+    }
 }

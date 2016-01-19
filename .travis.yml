@@ -14,6 +14,9 @@ rust:
   - beta
   - stable
   - 1.4.0
+matrix:
+  allow_failures:
+    - rust: nightly
 
 # load travis-cargo
 before_script:
@@ -26,7 +29,8 @@ script:
   - |
       travis-cargo build &&
       travis-cargo test &&
-      travis-cargo bench &&
+      travis-cargo build -- --features="no-sse" &&
+      travis-cargo test -- --features="no-sse" &&
       travis-cargo --only stable doc
 after_success:
   - travis-cargo --only stable doc-upload

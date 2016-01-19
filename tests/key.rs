@@ -59,11 +59,8 @@ fn it_params_from_key() {
         assert_eq!(params, &params2);
     }
 
-    for i in 0..param_arr.len() {
-        let params1 = &param_arr[i];
-
-        for j in 0..param_arr.len() {
-            let params2 = &param_arr[j];
+    for (i, params1) in param_arr.iter().enumerate() {
+        for (j, params2) in param_arr.iter().enumerate() {
             if params1 == params2 {
                 assert_eq!(i, j);
             } else {

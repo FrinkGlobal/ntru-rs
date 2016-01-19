@@ -52,7 +52,7 @@ impl Add for NtruIntPoly {
     type Output = NtruIntPoly;
     fn add(self, rhs: NtruIntPoly) -> Self::Output {
         let mut out = self.clone();
-        unsafe { ffi::ntru_add_int(&mut out, &rhs) };
+        unsafe { ffi::ntru_add(&mut out, &rhs) };
         out
     }
 }
@@ -61,7 +61,7 @@ impl Sub for NtruIntPoly {
     type Output = NtruIntPoly;
     fn sub(self, rhs: NtruIntPoly) -> Self::Output {
         let mut out = self.clone();
-        unsafe { ffi::ntru_sub_int(&mut out, &rhs) };
+        unsafe { ffi::ntru_sub(&mut out, &rhs) };
         out
     }
 }
@@ -95,8 +95,8 @@ impl NtruIntPoly {
     pub fn new(coeffs: &[i16]) -> NtruIntPoly {
         let mut new_coeffs = [0; NTRU_INT_POLY_SIZE];
 
-        for i in 0..coeffs.len() {
-            new_coeffs[i] = coeffs[i];
+        for (i, coeff) in coeffs.iter().enumerate() {
+            new_coeffs[i] = *coeff;
         }
         NtruIntPoly {
             n: coeffs.len() as u16,
@@ -135,8 +135,8 @@ impl NtruIntPoly {
     /// Set the coefficients
     pub fn set_coeffs(&mut self, coeffs: &[i16]) {
         self.coeffs = [0; NTRU_INT_POLY_SIZE];
-        for i in 0..coeffs.len() {
-            self.coeffs[i] = coeffs[i];
+        for (i, coeff) in coeffs.iter().enumerate() {
+            self.coeffs[i] = *coeff;
         }
     }
     /// Set a coefficient
@@ -162,6 +162,7 @@ impl NtruIntPoly {
         a.into_boxed_slice()
     }
 
+    #[cfg(SSE3)]
     pub fn to_arr_sse_2048(&self, params: &NtruEncParams) -> Box<[u8]> {
         let mut a = vec![0u8; params.enc_len() as usize];
         unsafe { ffi::ntru_to_arr_sse_2048(self, &mut a[0]) };
@@ -218,6 +219,7 @@ impl NtruIntPoly {
     /// Multiplies a NtruIntPoly by a NtruTernPoly. The number of coefficients must be the same for
     /// both polynomials. This variant requires SSSE3 support. It also returns if the number of
     /// coefficients differ or not.
+    #[cfg(SSE3)]
     pub fn mult_tern_sse(&self, b: &NtruTernPoly, mod_mask: u16) -> (NtruIntPoly, bool) {
         if self.n != b.n {
             panic!("To multiply a NtruIntPoly by a NtruTernPoly the number of coefficients must \
@@ -236,12 +238,12 @@ impl NtruIntPoly {
                 let tern_ones = b.get_ones();
                 let tern_neg_ones = b.get_neg_ones();
 
-                for i in 0..tern_ones.len() {
-                    coeffs[tern_ones[i] as usize] = self.coeffs[tern_ones[i] as usize] + 1;
+                for one in tern_ones.iter() {
+                    coeffs[*one as usize] = self.coeffs[*one as usize] + 1;
                 }
 
-                for i in 0..tern_neg_ones.len() {
-                    coeffs[tern_neg_ones[i] as usize] = self.coeffs[tern_neg_ones[i] as usize] + 1;
+                for neg_one in tern_neg_ones.iter() {
+                    coeffs[*neg_one as usize] = self.coeffs[*neg_one as usize] + 1;
                 }
                 coeffs
             },
@@ -414,12 +416,12 @@ impl NtruTernPoly {
         let mut new_ones = [0; NTRU_MAX_ONES];
         let mut new_neg_ones = [0; NTRU_MAX_ONES];
 
-        for i in 0..ones.len() {
-            new_ones[i] = ones[i];
+        for (i, one) in ones.iter().enumerate() {
+            new_ones[i] = *one;
         }
 
-        for i in 0..neg_ones.len() {
-            new_neg_ones[i] = neg_ones[i];
+        for (i, neg_one) in neg_ones.iter().enumerate() {
+            new_neg_ones[i] = *neg_one;
         }
 
         NtruTernPoly {
@@ -579,8 +581,8 @@ impl Default for PrivUnion {
 impl Clone for PrivUnion {
     fn clone(&self) -> PrivUnion {
         let mut new_data = [0u16; PRIVUNION_SIZE];
-        for i in 0..self.data.len() {
-            new_data[i] = self.data[i]
+        for (i, data) in self.data.iter().enumerate() {
+            new_data[i] = *data
         }
         PrivUnion { data: new_data }
     }
@@ -591,8 +593,8 @@ impl PrivUnion {
         let arr: &[uint16_t; 3004] = mem::transmute(&poly);
         let mut data = [0; PRIVUNION_SIZE];
 
-        for i in 0..arr.len() {
-            data[i] = arr[i];
+        for (i, b) in arr.iter().enumerate() {
+            data[i] = *b;
         }
 
         PrivUnion { data: data }
@@ -602,8 +604,8 @@ impl PrivUnion {
         let arr: &[uint16_t; 1001] = mem::transmute(&poly);
         let mut data = [0; PRIVUNION_SIZE];
 
-        for i in 0..arr.len() {
-            data[i] = arr[i];
+        for (i, b) in arr.iter().enumerate() {
+            data[i] = *b;
         }
 
         PrivUnion { data: data }

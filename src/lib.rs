@@ -8,6 +8,7 @@
 //! [here](https://en.wikipedia.org/wiki/NTRUEncrypt).
 //!
 //! To use it you only need to include the following in your crate:
+//!
 //! ```
 //! extern crate ntru;
 //! ```
@@ -190,5 +191,33 @@ pub fn decrypt(enc: &[u8],
         Ok(final_dec.into_boxed_slice())
     } else {
         Err(NtruError::from_uint8_t(result))
+    }
+}
+
+/// Execute if SSE support
+///
+/// Expands to its argument if SSE3 support is configured and to `()` otherwise
+#[cfg(not(SSE3))]
+#[macro_export]
+macro_rules! if_ntru_sse3 {
+    ($ex:expr) => (
+        ()
+    );
+    ($bl:block) => {
+        ()
+    }
+}
+
+/// Execute if SSE support
+///
+/// Expands to its argument if SSE3 support is configured and to `()` otherwise
+#[cfg(SSE3)]
+#[macro_export]
+macro_rules! if_ntru_sse3 {
+    ($ex:expr) => (
+        $ex
+    );
+    ($bl:block) => {
+        $bl
     }
 }
