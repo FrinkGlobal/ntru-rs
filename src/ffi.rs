@@ -15,7 +15,7 @@ pub struct CNtruRandContext {
     pub state: *const c_void,
 }
 
-extern "C" {
+extern {
     // ntru.h
     pub fn ntru_gen_key_pair(params: *const NtruEncParams,
                              kp: *mut NtruEncKeyPair,
