@@ -89,7 +89,10 @@ fn main() {
           .file("src/c/src/rand.c")
           .file("src/c/src/arith.c")
           .file("src/c/src/sha1.c")
-          .file("src/c/src/sha2.c");
+          .file("src/c/src/sha2.c")
+          .file("src/c/src/nist_ctr_drbg.c")
+          .file("src/c/src/rijndael.c")
+          .file("src/c/src/rijndael-alg-fst.c");
 
     if sse3 &&
        (cfg!(target_pointer_width = "64") || cfg!(target_os = "macos") ||

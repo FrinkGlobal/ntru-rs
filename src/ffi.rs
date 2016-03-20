@@ -107,6 +107,15 @@ extern "C" {
     #[cfg(not(target_os = "windows"))]
     pub fn ntru_rand_devurandom_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
 
+    pub fn ntru_rand_default_init(rand_ctx: *mut CNtruRandContext,
+                                  rand_gen: *const NtruRandGen)
+                                  -> uint8_t;
+    pub fn ntru_rand_default_generate(rand_data: *mut uint8_t,
+                                      len: uint16_t,
+                                      rand_ctx: *const CNtruRandContext)
+                                      -> uint8_t;
+    pub fn ntru_rand_default_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
+
     pub fn ntru_rand_igf2_init(rand_ctx: *mut CNtruRandContext,
                                rand_gen: *const NtruRandGen)
                                -> uint8_t;

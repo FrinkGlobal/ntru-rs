@@ -106,9 +106,6 @@ pub const NTRU_RNG_WINCRYPT: NtruRandGen = NtruRandGen {
     generate: ffi::ntru_rand_wincrypt_generate,
     release: ffi::ntru_rand_wincrypt_release,
 };
-#[cfg(target_os = "windows")]
-/// Default RNG (CryptGenRandom() on Windows)
-pub const NTRU_RNG_DEFAULT: NtruRandGen = NTRU_RNG_WINCRYPT;
 
 #[cfg(not(target_os = "windows"))]
 /// Unix default RNG, /dev/urandom
@@ -124,9 +121,15 @@ pub const NTRU_RNG_DEVRANDOM: NtruRandGen = NtruRandGen {
     generate_fn: ffi::ntru_rand_devrandom_generate,
     release_fn: ffi::ntru_rand_devrandom_release,
 };
-#[cfg(not(target_os = "windows"))]
-/// default RNG (/dev/urandom on *nix)
-pub const NTRU_RNG_DEFAULT: NtruRandGen = NTRU_RNG_DEVURANDOM;
+
+/// Default RNG
+///
+/// CTR_DRBG seeded from /dev/urandom (on *nix) or CryptGenRandom() (on Windows)
+pub const NTRU_RNG_DEFAULT: NtruRandGen = NtruRandGen {
+    init_fn: ffi::ntru_rand_default_init,
+    generate_fn: ffi::ntru_rand_default_generate,
+    release_fn: ffi::ntru_rand_default_release,
+};
 
 /// Deterministic RNG based on IGF-2
 pub const NTRU_RNG_IGF2: NtruRandGen = NtruRandGen {

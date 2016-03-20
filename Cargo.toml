@@ -1,13 +1,13 @@
 [package]
 name = "ntru"
-version = "0.4.2-rc2"
+version = "0.4.2-rc3"
 license = "GPL-3.0+/BSD-3-Clause"
 build = "build.rs"
 links = "ntru"
 readme = "README.md"
 repository = "https://github.com/FractalGlobal/ntru-rs"
 documentation = "http://fractal.global/ntru-rs"
-authors = ["Razican <razican@fractal.global>"]
+authors = ["Razican <iban@fractal.global>"]
 description = """
 Implementation of the NTRUEncrypt algorithm. Interface to libntru.
 """
