@@ -51,13 +51,11 @@ pub struct NtruEncParams {
     /// Hash function, e.g. ntru_sha256
     hash: unsafe extern "C" fn(input: *const uint8_t,
                                    input_len: uint16_t,
-                                   digest: *mut uint8_t)
-                                  ,
+                                   digest: *mut uint8_t),
     /// Hash function for 4 inputs, e.g. ntru_sha256_4way
     hash_4way: unsafe extern "C" fn(input: *const *const uint8_t,
                                         input_len: uint16_t,
-                                        digest: *mut *mut uint8_t)
-                                       ,
+                                        digest: *mut *mut uint8_t),
     /// output length of the hash function
     hlen: uint16_t,
     /// number of bits of the public key to hash
