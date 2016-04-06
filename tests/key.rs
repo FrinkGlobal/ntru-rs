@@ -9,10 +9,10 @@
 
 extern crate ntru;
 use ntru::encparams::{EES439EP1, EES1087EP2, ALL_PARAM_SETS};
-use ntru::rand::NTRU_RNG_DEFAULT;
-use ntru::types::{NtruEncPubKey, NtruEncPrivKey, NtruPrivPoly, NtruIntPoly};
+use ntru::rand::RNG_DEFAULT;
+use ntru::types::{PublicKey, PrivateKey, PrivPoly, IntPoly};
 
-fn ntru_priv_to_int(a: &NtruPrivPoly, modulus: u16) -> NtruIntPoly {
+fn ntru_priv_to_int(a: &PrivPoly, modulus: u16) -> IntPoly {
     if a.is_product() {
         a.get_poly_prod().to_int_poly(modulus)
     } else {
@@ -25,18 +25,18 @@ fn it_export_import() {
     let param_arr = [EES439EP1, EES1087EP2];
 
     for params in param_arr.into_iter() {
-        let rng = NTRU_RNG_DEFAULT;
+        let rng = RNG_DEFAULT;
         let rand_ctx = ntru::rand::init(&rng).unwrap();
         let kp = ntru::generate_key_pair(&params, &rand_ctx).unwrap();
 
         // Test public key
         let pub_arr = kp.get_public().export(&params);
-        let imp_pub = NtruEncPubKey::import(&pub_arr);
+        let imp_pub = PublicKey::import(&pub_arr);
         assert_eq!(kp.get_public().get_h(), imp_pub.get_h());
 
         // Test private key
         let priv_arr = kp.get_private().export(&params);
-        let imp_priv = NtruEncPrivKey::import(&priv_arr);
+        let imp_priv = PrivateKey::import(&priv_arr);
 
         let t_int1 = ntru_priv_to_int(imp_priv.get_t(), params.get_q());
         let t_int2 = ntru_priv_to_int(kp.get_private().get_t(), params.get_q());
@@ -50,7 +50,7 @@ fn it_params_from_key() {
     let param_arr = ALL_PARAM_SETS;
 
     for params in param_arr.into_iter() {
-        let rng = NTRU_RNG_DEFAULT;
+        let rng = RNG_DEFAULT;
         let rand_ctx = ntru::rand::init(&rng).unwrap();
 
         let kp = ntru::generate_key_pair(&params, &rand_ctx).unwrap();

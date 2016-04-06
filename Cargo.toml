@@ -1,6 +1,6 @@
 [package]
 name = "ntru"
-version = "0.4.2-rc3"
+version = "0.4.2-rc4"
 license = "GPL-3.0+/BSD-3-Clause"
 build = "build.rs"
 links = "ntru"
@@ -19,11 +19,11 @@ no-sse = []
 sse = []
 
 [dependencies]
-libc = "0.2"
+libc = "^0.2"
 
 [build-dependencies]
-gcc = "0.3"
+gcc = "^0.3"
 
 [dev-dependencies]
-rust-crypto = "0.2"
-rand = "0.3"
+rust-crypto = "^0.2"
+rand = "^0.3"

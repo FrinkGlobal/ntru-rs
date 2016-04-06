@@ -1,13 +1,13 @@
 use libc::{uint16_t, int16_t, uint8_t, c_void};
 
-use encparams::NtruEncParams;
-use types::{NtruIntPoly, NtruProdPoly, NtruTernPoly, NtruEncKeyPair, NtruPrivPoly, NtruEncPubKey,
-            NtruEncPrivKey};
-use rand::NtruRandGen;
+use encparams::EncParams;
+use types::{IntPoly, ProdPoly, TernPoly, KeyPair, PrivPoly, PublicKey,
+            PrivateKey};
+use rand::RandGen;
 
 #[repr(C)]
 pub struct CNtruRandContext {
-    pub rand_gen: *const NtruRandGen,
+    pub rand_gen: *const RandGen,
     /// For deterministic RNGs
     pub seed: *const uint8_t,
     /// For deterministic RNGs
@@ -17,31 +17,31 @@ pub struct CNtruRandContext {
 
 extern "C" {
     // ntru.h
-    pub fn ntru_gen_key_pair(params: *const NtruEncParams,
-                             kp: *mut NtruEncKeyPair,
+    pub fn ntru_gen_key_pair(params: *const EncParams,
+                             kp: *mut KeyPair,
                              rand_ctx: *const CNtruRandContext)
                              -> uint8_t;
-    pub fn ntru_gen_key_pair_multi(params: *const NtruEncParams,
-                                   private: *mut NtruEncPrivKey,
-                                   public: *mut NtruEncPubKey,
+    pub fn ntru_gen_key_pair_multi(params: *const EncParams,
+                                   private: *mut PrivateKey,
+                                   public: *mut PublicKey,
                                    rand_ctx: *const CNtruRandContext,
                                    num_pub: u32)
                                    -> uint8_t;
-    pub fn ntru_gen_pub(params: *const NtruEncParams,
-                        private: *const NtruEncPrivKey,
-                        public: *mut NtruEncPubKey,
+    pub fn ntru_gen_pub(params: *const EncParams,
+                        private: *const PrivateKey,
+                        public: *mut PublicKey,
                         rand_ctx: *const CNtruRandContext)
                         -> uint8_t;
     pub fn ntru_encrypt(msg: *const uint8_t,
                         msg_len: uint16_t,
-                        public: *const NtruEncPubKey,
-                        params: *const NtruEncParams,
+                        public: *const PublicKey,
+                        params: *const EncParams,
                         rand_ctx: *const CNtruRandContext,
                         enc: *const uint8_t)
                         -> uint8_t;
     pub fn ntru_decrypt(enc: *const uint8_t,
-                        kp: *const NtruEncKeyPair,
-                        params: *const NtruEncParams,
+                        kp: *const KeyPair,
+                        params: *const EncParams,
                         dec: *const uint8_t,
                         dec_len: *const uint16_t)
                         -> uint8_t;
@@ -58,10 +58,10 @@ extern "C" {
 
     // rand.h
     pub fn ntru_rand_init(rand_ctx: *mut CNtruRandContext,
-                          rand_gen: *const NtruRandGen)
+                          rand_gen: *const RandGen)
                           -> uint8_t;
     pub fn ntru_rand_init_det(rand_ctx: *mut CNtruRandContext,
-                              rand_gen: *const NtruRandGen,
+                              rand_gen: *const RandGen,
                               seed: *const uint8_t,
                               seed_len: uint16_t)
                               -> uint8_t;
@@ -73,7 +73,7 @@ extern "C" {
 
     #[cfg(target_os = "windows")]
     pub fn ntru_rand_wincrypt_init(rand_ctx: *mut NtruRandContext,
-                                   rand_gen: *const NtruRandGen)
+                                   rand_gen: *const RandGen)
                                    -> uint8_t;
     #[cfg(target_os = "windows")]
     pub fn ntru_rand_wincrypt_generate(rand_data: *mut uint8_t,
@@ -85,7 +85,7 @@ extern "C" {
 
     #[cfg(not(target_os = "windows"))]
     pub fn ntru_rand_devrandom_init(rand_ctx: *mut CNtruRandContext,
-                                    rand_gen: *const NtruRandGen)
+                                    rand_gen: *const RandGen)
                                     -> uint8_t;
     #[cfg(not(target_os = "windows"))]
     pub fn ntru_rand_devrandom_generate(rand_data: *mut uint8_t,
@@ -97,7 +97,7 @@ extern "C" {
 
     #[cfg(not(target_os = "windows"))]
     pub fn ntru_rand_devurandom_init(rand_ctx: *mut CNtruRandContext,
-                                     rand_gen: *const NtruRandGen)
+                                     rand_gen: *const RandGen)
                                      -> uint8_t;
     #[cfg(not(target_os = "windows"))]
     pub fn ntru_rand_devurandom_generate(rand_data: *mut uint8_t,
@@ -108,7 +108,7 @@ extern "C" {
     pub fn ntru_rand_devurandom_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
 
     pub fn ntru_rand_default_init(rand_ctx: *mut CNtruRandContext,
-                                  rand_gen: *const NtruRandGen)
+                                  rand_gen: *const RandGen)
                                   -> uint8_t;
     pub fn ntru_rand_default_generate(rand_data: *mut uint8_t,
                                       len: uint16_t,
@@ -117,7 +117,7 @@ extern "C" {
     pub fn ntru_rand_default_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
 
     pub fn ntru_rand_igf2_init(rand_ctx: *mut CNtruRandContext,
-                               rand_gen: *const NtruRandGen)
+                               rand_gen: *const RandGen)
                                -> uint8_t;
     pub fn ntru_rand_igf2_generate(rand_data: *mut uint8_t,
                                    len: uint16_t,
@@ -129,87 +129,87 @@ extern "C" {
     pub fn ntru_rand_tern(n: uint16_t,
                           num_ones: uint16_t,
                           num_neg_ones: uint16_t,
-                          poly: *mut NtruTernPoly,
+                          poly: *mut TernPoly,
                           rand_ctx: *const CNtruRandContext)
                           -> uint8_t;
-    pub fn ntru_mult_tern(a: *const NtruIntPoly,
-                          b: *const NtruTernPoly,
-                          c: *mut NtruIntPoly,
+    pub fn ntru_mult_tern(a: *const IntPoly,
+                          b: *const TernPoly,
+                          c: *mut IntPoly,
                           mod_mask: uint16_t)
                           -> uint8_t;
-    pub fn ntru_mult_tern_32(a: *const NtruIntPoly,
-                             b: *const NtruTernPoly,
-                             c: *mut NtruIntPoly,
+    pub fn ntru_mult_tern_32(a: *const IntPoly,
+                             b: *const TernPoly,
+                             c: *mut IntPoly,
                              mod_mask: uint16_t)
                              -> uint8_t;
-    pub fn ntru_mult_tern_64(a: *const NtruIntPoly,
-                             b: *const NtruTernPoly,
-                             c: *mut NtruIntPoly,
+    pub fn ntru_mult_tern_64(a: *const IntPoly,
+                             b: *const TernPoly,
+                             c: *mut IntPoly,
                              mod_mask: uint16_t)
                              -> uint8_t;
     #[cfg(SSE3)]
-    pub fn ntru_mult_tern_sse(a: *const NtruIntPoly,
-                              b: *const NtruTernPoly,
-                              c: *mut NtruIntPoly,
+    pub fn ntru_mult_tern_sse(a: *const IntPoly,
+                              b: *const TernPoly,
+                              c: *mut IntPoly,
                               mod_mask: uint16_t)
                               -> uint8_t;
-    pub fn ntru_mult_prod(a: *const NtruIntPoly,
-                          b: *const NtruProdPoly,
-                          c: *mut NtruIntPoly,
+    pub fn ntru_mult_prod(a: *const IntPoly,
+                          b: *const ProdPoly,
+                          c: *mut IntPoly,
                           mod_mask: uint16_t)
                           -> uint8_t;
-    pub fn ntru_mult_priv(a: *const NtruPrivPoly,
-                          b: *const NtruIntPoly,
-                          c: *mut NtruIntPoly,
+    pub fn ntru_mult_priv(a: *const PrivPoly,
+                          b: *const IntPoly,
+                          c: *mut IntPoly,
                           mod_mask: uint16_t)
                           -> uint8_t;
-    pub fn ntru_mult_int(a: *const NtruIntPoly,
-                         b: *const NtruIntPoly,
-                         c: *mut NtruIntPoly,
+    pub fn ntru_mult_int(a: *const IntPoly,
+                         b: *const IntPoly,
+                         c: *mut IntPoly,
                          mod_mask: uint16_t)
                          -> uint8_t;
-    pub fn ntru_mult_int_16(a: *const NtruIntPoly,
-                            b: *const NtruIntPoly,
-                            c: *mut NtruIntPoly,
+    pub fn ntru_mult_int_16(a: *const IntPoly,
+                            b: *const IntPoly,
+                            c: *mut IntPoly,
                             mod_mask: uint16_t)
                             -> uint8_t;
-    pub fn ntru_mult_int_64(a: *const NtruIntPoly,
-                            b: *const NtruIntPoly,
-                            c: *mut NtruIntPoly,
+    pub fn ntru_mult_int_64(a: *const IntPoly,
+                            b: *const IntPoly,
+                            c: *mut IntPoly,
                             mod_mask: uint16_t)
                             -> uint8_t;
-    pub fn ntru_add(a: *mut NtruIntPoly, b: *const NtruIntPoly);
-    pub fn ntru_sub(a: *mut NtruIntPoly, b: *const NtruIntPoly);
-    pub fn ntru_mod_mask(p: *mut NtruIntPoly, mod_mask: uint16_t);
-    pub fn ntru_mult_fac(a: *mut NtruIntPoly, factor: int16_t);
-    pub fn ntru_mod_center(p: *mut NtruIntPoly, modulus: uint16_t);
-    pub fn ntru_mod3(p: *mut NtruIntPoly);
-    pub fn ntru_to_arr_32(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t);
-    pub fn ntru_to_arr_64(p: *const NtruIntPoly, q: uint16_t, a: *mut uint8_t);
+    pub fn ntru_add(a: *mut IntPoly, b: *const IntPoly);
+    pub fn ntru_sub(a: *mut IntPoly, b: *const IntPoly);
+    pub fn ntru_mod_mask(p: *mut IntPoly, mod_mask: uint16_t);
+    pub fn ntru_mult_fac(a: *mut IntPoly, factor: int16_t);
+    pub fn ntru_mod_center(p: *mut IntPoly, modulus: uint16_t);
+    pub fn ntru_mod3(p: *mut IntPoly);
+    pub fn ntru_to_arr_32(p: *const IntPoly, q: uint16_t, a: *mut uint8_t);
+    pub fn ntru_to_arr_64(p: *const IntPoly, q: uint16_t, a: *mut uint8_t);
     #[cfg(SSE3)]
-    pub fn ntru_to_arr_sse_2048(p: *const NtruIntPoly, a: *mut uint8_t);
-    pub fn ntru_from_arr(arr: *const uint8_t, n: uint16_t, q: uint16_t, p: *mut NtruIntPoly);
-    pub fn ntru_invert(a: *const NtruPrivPoly,
+    pub fn ntru_to_arr_sse_2048(p: *const IntPoly, a: *mut uint8_t);
+    pub fn ntru_from_arr(arr: *const uint8_t, n: uint16_t, q: uint16_t, p: *mut IntPoly);
+    pub fn ntru_invert(a: *const PrivPoly,
                        mod_mask: uint16_t,
-                       fq: *mut NtruIntPoly)
+                       fq: *mut IntPoly)
                        -> uint8_t;
-    pub fn ntru_invert_32(a: *const NtruPrivPoly,
+    pub fn ntru_invert_32(a: *const PrivPoly,
                           mod_mask: uint16_t,
-                          fq: *mut NtruIntPoly)
+                          fq: *mut IntPoly)
                           -> uint8_t;
-    pub fn ntru_invert_64(a: *const NtruPrivPoly,
+    pub fn ntru_invert_64(a: *const PrivPoly,
                           mod_mask: uint16_t,
-                          fq: *mut NtruIntPoly)
+                          fq: *mut IntPoly)
                           -> uint8_t;
 
     // key.h
-    pub fn ntru_export_pub(key: *const NtruEncPubKey, arr: *mut uint8_t);
-    pub fn ntru_import_pub(arr: *const uint8_t, key: *mut NtruEncPubKey) -> uint16_t;
+    pub fn ntru_export_pub(key: *const PublicKey, arr: *mut uint8_t);
+    pub fn ntru_import_pub(arr: *const uint8_t, key: *mut PublicKey) -> uint16_t;
 
-    pub fn ntru_export_priv(key: *const NtruEncPrivKey, arr: *mut uint8_t) -> uint16_t;
-    pub fn ntru_import_priv(arr: *const uint8_t, key: *mut NtruEncPrivKey);
+    pub fn ntru_export_priv(key: *const PrivateKey, arr: *mut uint8_t) -> uint16_t;
+    pub fn ntru_import_priv(arr: *const uint8_t, key: *mut PrivateKey);
 
-    pub fn ntru_params_from_priv_key(key: *const NtruEncPrivKey,
-                                     params: *mut NtruEncParams)
+    pub fn ntru_params_from_priv_key(key: *const PrivateKey,
+                                     params: *mut EncParams)
                                      -> uint8_t;
 }
