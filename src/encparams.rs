@@ -5,10 +5,10 @@
 //! parameters for each level of security, and not use the deprecated parameters. The recommended
 //! parameters are the following:
 //!
-//! * ```NTRU_DEFAULT_PARAMS_112_BITS``` for 112 bits of security.
-//! * ```NTRU_DEFAULT_PARAMS_128_BITS``` for 128 bits of security.
-//! * ```NTRU_DEFAULT_PARAMS_192_BITS``` for 192 bits of security.
-//! * ```NTRU_DEFAULT_PARAMS_256_BITS``` for 256 bits of security.
+//! * ```DEFAULT_PARAMS_112_BITS``` for 112 bits of security.
+//! * ```DEFAULT_PARAMS_128_BITS``` for 128 bits of security.
+//! * ```DEFAULT_PARAMS_192_BITS``` for 192 bits of security.
+//! * ```DEFAULT_PARAMS_256_BITS``` for 256 bits of security.
 //!
 use libc::{c_char, uint16_t, uint8_t};
 use std::fmt;
@@ -16,7 +16,7 @@ use super::ffi;
 
 /// A set of parameters for NtruEncrypt
 #[repr(C)]
-pub struct NtruEncParams {
+pub struct EncParams {
     /// Name of the parameter set
     name: [c_char; 11],
     /// Number of polynomial coefficients
@@ -62,9 +62,9 @@ pub struct NtruEncParams {
     pklen: uint16_t,
 }
 
-impl Default for NtruEncParams {
-    fn default() -> NtruEncParams {
-        NtruEncParams {
+impl Default for EncParams {
+    fn default() -> EncParams {
+        EncParams {
             name: [0; 11],
             n: 0,
             q: 0,
@@ -88,8 +88,8 @@ impl Default for NtruEncParams {
     }
 }
 
-impl PartialEq for NtruEncParams {
-    fn eq(&self, other: &NtruEncParams) -> bool {
+impl PartialEq for EncParams {
+    fn eq(&self, other: &EncParams) -> bool {
         self.name == other.name && self.n == other.n && self.q == other.q &&
         self.prod_flag == other.prod_flag && self.df1 == other.df1 &&
         (self.prod_flag == 0 || (self.df2 == other.df2 && self.df3 == other.df3)) &&
@@ -115,7 +115,7 @@ impl PartialEq for NtruEncParams {
 }
 
 
-impl fmt::Debug for NtruEncParams {
+impl fmt::Debug for EncParams {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut name = String::with_capacity(10);
         for c in self.name.iter() {
@@ -125,7 +125,7 @@ impl fmt::Debug for NtruEncParams {
     }
 }
 
-impl NtruEncParams {
+impl EncParams {
     /// Get the name of the parameter set
     pub fn get_name(&self) -> String {
         let slice: [u8; 11] = [self.name[0] as u8,
@@ -194,7 +194,7 @@ impl NtruEncParams {
 }
 
 /// An IEEE 1361.1 parameter set that gives 112 bits of security and is optimized for key size.
-pub const EES401EP1: NtruEncParams = NtruEncParams {
+pub const EES401EP1: EncParams = EncParams {
     name: [69, 69, 83, 52, 48, 49, 69, 80, 49, 0, 0], // EES401EP1
     n: 401,
     q: 2048,
@@ -217,7 +217,7 @@ pub const EES401EP1: NtruEncParams = NtruEncParams {
 };
 
 /// An IEEE 1361.1 parameter set that gives 128 bits of security and is optimized for key size.
-pub const EES449EP1: NtruEncParams = NtruEncParams {
+pub const EES449EP1: EncParams = EncParams {
     name: [69, 69, 83, 52, 52, 57, 69, 80, 49, 0, 0], // EES449EP1
     n: 449,
     q: 2048,
@@ -240,7 +240,7 @@ pub const EES449EP1: NtruEncParams = NtruEncParams {
 };
 
 /// An IEEE 1361.1 parameter set that gives 192 bits of security and is optimized for key size.
-pub const EES677EP1: NtruEncParams = NtruEncParams {
+pub const EES677EP1: EncParams = EncParams {
     name: [69, 69, 83, 54, 55, 55, 69, 80, 49, 0, 0], // EES677EP1
     n: 677,
     q: 2048,
@@ -263,7 +263,7 @@ pub const EES677EP1: NtruEncParams = NtruEncParams {
 };
 
 /// An IEEE 1361.1 parameter set that gives 256 bits of security and is optimized for key size.
-pub const EES1087EP2: NtruEncParams = NtruEncParams {
+pub const EES1087EP2: EncParams = EncParams {
     name: [69, 69, 83, 49, 48, 56, 55, 69, 80, 50, 0], // EES1087EP2
     n: 1087,
     q: 2048,
@@ -287,7 +287,7 @@ pub const EES1087EP2: NtruEncParams = NtruEncParams {
 
 /// An IEEE 1361.1 parameter set that gives 112 bits of security and is a tradeoff between key size
 /// and encryption/decryption speed.
-pub const EES541EP1: NtruEncParams = NtruEncParams {
+pub const EES541EP1: EncParams = EncParams {
     name: [69, 69, 83, 53, 52, 49, 69, 80, 49, 0, 0], // EES541EP1
     n: 541,
     q: 2048,
@@ -311,7 +311,7 @@ pub const EES541EP1: NtruEncParams = NtruEncParams {
 
 /// An IEEE 1361.1 parameter set that gives 128 bits of security and is a tradeoff between key
 /// size and encryption/decryption speed.
-pub const EES613EP1: NtruEncParams = NtruEncParams {
+pub const EES613EP1: EncParams = EncParams {
     name: [69, 69, 83, 54, 49, 51, 69, 80, 49, 0, 0], // EES613EP1
     n: 613,
     q: 2048,
@@ -335,7 +335,7 @@ pub const EES613EP1: NtruEncParams = NtruEncParams {
 
 /// An IEEE 1361.1 parameter set that gives 192 bits of security and is a tradeoff between key size
 /// and encryption/decryption speed.
-pub const EES887EP1: NtruEncParams = NtruEncParams {
+pub const EES887EP1: EncParams = EncParams {
     name: [69, 69, 83, 56, 56, 55, 69, 80, 49, 0, 0], // EES887EP1
     n: 887,
     q: 2048,
@@ -359,7 +359,7 @@ pub const EES887EP1: NtruEncParams = NtruEncParams {
 
 /// An IEEE 1361.1 parameter set that gives 256 bits of security and is a tradeoff between key size
 /// and encryption/decryption speed.
-pub const EES1171EP1: NtruEncParams = NtruEncParams {
+pub const EES1171EP1: EncParams = EncParams {
     name: [69, 69, 83, 49, 49, 55, 49, 69, 80, 49, 0], // EES1171EP1
     n: 1171,
     q: 2048,
@@ -383,7 +383,7 @@ pub const EES1171EP1: NtruEncParams = NtruEncParams {
 
 /// An IEEE 1361.1 parameter set that gives 112 bits of security and is optimized for
 /// encryption/decryption speed.
-pub const EES659EP1: NtruEncParams = NtruEncParams {
+pub const EES659EP1: EncParams = EncParams {
     name: [69, 69, 83, 54, 53, 57, 69, 80, 49, 0, 0], // EES659EP1
     n: 659,
     q: 2048,
@@ -407,7 +407,7 @@ pub const EES659EP1: NtruEncParams = NtruEncParams {
 
 /// An IEEE 1361.1 parameter set that gives 128 bits of security and is optimized for
 /// encryption/decryption speed.
-pub const EES761EP1: NtruEncParams = NtruEncParams {
+pub const EES761EP1: EncParams = EncParams {
     name: [69, 69, 83, 55, 54, 49, 69, 80, 49, 0, 0], // EES761EP1
     n: 761,
     q: 2048,
@@ -431,7 +431,7 @@ pub const EES761EP1: NtruEncParams = NtruEncParams {
 
 /// An IEEE 1361.1 parameter set that gives 192 bits of security and is optimized for
 /// encryption/decryption speed.
-pub const EES1087EP1: NtruEncParams = NtruEncParams {
+pub const EES1087EP1: EncParams = EncParams {
     name: [69, 69, 83, 49, 48, 56, 55, 69, 80, 49, 0], // EES1087EP1
     n: 1087,
     q: 2048,
@@ -455,7 +455,7 @@ pub const EES1087EP1: NtruEncParams = NtruEncParams {
 
 /// An IEEE 1361.1 parameter set that gives 256 bits of security and is optimized for
 /// encryption/decryption speed.
-pub const EES1499EP1: NtruEncParams = NtruEncParams {
+pub const EES1499EP1: EncParams = EncParams {
     name: [69, 69, 83, 49, 52, 57, 57, 69, 80, 49, 0], // EES1499EP1
     n: 1499,
     q: 2048,
@@ -478,7 +478,7 @@ pub const EES1499EP1: NtruEncParams = NtruEncParams {
 };
 
 /// A product-form parameter set that gives 112 bits of security.
-pub const EES401EP2: NtruEncParams = NtruEncParams {
+pub const EES401EP2: EncParams = EncParams {
     name: [69, 69, 83, 52, 48, 49, 69, 80, 50, 0, 0], // EES401EP2
     n: 401,
     q: 2048,
@@ -503,7 +503,7 @@ pub const EES401EP2: NtruEncParams = NtruEncParams {
 /// **DEPRECATED** A product-form parameter set that gives 128 bits of security.
 ///
 /// **Deprecated**, use EES443EP1 instead.
-pub const EES439EP1: NtruEncParams = NtruEncParams {
+pub const EES439EP1: EncParams = EncParams {
     name: [69, 69, 83, 52, 51, 57, 69, 80, 49, 0, 0], // EES439EP1
     n: 439,
     q: 2048,
@@ -526,7 +526,7 @@ pub const EES439EP1: NtruEncParams = NtruEncParams {
 };
 
 /// A product-form parameter set that gives 128 bits of security.
-pub const EES443EP1: NtruEncParams = NtruEncParams {
+pub const EES443EP1: EncParams = EncParams {
     name: [69, 69, 83, 52, 52, 51, 69, 80, 49, 0, 0],
     n: 443,
     q: 2048,
@@ -551,7 +551,7 @@ pub const EES443EP1: NtruEncParams = NtruEncParams {
 /// **DEPRECATED** A product-form parameter set that gives 192 bits of security.
 ///
 /// **Deprecated**, use EES587EP1 instead.
-pub const EES593EP1: NtruEncParams = NtruEncParams {
+pub const EES593EP1: EncParams = EncParams {
     name: [69, 69, 83, 53, 57, 51, 69, 80, 49, 0, 0], // EES593EP1
     n: 593,
     q: 2048,
@@ -574,7 +574,7 @@ pub const EES593EP1: NtruEncParams = NtruEncParams {
 };
 
 /// A product-form parameter set that gives 192 bits of security.
-pub const EES587EP1: NtruEncParams = NtruEncParams {
+pub const EES587EP1: EncParams = EncParams {
     name: [69, 69, 83, 53, 56, 55, 69, 80, 49, 0, 0],
     n: 587,
     q: 2048,
@@ -597,7 +597,7 @@ pub const EES587EP1: NtruEncParams = NtruEncParams {
 };
 
 /// A product-form parameter set that gives 256 bits of security.
-pub const EES743EP1: NtruEncParams = NtruEncParams {
+pub const EES743EP1: EncParams = EncParams {
     name: [69, 69, 83, 55, 52, 51, 69, 80, 49, 0, 0], // EES743EP1
     n: 743,
     q: 2048,
@@ -620,19 +620,19 @@ pub const EES743EP1: NtruEncParams = NtruEncParams {
 };
 
 /// The default parameter set for 112 bits of security.
-pub const NTRU_DEFAULT_PARAMS_112_BITS: NtruEncParams = EES401EP2;
+pub const DEFAULT_PARAMS_112_BITS: EncParams = EES401EP2;
 
 /// The default parameter set for 128 bits of security.
-pub const NTRU_DEFAULT_PARAMS_128_BITS: NtruEncParams = EES443EP1;
+pub const DEFAULT_PARAMS_128_BITS: EncParams = EES443EP1;
 
 /// The default parameter set for 192 bits of security.
-pub const NTRU_DEFAULT_PARAMS_192_BITS: NtruEncParams = EES587EP1;
+pub const DEFAULT_PARAMS_192_BITS: EncParams = EES587EP1;
 
 /// The default parameter set for 256 bits of security.
-pub const NTRU_DEFAULT_PARAMS_256_BITS: NtruEncParams = EES743EP1;
+pub const DEFAULT_PARAMS_256_BITS: EncParams = EES743EP1;
 
 /// All parameter sets, in an array
-pub const ALL_PARAM_SETS: [NtruEncParams; 18] = [EES401EP1, EES449EP1, EES677EP1, EES1087EP2,
+pub const ALL_PARAM_SETS: [EncParams; 18] = [EES401EP1, EES449EP1, EES677EP1, EES1087EP2,
                                                  EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
                                                  EES659EP1, EES761EP1, EES1087EP1, EES1499EP1,
                                                  EES401EP2, EES439EP1, EES443EP1, EES593EP1,

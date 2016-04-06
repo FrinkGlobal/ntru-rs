@@ -17,18 +17,18 @@ use crypto::sha1::Sha1;
 
 use rand::Rng;
 
-use ntru::encparams::{NtruEncParams, ALL_PARAM_SETS};
-use ntru::rand::{NTRU_RNG_DEFAULT, NTRU_RNG_IGF2};
-use ntru::types::{NtruIntPoly, NtruTernPoly, NtruEncPrivKey, NtruEncPubKey, NtruEncKeyPair};
+use ntru::encparams::{EncParams, ALL_PARAM_SETS};
+use ntru::rand::{RNG_DEFAULT, RNG_IGF2};
+use ntru::types::{IntPoly, TernPoly, PrivateKey, PublicKey, KeyPair};
 
-fn encrypt_poly(m: NtruIntPoly, r: &NtruTernPoly, h: &NtruIntPoly, q: u16) -> NtruIntPoly {
+fn encrypt_poly(m: IntPoly, r: &TernPoly, h: &IntPoly, q: u16) -> IntPoly {
     let (mut e, _) = h.mult_tern(r, q);
     e = e + m;
     e.mod_mask(q - 1);
     e
 }
 
-fn decrypt_poly(e: NtruIntPoly, private: &NtruEncPrivKey, modulus: u16) -> NtruIntPoly {
+fn decrypt_poly(e: IntPoly, private: &PrivateKey, modulus: u16) -> IntPoly {
     let (mut d, _) = if private.get_t().is_product() {
         e.mult_prod(private.get_t().get_poly_prod(), modulus - 1)
     } else {
@@ -47,9 +47,9 @@ fn decrypt_poly(e: NtruIntPoly, private: &NtruEncPrivKey, modulus: u16) -> NtruI
     d
 }
 
-fn gen_key_pair(seed: &str, params: &NtruEncParams) -> NtruEncKeyPair {
+fn gen_key_pair(seed: &str, params: &EncParams) -> KeyPair {
     let seed_u8 = seed.as_bytes();
-    let rng = NTRU_RNG_IGF2;
+    let rng = RNG_IGF2;
     let mut rand_ctx = ntru::rand::init_det(&rng, seed_u8).unwrap();
     rand_ctx.set_seed(seed_u8);
 
@@ -70,18 +70,18 @@ fn it_keygen() {
     let param_arr = &ALL_PARAM_SETS;
 
     for params in param_arr {
-        let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).unwrap();
+        let rand_ctx = ntru::rand::init(&RNG_DEFAULT).unwrap();
         let mut kp = ntru::generate_key_pair(&params, &rand_ctx).unwrap();
 
         // Encrypt a random message
-        let m = NtruTernPoly::rand(params.get_n(),
+        let m = TernPoly::rand(params.get_n(),
                                    params.get_n() / 3,
                                    params.get_n() / 3,
                                    &rand_ctx)
                     .unwrap();
         let m_int = m.to_int_poly();
 
-        let r = NtruTernPoly::rand(params.get_n(),
+        let r = TernPoly::rand(params.get_n(),
                                    params.get_n() / 3,
                                    params.get_n() / 3,
                                    &rand_ctx)
@@ -95,7 +95,7 @@ fn it_keygen() {
 
         // Test deterministic key generation
         kp = gen_key_pair("my test password", &params);
-        let rng = NTRU_RNG_IGF2;
+        let rng = RNG_IGF2;
         let rand_ctx2 = ntru::rand::init_det(&rng, b"my test password").unwrap();
         let kp2 = ntru::generate_key_pair(&params, &rand_ctx2).unwrap();
 
@@ -104,8 +104,8 @@ fn it_keygen() {
 }
 
 // Tests ntru_encrypt() with a non-deterministic RNG
-fn test_encr_decr_nondet(params: &NtruEncParams) {
-    let rng = NTRU_RNG_DEFAULT;
+fn test_encr_decr_nondet(params: &EncParams) {
+    let rng = RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();
     let kp = ntru::generate_key_pair(params, &rand_ctx).unwrap();
 
@@ -156,7 +156,7 @@ fn test_encr_decr_nondet(params: &NtruEncParams) {
                                           &rand_ctx)
                                 .unwrap();
 
-            let kp_decrypt1 = NtruEncKeyPair::new(priv_multi1.clone(), pub_multi1[i].clone());
+            let kp_decrypt1 = KeyPair::new(priv_multi1.clone(), pub_multi1[i].clone());
             let decrypted = ntru::decrypt(&encrypted, &kp_decrypt1, params).unwrap();
             for i in 0..plain_len {
                 assert_eq!(plain[i as usize], decrypted[i as usize]);
@@ -171,7 +171,7 @@ fn test_encr_decr_nondet(params: &NtruEncParams) {
             let encrypted = ntru::encrypt(&plain[0..plain_len as usize], public, params, &rand_ctx)
                                 .unwrap();
 
-            let kp_decrypt2 = NtruEncKeyPair::new(kp_multi2.get_private().clone(), public.clone());
+            let kp_decrypt2 = KeyPair::new(kp_multi2.get_private().clone(), public.clone());
             let decrypted = ntru::decrypt(&encrypted, &kp_decrypt2, params).unwrap();
             for i in 0..plain_len {
                 assert_eq!(plain[i as usize], decrypted[i as usize]);
@@ -182,15 +182,15 @@ fn test_encr_decr_nondet(params: &NtruEncParams) {
 
 
 // Tests ntru_encrypt() with a deterministic RNG
-fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
+fn test_encr_decr_det(params: &EncParams, digest_expected: &[u8]) {
     let kp = gen_key_pair("seed value for key generation", params);
     let pub_arr = kp.get_public().export(params);
 
-    let pub2 = NtruEncPubKey::import(&pub_arr);
+    let pub2 = PublicKey::import(&pub_arr);
     assert_eq!(kp.get_public().get_h(), pub2.get_h());
 
     let max_len = params.max_msg_len();
-    let rng_plaintext = NTRU_RNG_IGF2;
+    let rng_plaintext = RNG_IGF2;
     let plain_seed = b"seed value for plaintext";
 
     let rand_ctx_plaintext = ntru::rand::init_det(&rng_plaintext, plain_seed).unwrap();
@@ -200,9 +200,9 @@ fn test_encr_decr_det(params: &NtruEncParams, digest_expected: &[u8]) {
     let seed = b"seed value";
     let seed2 = b"seed value";
 
-    let rng = NTRU_RNG_IGF2;
+    let rng = RNG_IGF2;
     let rand_ctx = ntru::rand::init_det(&rng, seed).unwrap();
-    let rng2 = NTRU_RNG_IGF2;
+    let rng2 = RNG_IGF2;
     let rand_ctx2 = ntru::rand::init_det(&rng2, seed2).unwrap();
 
     for plain_len in 0..max_len as usize {

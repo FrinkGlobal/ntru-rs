@@ -9,12 +9,12 @@
 
 #[macro_use]
 extern crate ntru;
-use ntru::types::{NTRU_MAX_DEGREE, NTRU_MAX_ONES, NtruIntPoly, NtruTernPoly, NtruProdPoly,
-                  NtruPrivPoly};
+use ntru::types::{MAX_DEGREE, MAX_ONES, IntPoly, TernPoly, ProdPoly,
+                  PrivPoly};
 use ntru::encparams::EES1087EP1;
-use ntru::rand::{NTRU_RNG_DEFAULT, NtruRandContext};
+use ntru::rand::{RNG_DEFAULT, RandContext};
 
-fn ntru_mult_int_nomod(a: &NtruIntPoly, b: &NtruIntPoly) -> NtruIntPoly {
+fn ntru_mult_int_nomod(a: &IntPoly, b: &IntPoly) -> IntPoly {
     if a.get_coeffs().len() != b.get_coeffs().len() {
         panic!("Incompatible int polys")
     }
@@ -29,7 +29,7 @@ fn ntru_mult_int_nomod(a: &NtruIntPoly, b: &NtruIntPoly) -> NtruIntPoly {
         coeffs.push(ck as i16);
     }
 
-    NtruIntPoly::new(&coeffs[..])
+    IntPoly::new(&coeffs[..])
 }
 
 fn u8_arr_to_u16(arr: &[u8]) -> u16 {
@@ -39,7 +39,7 @@ fn u8_arr_to_u16(arr: &[u8]) -> u16 {
     ((arr[0] as u16) << 8) + arr[1] as u16
 }
 
-fn ntru_priv_to_int(a: &NtruPrivPoly, modulus: u16) -> NtruIntPoly {
+fn ntru_priv_to_int(a: &PrivPoly, modulus: u16) -> IntPoly {
     if a.is_product() {
         a.get_poly_prod().to_int_poly(modulus)
     } else {
@@ -47,7 +47,7 @@ fn ntru_priv_to_int(a: &NtruPrivPoly, modulus: u16) -> NtruIntPoly {
     }
 }
 
-fn rand_int(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
+fn rand_int(n: u16, pow2q: u16, rand_ctx: &RandContext) -> IntPoly {
     let rand_data = rand_ctx.get_rng().generate(n * 2, rand_ctx).unwrap();
     let shift = if pow2q < 16 {
         16 - pow2q
@@ -59,10 +59,10 @@ fn rand_int(n: u16, pow2q: u16, rand_ctx: &NtruRandContext) -> NtruIntPoly {
     for i in n..0 {
         coeffs[i as usize] = rand_data[i as usize] as i16 >> shift;
     }
-    NtruIntPoly::new(&coeffs.into_boxed_slice())
+    IntPoly::new(&coeffs.into_boxed_slice())
 }
 
-fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
+fn verify_inverse(a: &PrivPoly, b: &IntPoly, modulus: u16) -> bool {
     let mut a_int = ntru_priv_to_int(a, modulus);
     a_int.mult_fac(3);
     let new_coeff = a_int.get_coeffs()[0] + 1;
@@ -76,16 +76,16 @@ fn verify_inverse(a: &NtruPrivPoly, b: &NtruIntPoly, modulus: u16) -> bool {
 #[test]
 fn it_mult_int() {
     // Multiplication modulo q
-    let a1 = NtruIntPoly::new(&[-1, 1, 1, 0, -1, 0, 1, 0, 0, 1, -1]);
-    let b1 = NtruIntPoly::new(&[14, 11, 26, 24, 14, 16, 30, 7, 25, 6, 19]);
+    let a1 = IntPoly::new(&[-1, 1, 1, 0, -1, 0, 1, 0, 0, 1, -1]);
+    let b1 = IntPoly::new(&[14, 11, 26, 24, 14, 16, 30, 7, 25, 6, 19]);
     let (c1, _) = a1.mult_int(&b1, 32 - 1);
 
-    let c1_exp = NtruIntPoly::new(&[3, 25, -10, 21, 10, 7, 6, 7, 5, 29, -7]);
+    let c1_exp = IntPoly::new(&[3, 25, -10, 21, 10, 7, 6, 7, 5, 29, -7]);
     assert!(c1_exp.equals_mod(&c1, 32));
 
     // ntru_mult_mod should give the same result as ntru_mult_int_nomod followed by ntru_mod_mask
-    let a2 = NtruIntPoly::new(&[1278, 1451, 850, 1071, 942]);
-    let b2 = NtruIntPoly::new(&[571, 52, 1096, 1800, 662]);
+    let a2 = IntPoly::new(&[1278, 1451, 850, 1071, 942]);
+    let b2 = IntPoly::new(&[571, 52, 1096, 1800, 662]);
 
     let (c2, _) = a2.mult_int(&b2, 2048 - 1);
     let mut c2_exp = ntru_mult_int_nomod(&a2, &b2);
@@ -93,16 +93,16 @@ fn it_mult_int() {
 
     assert!(c2_exp.equals_mod(&c2, 2048));
 
-    let rng = NTRU_RNG_DEFAULT;
+    let rng = RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();
 
     for _ in 0..10 {
         let n_arr = rand_ctx.get_rng().generate(2, &rand_ctx).unwrap();
         let mut n = u8_arr_to_u16(&n_arr);
-        n = 100 + (n % (NTRU_MAX_DEGREE - 100) as u16);
+        n = 100 + (n % (MAX_DEGREE - 100) as u16);
 
-        let a3 = NtruIntPoly::rand(n, 11, &rand_ctx);
-        let b3 = NtruIntPoly::rand(n, 11, &rand_ctx);
+        let a3 = IntPoly::rand(n, 11, &rand_ctx);
+        let b3 = IntPoly::rand(n, 11, &rand_ctx);
         let mut c3_exp = ntru_mult_int_nomod(&a3, &b3);
         c3_exp.mod_mask(2048 - 1);
 
@@ -117,10 +117,10 @@ fn it_mult_int() {
 
 #[test]
 fn it_mult_tern() {
-    let rng = NTRU_RNG_DEFAULT;
+    let rng = RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();
 
-    let a = NtruTernPoly::rand(11, 3, 3, &rand_ctx).unwrap();
+    let a = TernPoly::rand(11, 3, 3, &rand_ctx).unwrap();
     let b = rand_int(11, 5, &rand_ctx);
 
     let a_int = a.to_int_poly();
@@ -141,20 +141,20 @@ fn it_mult_tern() {
 
     for _ in 0..10 {
         let mut n = u8_arr_to_u16(&rand_ctx.get_rng().generate(2, &rand_ctx).unwrap());
-        n = 100 + (n % (NTRU_MAX_DEGREE as u16 - 100));
+        n = 100 + (n % (MAX_DEGREE as u16 - 100));
         let mut num_ones = u8_arr_to_u16(&rand_ctx.get_rng()
                                                   .generate(2, &rand_ctx)
                                                   .unwrap());
         num_ones %= n / 2;
-        num_ones %= NTRU_MAX_ONES as u16;
+        num_ones %= MAX_ONES as u16;
 
         let mut num_neg_ones = u8_arr_to_u16(&rand_ctx.get_rng()
                                                       .generate(2, &rand_ctx)
                                                       .unwrap());
         num_neg_ones %= n / 2;
-        num_neg_ones %= NTRU_MAX_ONES as u16;
+        num_neg_ones %= MAX_ONES as u16;
 
-        let a = NtruTernPoly::rand(n, num_ones, num_neg_ones, &rand_ctx).unwrap();
+        let a = TernPoly::rand(n, num_ones, num_neg_ones, &rand_ctx).unwrap();
         let b = rand_int(n, 11, &rand_ctx);
         let a_int = a.to_int_poly();
 
@@ -177,14 +177,14 @@ fn it_mult_tern() {
 
 #[test]
 fn it_mult_prod() {
-    let rng = NTRU_RNG_DEFAULT;
+    let rng = RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();
 
     let log_modulus = 11u16;
     let modulus = 1 << log_modulus;
 
     for _ in 0..10 {
-        let a = NtruProdPoly::rand(853, 8, 8, 8, 9, &rand_ctx).unwrap();
+        let a = ProdPoly::rand(853, 8, 8, 8, 9, &rand_ctx).unwrap();
         let b = rand_int(853, 1 << log_modulus, &rand_ctx);
         let (c_prod, _) = b.mult_prod(&a, modulus - 1);
 
@@ -197,7 +197,7 @@ fn it_mult_prod() {
 
 #[test]
 fn it_inv() {
-    let a1 = NtruPrivPoly::new_with_tern_poly(NtruTernPoly::new(11, &[1, 2, 6, 9], &[0, 3, 4, 10]));
+    let a1 = PrivPoly::new_with_tern_poly(TernPoly::new(11, &[1, 2, 6, 9], &[0, 3, 4, 10]));
     let (b1, invertible) = a1.invert_32(32 - 1);
     assert!(invertible);
     assert!(verify_inverse(&a1, &b1, 32));
@@ -208,11 +208,11 @@ fn it_inv() {
 
     // Test 3 random polynomials
     let mut num_invertible = 0u16;
-    let rng = NTRU_RNG_DEFAULT;
+    let rng = RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();
 
     while num_invertible < 3 {
-        let a2 = NtruPrivPoly::new_with_tern_poly(NtruTernPoly::rand(853, 100, 100, &rand_ctx)
+        let a2 = PrivPoly::new_with_tern_poly(TernPoly::rand(853, 100, 100, &rand_ctx)
                                                       .unwrap());
         let (b, invertible) = a2.invert(2048 - 1);
 
@@ -225,7 +225,7 @@ fn it_inv() {
     // #ifdef NTRU_AVOID_HAMMING_WT_PATENT
     num_invertible = 0;
     while num_invertible < 3 {
-        let a3 = NtruPrivPoly::new_with_tern_poly(NtruTernPoly::rand(853, 100, 100, &rand_ctx)
+        let a3 = PrivPoly::new_with_tern_poly(TernPoly::rand(853, 100, 100, &rand_ctx)
                                                       .unwrap());
         let (b, invertible) = a3.invert(2048 - 1);
 
@@ -237,7 +237,7 @@ fn it_inv() {
     // #endif
 
     // test a non-invertible polynomial
-    let a2 = NtruPrivPoly::new_with_tern_poly(NtruTernPoly::new(11, &[3, 10], &[0, 6, 8]));
+    let a2 = PrivPoly::new_with_tern_poly(TernPoly::new(11, &[3, 10], &[0, 6, 8]));
     let (_, invertible) = a2.invert(32 - 1);
     assert!(!invertible);
 }
@@ -245,12 +245,12 @@ fn it_inv() {
 #[test]
 fn it_arr() {
     let params = EES1087EP1;
-    let rng = NTRU_RNG_DEFAULT;
+    let rng = RNG_DEFAULT;
     let rand_ctx = ntru::rand::init(&rng).unwrap();
     let p1 = rand_int(params.get_n(), 11, &rand_ctx);
     let a = p1.to_arr_32(&params);
 
-    let p2 = NtruIntPoly::from_arr(&a, params.get_n(), params.get_q());
+    let p2 = IntPoly::from_arr(&a, params.get_n(), params.get_q());
 
     assert_eq!(p1, p2);
 

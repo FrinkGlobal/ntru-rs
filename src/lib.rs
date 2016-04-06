@@ -18,26 +18,26 @@
 //! use:
 //!
 //! ```
-//! use ntru::rand::NTRU_RNG_DEFAULT;
-//! use ntru::encparams::NTRU_DEFAULT_PARAMS_256_BITS;
+//! use ntru::rand::RNG_DEFAULT;
+//! use ntru::encparams::DEFAULT_PARAMS_256_BITS;
 //!
-//! let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).unwrap();
-//! let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).unwrap();
+//! let rand_ctx = ntru::rand::init(&RNG_DEFAULT).unwrap();
+//! let kp = ntru::generate_key_pair(&DEFAULT_PARAMS_256_BITS, &rand_ctx).unwrap();
 //! ```
 //!
 //! This creates a key pair that can be uses to encrypt and decrypt messages:
 //!
 //! ```
-//! # use ntru::rand::NTRU_RNG_DEFAULT;
-//! use ntru::encparams::NTRU_DEFAULT_PARAMS_256_BITS;
+//! # use ntru::rand::RNG_DEFAULT;
+//! use ntru::encparams::DEFAULT_PARAMS_256_BITS;
 //! #
-//! # let rand_ctx = ntru::rand::init(&NTRU_RNG_DEFAULT).unwrap();
-//! # let kp = ntru::generate_key_pair(&NTRU_DEFAULT_PARAMS_256_BITS, &rand_ctx).unwrap();
+//! # let rand_ctx = ntru::rand::init(&RNG_DEFAULT).unwrap();
+//! # let kp = ntru::generate_key_pair(&DEFAULT_PARAMS_256_BITS, &rand_ctx).unwrap();
 //!
 //! let msg = b"Hello from Rust!";
-//! let encrypted = ntru::encrypt(msg, kp.get_public(), &NTRU_DEFAULT_PARAMS_256_BITS,
+//! let encrypted = ntru::encrypt(msg, kp.get_public(), &DEFAULT_PARAMS_256_BITS,
 //!                               &rand_ctx).unwrap();
-//! let decrypted = ntru::decrypt(&encrypted, &kp, &NTRU_DEFAULT_PARAMS_256_BITS).unwrap();
+//! let decrypted = ntru::decrypt(&encrypted, &kp, &DEFAULT_PARAMS_256_BITS).unwrap();
 //!
 //! assert_eq!(&msg[..], &decrypted[..]);
 //! ```
@@ -58,23 +58,23 @@ pub mod rand;
 pub mod encparams;
 mod ffi;
 
-use types::{NtruEncKeyPair, NtruEncPrivKey, NtruEncPubKey, NtruError};
-use encparams::NtruEncParams;
-use rand::NtruRandContext;
+use types::{KeyPair, PrivateKey, PublicKey, Error};
+use encparams::EncParams;
+use rand::RandContext;
 
 /// Key generation
 ///
 /// Generates a NtruEncrypt key pair. If a deterministic RNG is used, the key pair will be
 /// deterministic for a given random seed; otherwise, the key pair will be completely random.
-pub fn generate_key_pair(params: &NtruEncParams,
-                         rand_context: &NtruRandContext)
-                         -> Result<NtruEncKeyPair, NtruError> {
-    let mut kp: NtruEncKeyPair = Default::default();
+pub fn generate_key_pair(params: &EncParams,
+                         rand_context: &RandContext)
+                         -> Result<KeyPair, Error> {
+    let mut kp: KeyPair = Default::default();
     let result = unsafe { ffi::ntru_gen_key_pair(params, &mut kp, rand_context.get_c_rand_ctx()) };
     if result == 0 {
         Ok(kp)
     } else {
-        Err(NtruError::from_uint8_t(result))
+        Err(Error::from(result))
     }
 }
 
@@ -85,12 +85,12 @@ pub fn generate_key_pair(params: &NtruEncParams,
 /// decrypting, the public key of the key pair passed into ntru_decrypt() must match the public key
 /// used for encrypting the message. If a deterministic RNG is used, the key pair will be
 /// deterministic for a given random seed; otherwise, the key pair will be completely random.
-pub fn generate_multiple_key_pairs(params: &NtruEncParams,
-                                   rand_context: &NtruRandContext,
+pub fn generate_multiple_key_pairs(params: &EncParams,
+                                   rand_context: &RandContext,
                                    num_pub: usize)
-                                   -> Result<(NtruEncPrivKey, Box<[NtruEncPubKey]>), NtruError> {
-    let mut private: NtruEncPrivKey = Default::default();
-    let mut public: Vec<NtruEncPubKey> = Vec::with_capacity(num_pub);
+                                   -> Result<(PrivateKey, Box<[PublicKey]>), Error> {
+    let mut private: PrivateKey = Default::default();
+    let mut public: Vec<PublicKey> = Vec::with_capacity(num_pub);
     for _ in 0..num_pub {
         public.push(Default::default());
     }
@@ -104,7 +104,7 @@ pub fn generate_multiple_key_pairs(params: &NtruEncParams,
     if result == 0 {
         Ok((private, public.into_boxed_slice()))
     } else {
-        Err(NtruError::from_uint8_t(result))
+        Err(Error::from(result))
     }
 }
 
@@ -118,18 +118,18 @@ pub fn generate_multiple_key_pairs(params: &NtruEncParams,
 /// key of the key pair passed into ntru_decrypt() must match the public key used for encrypting
 /// the message. If a deterministic RNG is used, the key will be deterministic for a given random
 /// seed; otherwise, the key will be completely random.
-pub fn generate_public(params: &NtruEncParams,
-                       private: &NtruEncPrivKey,
-                       rand_context: &NtruRandContext)
-                       -> Result<NtruEncPubKey, NtruError> {
-    let mut public: NtruEncPubKey = Default::default();
+pub fn generate_public(params: &EncParams,
+                       private: &PrivateKey,
+                       rand_context: &RandContext)
+                       -> Result<PublicKey, Error> {
+    let mut public: PublicKey = Default::default();
     let result = unsafe {
         ffi::ntru_gen_pub(params, private, &mut public, rand_context.get_c_rand_ctx())
     };
     if result == 0 {
         Ok(public)
     } else {
-        Err(NtruError::from_uint8_t(result))
+        Err(Error::from(result))
     }
 }
 
@@ -143,10 +143,10 @@ pub fn generate_public(params: &NtruEncParams,
 /// * params: The NtruEncrypt parameters to use.
 /// * and_ctx: An initialized random number generator.
 pub fn encrypt(msg: &[u8],
-               public: &NtruEncPubKey,
-               params: &NtruEncParams,
-               rand_ctx: &NtruRandContext)
-               -> Result<Box<[u8]>, NtruError> {
+               public: &PublicKey,
+               params: &EncParams,
+               rand_ctx: &RandContext)
+               -> Result<Box<[u8]>, Error> {
     let mut enc = vec![0u8; params.enc_len() as usize];
     let result = unsafe {
         ffi::ntru_encrypt(if msg.len() > 0 {
@@ -164,7 +164,7 @@ pub fn encrypt(msg: &[u8],
     if result == 0 {
         Ok(enc.into_boxed_slice())
     } else {
-        Err(NtruError::from_uint8_t(result))
+        Err(Error::from(result))
     }
 }
 
@@ -176,9 +176,9 @@ pub fn encrypt(msg: &[u8],
 ///       corresponding private key.
 /// * params: Parameters the message was encrypted with
 pub fn decrypt(enc: &[u8],
-               kp: &NtruEncKeyPair,
-               params: &NtruEncParams)
-               -> Result<Box<[u8]>, NtruError> {
+               kp: &KeyPair,
+               params: &EncParams)
+               -> Result<Box<[u8]>, Error> {
     let mut dec = vec![0u8; params.max_msg_len() as usize];
     let mut dec_len = 0u16;
     let result = unsafe { ffi::ntru_decrypt(&enc[0], kp, params, &mut dec[0], &mut dec_len) };
@@ -190,7 +190,7 @@ pub fn decrypt(enc: &[u8],
         }
         Ok(final_dec.into_boxed_slice())
     } else {
-        Err(NtruError::from_uint8_t(result))
+        Err(Error::from(result))
     }
 }
 
