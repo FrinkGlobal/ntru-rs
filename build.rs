@@ -6,7 +6,6 @@ use std::io::Write;
 use std::process::Command;
 use std::env;
 
-// Only Linux yet
 fn main() {
     if cfg!(target_os = "linux") || cfg!(target_os = "macos") || cfg!(target_os = "windows") {
         env::set_var("CC", "gcc");
