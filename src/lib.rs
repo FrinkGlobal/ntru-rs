@@ -66,9 +66,7 @@ use rand::RandContext;
 ///
 /// Generates a NtruEncrypt key pair. If a deterministic RNG is used, the key pair will be
 /// deterministic for a given random seed; otherwise, the key pair will be completely random.
-pub fn generate_key_pair(params: &EncParams,
-                         rand_context: &RandContext)
-                         -> Result<KeyPair, Error> {
+pub fn generate_key_pair(params: &EncParams, rand_context: &RandContext) -> Result<KeyPair, Error> {
     let mut kp: KeyPair = Default::default();
     let result = unsafe { ffi::ntru_gen_key_pair(params, &mut kp, rand_context.get_c_rand_ctx()) };
     if result == 0 {
@@ -175,10 +173,7 @@ pub fn encrypt(msg: &[u8],
 /// * kp: A key pair that contains the public key the message was encrypted with, and the
 ///       corresponding private key.
 /// * params: Parameters the message was encrypted with
-pub fn decrypt(enc: &[u8],
-               kp: &KeyPair,
-               params: &EncParams)
-               -> Result<Box<[u8]>, Error> {
+pub fn decrypt(enc: &[u8], kp: &KeyPair, params: &EncParams) -> Result<Box<[u8]>, Error> {
     let mut dec = vec![0u8; params.max_msg_len() as usize];
     let mut dec_len = 0u16;
     let result = unsafe { ffi::ntru_decrypt(&enc[0], kp, params, &mut dec[0], &mut dec_len) };
