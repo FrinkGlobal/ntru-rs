@@ -1,7 +1,5 @@
-//! NTRUEncrypt library for Rust
-//!
-//! This library implements the NTRUEncrypt library in Rust. It is an interface to libntru, even
-//! though many of the methds are being implemented in pure Rust. The plan is to gradually
+//! This crate implements the NTRUEncrypt library in Rust. It is an interface to libntru, even
+//! though many of the methods are being implemented in pure Rust. The plan is to gradually
 //! implement the library natively. It uses this library since it has proven to be faster than the
 //! original NTRUEncrypt implementation. In any case, it is much faster than usual encryption /
 //! decryption mecanisms, and quantum-proof. More on NTRUEncrypt
@@ -14,8 +12,9 @@
 //! ```
 //!
 //! NTRUEncrypt uses its own keys, that must be generated with the included random key generator,
-//! and must not be used for other applications such as NTRUSign or NTRUNMLS. Here is an example of
-//! use:
+//! and must not be used for other applications such as NTRUSign or NTRUNMLS.
+//!
+//! # Examples
 //!
 //! ```
 //! use ntru::rand::RNG_DEFAULT;
