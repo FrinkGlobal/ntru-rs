@@ -90,10 +90,16 @@ fn main() {
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
                 .arg("src/c/src/sha1-mb-x86_64.pl")
-                .arg("elf")
+                .arg("coff")
                 .output()
                 .unwrap()
-        } else {
+        } else if cfg!(target_os = "macos") {
+            Command::new("/usr/bin/perl")
+                .arg("src/c/src/sha1-mb-x86_64.pl")
+                .arg("macosx")
+                .output()
+                .unwrap()
+        } else  {
             Command::new("/usr/bin/perl")
                 .arg("src/c/src/sha1-mb-x86_64.pl")
                 .arg("elf")
@@ -108,7 +114,7 @@ fn main() {
 
         println!("Exists .s: {}", p.exists());
 
-        let out = Command::new(env::var("CC").unwrap())
+        Command::new(env::var("CC").unwrap())
             .arg("-c")
             .arg("src/c/src/sha1-mb-x86_64.s")
             .arg("-o")
@@ -116,15 +122,16 @@ fn main() {
             .output()
             .unwrap();
 
-        println!("Exists .o: {}", Path::new("src/c/src/sha1-mb-x86_64.o").exists());
-        println!("Out: {}", std::str::from_utf8(&out.stderr[..]).unwrap().trim());
-
-        panic!();
-
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
                 .arg("src/c/src/sha256-mb-x86_64.pl")
-                .arg("elf")
+                .arg("coff")
+                .output()
+                .unwrap()
+        } else if cfg!(target_os = "macos") {
+            Command::new("/usr/bin/perl")
+                .arg("src/c/src/sha256-mb-x86_64.pl")
+                .arg("macosx")
                 .output()
                 .unwrap()
         } else {
