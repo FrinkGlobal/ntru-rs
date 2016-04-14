@@ -117,7 +117,7 @@ fn main() {
             .unwrap();
 
         println!("Exists .o: {}", Path::new("src/c/src/sha1-mb-x86_64.o").exists());
-        println!("Out: {}", std::str::from_utf8(&out.stdout[..]).unwrap().trim());
+        println!("Out: {}", std::str::from_utf8(&out.stderr[..]).unwrap().trim());
 
         panic!();
 
