@@ -112,8 +112,6 @@ fn main() {
         let mut f = File::create(&p).unwrap();
         f.write(out.as_bytes()).unwrap();
 
-        println!("Exists .s: {}", p.exists());
-
         Command::new(env::var("CC").unwrap())
             .arg("-c")
             .arg("src/c/src/sha1-mb-x86_64.s")

@@ -4,9 +4,6 @@ sudo: false
 os:
   - linux
   - osx
-matrix:
-  allow_failures:
-    - os: osx
 
 addons:
   apt:
