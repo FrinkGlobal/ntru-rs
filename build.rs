@@ -137,6 +137,10 @@ fn main() {
 
         println!("Exists: {}", Path::new("src/c/src/sha1-mb-x86_64.o").exists());
 
+        if cfg!(target_os = "macos") {
+        panic!();
+    }
+
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
                 .arg("src/c/src/sha256-mb-x86_64.pl")
