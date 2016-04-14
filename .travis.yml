@@ -1,13 +1,9 @@
 language: rust
+os:
+  - linux
+    dist: trusty
+  - osx
 matrix:
-  include:
-    - os: linux
-      dist: precise
-      sudo: false
-    - os: linux
-      dist: trusty
-      sudo: false
-    - os: osx
   allow_failures:
     - os: osx
 
