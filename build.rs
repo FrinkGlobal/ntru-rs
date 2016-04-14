@@ -115,6 +115,8 @@ fn main() {
         let mut f = File::create(&p).unwrap();
         f.write(out.as_bytes()).unwrap();
 
+        println!("Out: {}", out);
+
         if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
             Command::new("gcc")
                 .arg("-c")
@@ -132,6 +134,8 @@ fn main() {
                 .output()
                 .unwrap();
         }
+
+        println!("Exists: {}", Path::new("src/c/src/sha1-mb-x86_64.o").exists());
 
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
