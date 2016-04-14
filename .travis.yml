@@ -29,6 +29,7 @@ rust:
 
 # load travis-cargo
 before_script:
+  - which perl
   - |
       if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       pip install 'travis-cargo<0.2' --user &&
