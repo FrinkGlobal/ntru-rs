@@ -115,8 +115,6 @@ fn main() {
         let mut f = File::create(&p).unwrap();
         f.write(out.as_bytes()).unwrap();
 
-        println!("Out: {}", out);
-
         if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
             Command::new("gcc")
                 .arg("-c")
@@ -137,9 +135,17 @@ fn main() {
 
         println!("Exists: {}", Path::new("src/c/src/sha1-mb-x86_64.o").exists());
 
-        if cfg!(target_os = "macos") {
-        panic!();
-    }
+        let unix = cfg!(unix);
+        println!("Unix: {}", unix);
+        let linux = cfg!(target_os = "linux");
+        println!("Linux: {}", linux);
+        let mac = cfg!(target_os = "macos");
+        println!("OSX: {}", mac);
+        let freebsd = cfg!(target_os = "freebsd");
+        println!("FreeBSD: {}", freebsd);
+        let openbsd = cfg!(target_os = "openbsd");
+        println!("OpenBSD: {}", openbsd);
+        panic!("Panicing for debuging");
 
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
