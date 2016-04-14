@@ -1,7 +1,10 @@
 language: rust
 sudo: false
 os:
-  - linux
+  - linux:
+    - dist:
+        - precise
+        - trusty
   - osx
 matrix:
   allow_failures:
@@ -19,6 +22,7 @@ rust:
   - nightly
   - beta
   - stable
+  - 1.8.0
   - 1.7.0
   - 1.6.0
   - 1.5.0
@@ -30,6 +34,10 @@ before_script:
       if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       pip install 'travis-cargo<0.2' --user &&
       export PATH=$HOME/.local/bin:$PATH
+      fi
+  - |
+      if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew install perl
       fi
 
 # the main build
