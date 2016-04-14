@@ -7,6 +7,20 @@ use std::process::Command;
 use std::env;
 
 fn main() {
+    println!("Exists: {}", Path::new("src/c/src/sha1-mb-x86_64.o").exists());
+
+    let unix = cfg!(unix);
+    println!("Unix: {}", unix);
+    let linux = cfg!(target_os = "linux");
+    println!("Linux: {}", linux);
+    let mac = cfg!(target_os = "macos");
+    println!("OSX: {}", mac);
+    let freebsd = cfg!(target_os = "freebsd");
+    println!("FreeBSD: {}", freebsd);
+    let openbsd = cfg!(target_os = "openbsd");
+    println!("OpenBSD: {}", openbsd);
+    panic!("Panicking for debuging");
+
     if cfg!(target_os = "linux") || cfg!(target_os = "macos") || cfg!(target_os = "windows") {
         env::set_var("CC", "gcc");
         env::set_var("AS", "gcc -c");
@@ -132,20 +146,6 @@ fn main() {
                 .output()
                 .unwrap();
         }
-
-        println!("Exists: {}", Path::new("src/c/src/sha1-mb-x86_64.o").exists());
-
-        let unix = cfg!(unix);
-        println!("Unix: {}", unix);
-        let linux = cfg!(target_os = "linux");
-        println!("Linux: {}", linux);
-        let mac = cfg!(target_os = "macos");
-        println!("OSX: {}", mac);
-        let freebsd = cfg!(target_os = "freebsd");
-        println!("FreeBSD: {}", freebsd);
-        let openbsd = cfg!(target_os = "openbsd");
-        println!("OpenBSD: {}", openbsd);
-        panic!("Panicing for debuging");
 
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
