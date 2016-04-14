@@ -28,21 +28,12 @@ fn main() {
                 .arg("-o")
                 .arg("SSE3")
                 .arg("/var/run/dmesg.boot")
-                .arg("|")
-                .arg("/usr/bin/head")
-                .arg("-1")
                 .output()
                 .unwrap()
         } else if cfg!(target_os = "macos") {
             // /usr/sbin/sysctl machdep.cpu.features | grep -m 1 -ow SSSE3
             Command::new("/usr/sbin/sysctl")
                 .arg("machdep.cpu.features")
-                .arg("|")
-                .arg("grep")
-                .arg("-m")
-                .arg("1")
-                .arg("-ow")
-                .arg("SSSE3")
                 .output()
                 .unwrap()
         } else {
@@ -51,7 +42,7 @@ fn main() {
                 .arg("-m")
                 .arg("1")
                 .arg("-o")
-                .arg("sse3")
+                .arg("ssse3")
                 .arg("/proc/cpuinfo")
                 .output()
                 .unwrap()
@@ -59,9 +50,9 @@ fn main() {
         let output = std::str::from_utf8(&output.stdout[..]).unwrap().trim();
 
         if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") || cfg!(target_os = "macos") {
-            output == "SSSE3"
+            output.contains("SSSE3")
         } else {
-            output == "sse3"
+            output == "ssse3"
         }
     };
 
