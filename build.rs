@@ -106,6 +106,9 @@ fn main() {
         let mut f = File::create(&p).unwrap();
         f.write(out.as_bytes()).unwrap();
 
+        println!("{}", out);
+        panic!();
+
         if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
             Command::new("gcc")
                 .arg("-c")
