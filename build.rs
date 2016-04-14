@@ -42,7 +42,7 @@ fn main() {
                 .arg("-m")
                 .arg("1")
                 .arg("-ow")
-                .arg("SSE3")
+                .arg("SSSE3")
                 .output()
                 .unwrap()
         } else {
