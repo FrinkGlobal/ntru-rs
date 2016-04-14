@@ -106,26 +106,13 @@ fn main() {
         let mut f = File::create(&p).unwrap();
         f.write(out.as_bytes()).unwrap();
 
-        println!("{}", out);
-        panic!();
-
-        if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
-            Command::new("gcc")
-                .arg("-c")
-                .arg("src/c/src/sha1-mb-x86_64.s")
-                .arg("-o")
-                .arg("src/c/src/sha1-mb-x86_64.o")
-                .output()
-                .unwrap();
-        } else if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
-            Command::new("cc")
-                .arg("-c")
-                .arg("src/c/src/sha1-mb-x86_64.s")
-                .arg("-o")
-                .arg("src/c/src/sha1-mb-x86_64.o")
-                .output()
-                .unwrap();
-        }
+        Command::new(env::var("CC").unwrap())
+            .arg("-c")
+            .arg("src/c/src/sha1-mb-x86_64.s")
+            .arg("-o")
+            .arg("src/c/src/sha1-mb-x86_64.o")
+            .output()
+            .unwrap();
 
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
@@ -146,23 +133,13 @@ fn main() {
         let mut f = File::create(&p).unwrap();
         f.write(out.as_bytes()).unwrap();
 
-        if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
-            Command::new("gcc")
-                .arg("-c")
-                .arg("src/c/src/sha256-mb-x86_64.s")
-                .arg("-o")
-                .arg("src/c/src/sha256-mb-x86_64.o")
-                .output()
-                .unwrap();
-        } else if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
-            Command::new("cc")
-                .arg("-c")
-                .arg("src/c/src/sha256-mb-x86_64.s")
-                .arg("-o")
-                .arg("src/c/src/sha256-mb-x86_64.o")
-                .output()
-                .unwrap();
-        }
+        Command::new(env::var("CC").unwrap())
+            .arg("-c")
+            .arg("src/c/src/sha256-mb-x86_64.s")
+            .arg("-o")
+            .arg("src/c/src/sha256-mb-x86_64.o")
+            .output()
+            .unwrap();
 
         config.object("src/c/src/sha1-mb-x86_64.o").object("src/c/src/sha256-mb-x86_64.o");
     }
