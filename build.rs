@@ -106,6 +106,8 @@ fn main() {
         let mut f = File::create(&p).unwrap();
         f.write(out.as_bytes()).unwrap();
 
+        println!("Exists .s: {}", p.exists());
+
         Command::new(env::var("CC").unwrap())
             .arg("-c")
             .arg("src/c/src/sha1-mb-x86_64.s")
@@ -113,6 +115,10 @@ fn main() {
             .arg("src/c/src/sha1-mb-x86_64.o")
             .output()
             .unwrap();
+
+        println!("Exists .o: {}", Path::new("src/c/src/sha1-mb-x86_64.o").exists());
+
+        panic!();
 
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
