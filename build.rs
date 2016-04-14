@@ -108,7 +108,7 @@ fn main() {
 
         println!("Exists .s: {}", p.exists());
 
-        Command::new(env::var("CC").unwrap())
+        let out = Command::new(env::var("CC").unwrap())
             .arg("-c")
             .arg("src/c/src/sha1-mb-x86_64.s")
             .arg("-o")
@@ -117,6 +117,7 @@ fn main() {
             .unwrap();
 
         println!("Exists .o: {}", Path::new("src/c/src/sha1-mb-x86_64.o").exists());
+        println!("Out: {}", std::str::from_utf8(&out.stdout[..]).unwrap().trim());
 
         panic!();
 
