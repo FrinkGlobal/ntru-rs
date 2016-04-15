@@ -1,8 +1,7 @@
 use libc::{uint16_t, int16_t, uint8_t, c_void};
 
 use encparams::EncParams;
-use types::{IntPoly, ProdPoly, TernPoly, KeyPair, PrivPoly, PublicKey,
-            PrivateKey};
+use types::{IntPoly, ProdPoly, TernPoly, KeyPair, PrivPoly, PublicKey, PrivateKey};
 use rand::RandGen;
 
 #[repr(C)]
@@ -57,9 +56,7 @@ extern "C" {
                             digest: *mut *mut uint8_t);
 
     // rand.h
-    pub fn ntru_rand_init(rand_ctx: *mut CNtruRandContext,
-                          rand_gen: *const RandGen)
-                          -> uint8_t;
+    pub fn ntru_rand_init(rand_ctx: *mut CNtruRandContext, rand_gen: *const RandGen) -> uint8_t;
     pub fn ntru_rand_init_det(rand_ctx: *mut CNtruRandContext,
                               rand_gen: *const RandGen,
                               seed: *const uint8_t,
@@ -72,16 +69,16 @@ extern "C" {
     pub fn ntru_rand_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
 
     #[cfg(target_os = "windows")]
-    pub fn ntru_rand_wincrypt_init(rand_ctx: *mut NtruRandContext,
+    pub fn ntru_rand_wincrypt_init(rand_ctx: *mut CNtruRandContext,
                                    rand_gen: *const RandGen)
                                    -> uint8_t;
     #[cfg(target_os = "windows")]
     pub fn ntru_rand_wincrypt_generate(rand_data: *mut uint8_t,
                                        len: uint16_t,
-                                       rand_ctx: *const NtruRandContext)
+                                       rand_ctx: *const CNtruRandContext)
                                        -> uint8_t;
     #[cfg(target_os = "windows")]
-    pub fn ntru_rand_wincrypt_release(rand_ctx: *mut NtruRandContext) -> uint8_t;
+    pub fn ntru_rand_wincrypt_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
 
     #[cfg(not(target_os = "windows"))]
     pub fn ntru_rand_devrandom_init(rand_ctx: *mut CNtruRandContext,
@@ -189,18 +186,9 @@ extern "C" {
     #[cfg(SSE3)]
     pub fn ntru_to_arr_sse_2048(p: *const IntPoly, a: *mut uint8_t);
     pub fn ntru_from_arr(arr: *const uint8_t, n: uint16_t, q: uint16_t, p: *mut IntPoly);
-    pub fn ntru_invert(a: *const PrivPoly,
-                       mod_mask: uint16_t,
-                       fq: *mut IntPoly)
-                       -> uint8_t;
-    pub fn ntru_invert_32(a: *const PrivPoly,
-                          mod_mask: uint16_t,
-                          fq: *mut IntPoly)
-                          -> uint8_t;
-    pub fn ntru_invert_64(a: *const PrivPoly,
-                          mod_mask: uint16_t,
-                          fq: *mut IntPoly)
-                          -> uint8_t;
+    pub fn ntru_invert(a: *const PrivPoly, mod_mask: uint16_t, fq: *mut IntPoly) -> uint8_t;
+    pub fn ntru_invert_32(a: *const PrivPoly, mod_mask: uint16_t, fq: *mut IntPoly) -> uint8_t;
+    pub fn ntru_invert_64(a: *const PrivPoly, mod_mask: uint16_t, fq: *mut IntPoly) -> uint8_t;
 
     // key.h
     pub fn ntru_export_pub(key: *const PublicKey, arr: *mut uint8_t);
@@ -209,7 +197,5 @@ extern "C" {
     pub fn ntru_export_priv(key: *const PrivateKey, arr: *mut uint8_t) -> uint16_t;
     pub fn ntru_import_priv(arr: *const uint8_t, key: *mut PrivateKey);
 
-    pub fn ntru_params_from_priv_key(key: *const PrivateKey,
-                                     params: *mut EncParams)
-                                     -> uint8_t;
+    pub fn ntru_params_from_priv_key(key: *const PrivateKey, params: *mut EncParams) -> uint8_t;
 }

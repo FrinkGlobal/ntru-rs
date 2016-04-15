@@ -6,7 +6,6 @@ use std::io::Write;
 use std::process::Command;
 use std::env;
 
-// Only Linux yet
 fn main() {
     if cfg!(target_os = "linux") || cfg!(target_os = "macos") || cfg!(target_os = "windows") {
         env::set_var("CC", "gcc");
@@ -29,21 +28,12 @@ fn main() {
                 .arg("-o")
                 .arg("SSE3")
                 .arg("/var/run/dmesg.boot")
-                .arg("|")
-                .arg("/usr/bin/head")
-                .arg("-1")
                 .output()
                 .unwrap()
         } else if cfg!(target_os = "macos") {
             // /usr/sbin/sysctl machdep.cpu.features | grep -m 1 -ow SSSE3
             Command::new("/usr/sbin/sysctl")
                 .arg("machdep.cpu.features")
-                .arg("|")
-                .arg("grep")
-                .arg("-m")
-                .arg("1")
-                .arg("-ow")
-                .arg("SSE3")
                 .output()
                 .unwrap()
         } else {
@@ -52,7 +42,7 @@ fn main() {
                 .arg("-m")
                 .arg("1")
                 .arg("-o")
-                .arg("sse3")
+                .arg("ssse3")
                 .arg("/proc/cpuinfo")
                 .output()
                 .unwrap()
@@ -60,9 +50,9 @@ fn main() {
         let output = std::str::from_utf8(&output.stdout[..]).unwrap().trim();
 
         if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") || cfg!(target_os = "macos") {
-            output == "SSE3"
+            output.contains("SSSE3")
         } else {
-            output == "sse3"
+            output == "ssse3"
         }
     };
 
@@ -100,10 +90,16 @@ fn main() {
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
                 .arg("src/c/src/sha1-mb-x86_64.pl")
-                .arg("elf")
+                .arg("coff")
                 .output()
                 .unwrap()
-        } else {
+        } else if cfg!(target_os = "macos") {
+            Command::new("/usr/bin/perl")
+                .arg("src/c/src/sha1-mb-x86_64.pl")
+                .arg("macosx")
+                .output()
+                .unwrap()
+        } else  {
             Command::new("/usr/bin/perl")
                 .arg("src/c/src/sha1-mb-x86_64.pl")
                 .arg("elf")
@@ -116,28 +112,24 @@ fn main() {
         let mut f = File::create(&p).unwrap();
         f.write(out.as_bytes()).unwrap();
 
-        if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
-            Command::new("gcc")
-                .arg("-c")
-                .arg("src/c/src/sha1-mb-x86_64.s")
-                .arg("-o")
-                .arg("src/c/src/sha1-mb-x86_64.o")
-                .output()
-                .unwrap();
-        } else if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
-            Command::new("cc")
-                .arg("-c")
-                .arg("src/c/src/sha1-mb-x86_64.s")
-                .arg("-o")
-                .arg("src/c/src/sha1-mb-x86_64.o")
-                .output()
-                .unwrap();
-        }
+        Command::new(env::var("CC").unwrap())
+            .arg("-c")
+            .arg("src/c/src/sha1-mb-x86_64.s")
+            .arg("-o")
+            .arg("src/c/src/sha1-mb-x86_64.o")
+            .output()
+            .unwrap();
 
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
                 .arg("src/c/src/sha256-mb-x86_64.pl")
-                .arg("elf")
+                .arg("coff")
+                .output()
+                .unwrap()
+        } else if cfg!(target_os = "macos") {
+            Command::new("/usr/bin/perl")
+                .arg("src/c/src/sha256-mb-x86_64.pl")
+                .arg("macosx")
                 .output()
                 .unwrap()
         } else {
@@ -153,23 +145,13 @@ fn main() {
         let mut f = File::create(&p).unwrap();
         f.write(out.as_bytes()).unwrap();
 
-        if cfg!(target_os = "linux") || cfg!(target_os = "macos") {
-            Command::new("gcc")
-                .arg("-c")
-                .arg("src/c/src/sha256-mb-x86_64.s")
-                .arg("-o")
-                .arg("src/c/src/sha256-mb-x86_64.o")
-                .output()
-                .unwrap();
-        } else if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
-            Command::new("cc")
-                .arg("-c")
-                .arg("src/c/src/sha256-mb-x86_64.s")
-                .arg("-o")
-                .arg("src/c/src/sha256-mb-x86_64.o")
-                .output()
-                .unwrap();
-        }
+        Command::new(env::var("CC").unwrap())
+            .arg("-c")
+            .arg("src/c/src/sha256-mb-x86_64.s")
+            .arg("-o")
+            .arg("src/c/src/sha256-mb-x86_64.o")
+            .output()
+            .unwrap();
 
         config.object("src/c/src/sha1-mb-x86_64.o").object("src/c/src/sha256-mb-x86_64.o");
     }

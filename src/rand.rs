@@ -84,10 +84,7 @@ impl RandGen {
     }
 
     /// Generate random data
-    pub fn generate(&self,
-                    length: u16,
-                    rand_ctx: &RandContext)
-                    -> Result<Box<[u8]>, Error> {
+    pub fn generate(&self, length: u16, rand_ctx: &RandContext) -> Result<Box<[u8]>, Error> {
         let mut plain = vec![0u8; length as usize];
         let result = unsafe { (self.generate_fn)(&mut plain[0], length, &rand_ctx.rand_ctx) };
 
@@ -102,9 +99,9 @@ impl RandGen {
 #[cfg(target_os = "windows")]
 /// Default Windows RNG, CryptGenRandom()
 pub const RNG_WINCRYPT: RandGen = RandGen {
-    init: ffi::ntru_rand_wincrypt_init,
-    generate: ffi::ntru_rand_wincrypt_generate,
-    release: ffi::ntru_rand_wincrypt_release,
+    init_fn: ffi::ntru_rand_wincrypt_init,
+    generate_fn: ffi::ntru_rand_wincrypt_generate,
+    release_fn: ffi::ntru_rand_wincrypt_release,
 };
 
 #[cfg(not(target_os = "windows"))]

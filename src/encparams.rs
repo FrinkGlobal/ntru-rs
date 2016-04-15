@@ -633,7 +633,7 @@ pub const DEFAULT_PARAMS_256_BITS: EncParams = EES743EP1;
 
 /// All parameter sets, in an array
 pub const ALL_PARAM_SETS: [EncParams; 18] = [EES401EP1, EES449EP1, EES677EP1, EES1087EP2,
-                                                 EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
-                                                 EES659EP1, EES761EP1, EES1087EP1, EES1499EP1,
-                                                 EES401EP2, EES439EP1, EES443EP1, EES593EP1,
-                                                 EES587EP1, EES743EP1];
+                                             EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
+                                             EES659EP1, EES761EP1, EES1087EP1, EES1499EP1,
+                                             EES401EP2, EES439EP1, EES443EP1, EES593EP1,
+                                             EES587EP1, EES743EP1];

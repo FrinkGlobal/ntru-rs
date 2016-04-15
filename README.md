@@ -1,7 +1,9 @@
 # NTRUEncrypt library for Rust #
 
 [![Build Status](https://travis-ci.org/FractalGlobal/ntru-rs.svg?branch=master)](https://travis-ci.org/FractalGlobal/ntru-rs)
+[![Build status](https://ci.appveyor.com/api/projects/status/w352flnvc7psujnf?svg=true)](https://ci.appveyor.com/project/Razican/ntru-rs)
 [![Coverage Status](https://coveralls.io/repos/FractalGlobal/ntru-rs/badge.svg?branch=master&service=github)](https://coveralls.io/github/FractalGlobal/ntru-rs?branch=master)
+[![Crates.io](https://meritbadge.herokuapp.com/ntru)](https://crates.io/crates/ntru)
 
 This library implements an interface with
 *[libntru](https://tbuktu.github.io/ntru/)* C library. It is currently under

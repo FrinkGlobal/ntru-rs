@@ -642,13 +642,9 @@ impl Default for PrivPoly {
 impl fmt::Debug for PrivPoly {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.is_product() {
-            write!(f,
-                   "PrivPoly {{ prod_poly: {:?} }}",
-                   self.get_poly_prod())
+            write!(f, "PrivPoly {{ prod_poly: {:?} }}", self.get_poly_prod())
         } else {
-            write!(f,
-                   "PrivPoly {{ tern_poly: {:?} }}",
-                   self.get_poly_tern())
+            write!(f, "PrivPoly {{ tern_poly: {:?} }}", self.get_poly_tern())
         }
     }
 }
