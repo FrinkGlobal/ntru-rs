@@ -1,4 +1,3 @@
-clone_depth: 50
 environment:
   matrix:
   - TARGET: nightly-x86_64-pc-windows-gnu

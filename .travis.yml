@@ -47,6 +47,7 @@ script:
       cargo test &&
       cargo bench;
       fi
+
 after_success:
   - |
       if [["$TRAVIS_OS_NAME" == "linux"]]; then
