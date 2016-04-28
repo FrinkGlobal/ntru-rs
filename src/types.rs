@@ -17,8 +17,8 @@ const INT_POLY_SIZE: usize = ((MAX_DEGREE + 16 + 7) & 0xFFF8);
 /// max(df1, df2, df3, dg)
 pub const MAX_ONES: usize = 499;
 
-/// A polynomial with integer coefficients.
 #[repr(C)]
+/// A polynomial with integer coefficients.
 pub struct IntPoly {
     /// The number of coefficients
     n: uint16_t,
@@ -132,6 +132,7 @@ impl IntPoly {
     pub fn get_coeffs(&self) -> &[i16] {
         &self.coeffs[0..self.n as usize]
     }
+
     /// Set the coefficients
     pub fn set_coeffs(&mut self, coeffs: &[i16]) {
         self.coeffs = [0; INT_POLY_SIZE];
@@ -139,15 +140,18 @@ impl IntPoly {
             self.coeffs[i] = *coeff;
         }
     }
+
     /// Set a coefficient
     pub fn set_coeff(&mut self, index: usize, value: i16) {
         self.coeffs[index] = value
     }
 
+    /// Modifies the IntPoly with the given mask
     pub fn mod_mask(&mut self, mod_mask: u16) {
         unsafe { ffi::ntru_mod_mask(self, mod_mask) };
     }
 
+    /// Converts the IntPoly to a byte array using 32 bit arithmetic
     pub fn to_arr_32(&self, params: &EncParams) -> Box<[u8]> {
         let mut a = vec![0u8; params.enc_len() as usize];
         unsafe { ffi::ntru_to_arr_32(self, params.get_q(), &mut a[0]) };
@@ -155,6 +159,7 @@ impl IntPoly {
         a.into_boxed_slice()
     }
 
+    /// Converts the IntPoly to a byte array using 64 bit arithmetic
     pub fn to_arr_64(&self, params: &EncParams) -> Box<[u8]> {
         let mut a = vec![0u8; params.enc_len() as usize];
         unsafe { ffi::ntru_to_arr_64(self, params.get_q(), &mut a[0]) };
@@ -163,6 +168,7 @@ impl IntPoly {
     }
 
     #[cfg(SSE3)]
+    /// Converts the IntPoly to a byte 2048 SSE arithmetic
     pub fn to_arr_sse_2048(&self, params: &EncParams) -> Box<[u8]> {
         let mut a = vec![0u8; params.enc_len() as usize];
         unsafe { ffi::ntru_to_arr_sse_2048(self, &mut a[0]) };
@@ -172,8 +178,8 @@ impl IntPoly {
 
     /// General polynomial by ternary polynomial multiplication
     ///
-    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for
-    /// both polynomials. It also returns if the number of coefficients differ or not.
+    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for both
+    /// polynomials. It also returns if the number of coefficients differ or not.
     pub fn mult_tern(&self, b: &TernPoly, mod_mask: u16) -> (IntPoly, bool) {
         if self.n != b.n {
             panic!("To multiply a IntPoly by a TernPoly the number of coefficients must \
@@ -186,9 +192,9 @@ impl IntPoly {
 
     /// General polynomial by ternary polynomial multiplication
     ///
-    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for
-    /// both polynomials. Uses 32-bit arithmetic. It also returns if the number of coefficients
-    /// differ or not.
+    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for both
+    /// polynomials. Uses 32-bit arithmetic. It also returns if the number of coefficients differ or
+    /// not.
     pub fn mult_tern_32(&self, b: &TernPoly, mod_mask: u16) -> (IntPoly, bool) {
         if self.n != b.n {
             panic!("To multiply a IntPoly by a TernPoly the number of coefficients must \
@@ -201,9 +207,9 @@ impl IntPoly {
 
     /// General polynomial by ternary polynomial multiplication
     ///
-    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for
-    /// both polynomials. Uses 64-bit arithmetic. It also returns if the number of coefficients
-    /// differ or not.
+    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for both
+    /// polynomials. Uses 64-bit arithmetic. It also returns if the number of coefficients differ or
+    /// not.
     pub fn mult_tern_64(&self, b: &TernPoly, mod_mask: u16) -> (IntPoly, bool) {
         if self.n != b.n {
             panic!("To multiply a IntPoly by a TernPoly the number of coefficients must \
@@ -214,12 +220,12 @@ impl IntPoly {
         (c, result == 1)
     }
 
+    #[cfg(SSE3)]
     /// General polynomial by ternary polynomial multiplication, SSSE3 version
     ///
-    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for
-    /// both polynomials. This variant requires SSSE3 support. It also returns if the number of
+    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for both
+    /// polynomials. This variant requires SSSE3 support. It also returns if the number of
     /// coefficients differ or not.
-    #[cfg(SSE3)]
     pub fn mult_tern_sse(&self, b: &TernPoly, mod_mask: u16) -> (IntPoly, bool) {
         if self.n != b.n {
             panic!("To multiply a IntPoly by a TernPoly the number of coefficients must \
@@ -230,6 +236,9 @@ impl IntPoly {
         (c, result == 1)
     }
 
+    /// Add a ternary polynomial
+    ///
+    /// Adds a ternary polynomial to the general polynomial. Returns a new general polynomial.
     pub fn add_tern(&self, b: &TernPoly) -> IntPoly {
         IntPoly {
             n: self.n,
@@ -252,8 +261,8 @@ impl IntPoly {
 
     /// General polynomial by product-form polynomial multiplication
     ///
-    /// Multiplies a IntPoly by a ProdPoly. The number of coefficients must be the same for
-    /// both polynomials. It also returns if the number of coefficients differ or not.
+    /// Multiplies a IntPoly by a ProdPoly. The number of coefficients must be the same for both
+    /// polynomials. It also returns if the number of coefficients differ or not.
     pub fn mult_prod(&self, b: &ProdPoly, mod_mask: u16) -> (IntPoly, bool) {
         if self.n != b.n {
             panic!("To multiply a IntPoly by a ProdPoly the number of coefficients must \
@@ -266,9 +275,9 @@ impl IntPoly {
 
     /// General polynomial by private polynomial multiplication
     ///
-    /// Multiplies a IntPoly by a PrivPoly, i.e. a TernPoly or a ProdPoly. The
-    /// number of coefficients must be the same for both polynomials. It also returns if the number
-    /// of coefficients differ or not.
+    /// Multiplies a IntPoly by a PrivPoly, i.e. a TernPoly or a ProdPoly. The number of
+    /// coefficients must be the same for both polynomials. It also returns if the number of
+    /// coefficients differ or not.
     pub fn mult_priv(&self, b: &PrivPoly, mod_mask: u16) -> (IntPoly, bool) {
         if (b.is_product() && self.n != b.get_poly_prod().n) ||
            (!b.is_product() && self.n != b.get_poly_tern().n) {
@@ -280,18 +289,33 @@ impl IntPoly {
         (c, result == 1)
     }
 
+    /// General polynomial by general polynomial multiplication
+    ///
+    /// Multiplies a IntPoly by another IntPoly, i.e. a TernPoly or a ProdPoly. The number of
+    /// coefficients must be the same for both polynomials. It also returns if the number of
+    /// coefficients differ or not.
     pub fn mult_int(&self, b: &IntPoly, mod_mask: u16) -> (IntPoly, bool) {
         let mut c: IntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_int(self, b, &mut c, mod_mask) };
         (c, result == 1)
     }
 
+    /// General polynomial by general polynomial multiplication, 16 bit arithmetic
+    ///
+    /// Multiplies a IntPoly by another IntPoly, i.e. a TernPoly or a ProdPoly. The number of
+    /// coefficients must be the same for both polynomials. It also returns if the number of
+    /// coefficients differ or not.
     pub fn mult_int_16(&self, b: &IntPoly, mod_mask: u16) -> (IntPoly, bool) {
         let mut c: IntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_int_16(self, b, &mut c, mod_mask) };
         (c, result == 1)
     }
 
+    /// General polynomial by general polynomial multiplication, 64 bit arithmetic
+    ///
+    /// Multiplies a IntPoly by another IntPoly, i.e. a TernPoly or a ProdPoly. The number of
+    /// coefficients must be the same for both polynomials. It also returns if the number of
+    /// coefficients differ or not.
     pub fn mult_int_64(&self, b: &IntPoly, mod_mask: u16) -> (IntPoly, bool) {
         let mut c: IntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_int_64(self, b, &mut c, mod_mask) };
@@ -324,7 +348,7 @@ impl IntPoly {
         }
     }
 
-    // Check if the IntPoly equals 1
+    /// Check if the IntPoly equals 1
     pub fn equals1(&self) -> bool {
         for i in 1..self.n {
             if self.coeffs[i as usize] != 0 {
@@ -335,8 +359,8 @@ impl IntPoly {
     }
 }
 
-/// A ternary polynomial, i.e. all coefficients are equal to -1, 0, or 1.
 #[repr(C)]
+/// A ternary polynomial, i.e. all coefficients are equal to -1, 0, or 1.
 pub struct TernPoly {
     n: uint16_t,
     num_ones: uint16_t,
@@ -412,6 +436,7 @@ impl PartialEq for TernPoly {
 }
 
 impl TernPoly {
+    /// Creates a new TernPoly
     pub fn new(n: u16, ones: &[u16], neg_ones: &[u16]) -> TernPoly {
         let mut new_ones = [0; MAX_ONES];
         let mut new_neg_ones = [0; MAX_ONES];
@@ -433,28 +458,17 @@ impl TernPoly {
         }
     }
 
-    // /// Random ternary polynomial
-    // ///
-    // /// Generates a random ternary polynomial. If an error occurs, it will return None.
-    // pub fn rand(n: u16, num_ones: u16, num_neg_ones: u16, rand_ctx: &RandContext)
-    //             -> Option<TernPoly> {
-    //     let mut poly: TernPoly = Default::default();
-    //     let result = unsafe { ffi::ntru_rand_tern(n, num_ones, num_neg_ones, &mut poly,
-    //                                               &rand_ctx.rand_ctx) };
-    //
-    //     if result == 0 {
-    //         None
-    //     } else {
-    //         Some(poly)
-    //     }
-    // }
-
+    /// Get the
     pub fn get_n(&self) -> u16 {
         self.n
     }
+
+    /// Get +1 coefficients
     pub fn get_ones(&self) -> &[u16] {
         &self.ones[0..self.num_ones as usize]
     }
+
+    /// Get -1 coefficients
     pub fn get_neg_ones(&self) -> &[u16] {
         &self.neg_ones[0..self.num_neg_ones as usize]
     }
@@ -481,10 +495,10 @@ impl TernPoly {
     }
 }
 
-/// A product-form polynomial, i.e. a polynomial of the form f1*f2+f3 where f1,f2,f3 are very
-/// sparsely populated ternary polynomials.
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone)]
+/// A product-form polynomial, i.e. a polynomial of the form f1*f2+f3 where f1,f2,f3 are very
+/// sparsely populated ternary polynomials.
 pub struct ProdPoly {
     n: uint16_t,
     f1: TernPoly,
@@ -504,6 +518,7 @@ impl Default for ProdPoly {
 }
 
 impl ProdPoly {
+    /// Creates a new `ProdPoly` from three `TernPoly`s
     pub fn new(n: u16, f1: TernPoly, f2: TernPoly, f3: TernPoly) -> ProdPoly {
         ProdPoly {
             n: n,
@@ -552,6 +567,7 @@ impl ProdPoly {
         Some(ProdPoly::new(n, f1, f2, f3))
     }
 
+    /// Returns an IntPoly equivalent to the ProdPoly
     pub fn to_int_poly(&self, modulus: u16) -> IntPoly {
         let c = IntPoly {
             n: self.n,
@@ -568,7 +584,9 @@ impl ProdPoly {
 const PRIVUNION_SIZE: usize = 3004;
 
 #[repr(C)]
+/// Union for the private key polynomial
 struct PrivUnion {
+    /// The union data as a 2-byte array
     data: [uint16_t; PRIVUNION_SIZE],
 }
 
@@ -589,6 +607,7 @@ impl Clone for PrivUnion {
 }
 
 impl PrivUnion {
+    /// Create a new union from a ProdPoly
     unsafe fn new_from_prod(poly: ProdPoly) -> PrivUnion {
         let arr: &[uint16_t; 3004] = mem::transmute(&poly);
         let mut data = [0; PRIVUNION_SIZE];
@@ -600,6 +619,7 @@ impl PrivUnion {
         PrivUnion { data: data }
     }
 
+    /// Create a new union from a TernPoly
     unsafe fn new_from_tern(poly: TernPoly) -> PrivUnion {
         let arr: &[uint16_t; 1001] = mem::transmute(&poly);
         let mut data = [0; PRIVUNION_SIZE];
@@ -611,18 +631,20 @@ impl PrivUnion {
         PrivUnion { data: data }
     }
 
+    /// Get the union as a ProdPoly
     unsafe fn prod(&self) -> &ProdPoly {
         mem::transmute(&self.data)
     }
 
+    /// Get the union as a TernPoly
     unsafe fn tern(&self) -> &TernPoly {
         mem::transmute(&self.data)
     }
 }
 
-/// Private polynomial, can be ternary or product-form
 #[repr(C)]
 #[derive(Clone)]
+/// Private polynomial, can be ternary or product-form
 pub struct PrivPoly {
     // maybe we could do conditional compilation?
     /// Whether the polynomial is in product form
@@ -684,6 +706,9 @@ impl PrivPoly {
         self.prod_flag == 1
     }
 
+    /// Get the ProdPoly of the union
+    ///
+    /// Panics if the union is actually a TernPoly
     pub fn get_poly_prod(&self) -> &ProdPoly {
         if self.prod_flag != 1 {
             panic!("Trying to get PrivPoly from an union that is TernPoly.");
@@ -691,6 +716,9 @@ impl PrivPoly {
         unsafe { &*self.poly.prod() }
     }
 
+    /// Get the TernPoly of the union
+    ///
+    /// Panics if the union is actually a ProdPoly
     pub fn get_poly_tern(&self) -> &TernPoly {
         if self.prod_flag != 0 {
             panic!("Trying to get TernPoly from an union that is ProdPoly.");
@@ -741,9 +769,9 @@ impl PrivPoly {
     }
 }
 
-/// NtruEncrypt private key
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone)]
+/// NtruEncrypt private key
 pub struct PrivateKey {
     q: uint16_t,
     t: PrivPoly,
@@ -759,9 +787,12 @@ impl Default for PrivateKey {
 }
 
 impl PrivateKey {
+    /// Gets the q parameter of the PrivateKey
     pub fn get_q(&self) -> u16 {
         self.q
     }
+
+    /// Gets the tparameter of the PrivateKey
     pub fn get_t(&self) -> &PrivPoly {
         &self.t
     }
@@ -795,9 +826,9 @@ impl PrivateKey {
     }
 }
 
-/// NtruEncrypt public key
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone)]
+/// NtruEncrypt public key
 pub struct PublicKey {
     q: uint16_t,
     h: IntPoly,
@@ -813,9 +844,12 @@ impl Default for PublicKey {
 }
 
 impl PublicKey {
+    /// Get the q parameter of the PublicKey
     pub fn get_q(&self) -> u16 {
         self.q
     }
+
+    /// Get the h parameter of the PublicKey
     pub fn get_h(&self) -> &IntPoly {
         &self.h
     }
@@ -837,9 +871,9 @@ impl PublicKey {
     }
 }
 
-/// NtruEncrypt key pair
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone)]
+/// NtruEncrypt key pair
 pub struct KeyPair {
     /// Private key
     private: PrivateKey,

@@ -13,6 +13,7 @@ use super::ffi;
 
 /// A random context for key generation and encryption
 pub struct RandContext {
+    /// The actual C-compatible RandContext
     rand_ctx: ffi::CNtruRandContext,
 }
 
@@ -39,35 +40,45 @@ impl Drop for RandContext {
 }
 
 impl RandContext {
+    /// Gets the native struct representing the RandContext
+    ///
+    /// *Note: this will be deprecated in the future once the Drop trait can be safely implemented
+    /// in native structs.*
     pub unsafe fn get_c_rand_ctx(&self) -> &ffi::CNtruRandContext {
         &self.rand_ctx
     }
 
+    /// Gets the seed for the RandContext
     pub fn get_seed(&self) -> &[u8] {
         unsafe { slice::from_raw_parts(self.rand_ctx.seed, self.rand_ctx.seed_len as usize) }
     }
 
+    /// Sets the seed for the RandContext
     pub fn set_seed(&mut self, seed: &[u8]) {
         self.rand_ctx.seed_len = seed.len() as uint16_t;
         self.rand_ctx.seed = &seed[0];
     }
 
+    /// Gets the RNG of the RandContext
     pub fn get_rng(&self) -> &RandGen {
         unsafe { &*self.rand_ctx.rand_gen }
     }
 }
 
 #[repr(C)]
+/// Random number generator
 pub struct RandGen {
+    /// Random number generator initialization function
     init_fn: unsafe extern "C" fn(rand_ctx: *mut ffi::CNtruRandContext,
-                                  rand_gen: *const RandGen)
-                                  -> uint8_t,
+                                      rand_gen: *const RandGen)
+                                      -> uint8_t,
     /// A pointer to a function that takes an array and an array size, and fills the array with
     /// random data
     generate_fn: unsafe extern "C" fn(rand_data: *mut uint8_t,
                                           len: uint16_t,
                                           rand_ctx: *const ffi::CNtruRandContext)
                                           -> uint8_t,
+    /// The rng release function
     release_fn: unsafe extern "C" fn(rand_ctx: *mut ffi::CNtruRandContext) -> uint8_t,
 }
 

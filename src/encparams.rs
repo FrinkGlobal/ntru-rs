@@ -141,14 +141,17 @@ impl EncParams {
                                self.name[10] as u8];
         String::from_utf8_lossy(&slice).into_owned()
     }
+
     /// Get the number of polynomial coefficients
     pub fn get_n(&self) -> u16 {
         self.n
     }
+
     /// Get the modulus
     pub fn get_q(&self) -> u16 {
         self.q
     }
+
     /// Get the number of random bits to prepend to the message
     pub fn get_db(&self) -> u16 {
         self.db
@@ -183,6 +186,7 @@ impl EncParams {
     pub fn public_len(&self) -> u16 {
         4 + self.enc_len()
     }
+
     /// Private key length
     pub fn private_len(&self) -> u16 {
         if self.prod_flag == 1 {

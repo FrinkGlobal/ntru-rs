@@ -6,11 +6,13 @@ use rand::RandGen;
 
 #[repr(C)]
 pub struct CNtruRandContext {
+    /// The RNG for the RandContext
     pub rand_gen: *const RandGen,
     /// For deterministic RNGs
     pub seed: *const uint8_t,
     /// For deterministic RNGs
     pub seed_len: uint16_t,
+    /// The current context state
     pub state: *const c_void,
 }
 
