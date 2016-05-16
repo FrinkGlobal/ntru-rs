@@ -139,11 +139,11 @@ pub const RNG_DEFAULT: RandGen = RandGen {
     release_fn: ffi::ntru_rand_default_release,
 };
 
-/// Deterministic RNG based on IGF-2
-pub const RNG_IGF2: RandGen = RandGen {
-    init_fn: ffi::ntru_rand_igf2_init,
-    generate_fn: ffi::ntru_rand_igf2_generate,
-    release_fn: ffi::ntru_rand_igf2_release,
+/// Deterministic RNG based on CTR_DRBG
+pub const RNG_CTR_DRBG: RandGen = RandGen {
+    init_fn: ffi::ntru_rand_ctr_drbg_init,
+    generate_fn: ffi::ntru_rand_ctr_drbg_generate,
+    release_fn: ffi::ntru_rand_ctr_drbg_release,
 };
 
 /// Initialize a new rand context

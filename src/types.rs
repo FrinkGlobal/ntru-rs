@@ -152,26 +152,9 @@ impl IntPoly {
     }
 
     /// Converts the IntPoly to a byte array using 32 bit arithmetic
-    pub fn to_arr_32(&self, params: &EncParams) -> Box<[u8]> {
+    pub fn to_arr(&self, params: &EncParams) -> Box<[u8]> {
         let mut a = vec![0u8; params.enc_len() as usize];
-        unsafe { ffi::ntru_to_arr_32(self, params.get_q(), &mut a[0]) };
-
-        a.into_boxed_slice()
-    }
-
-    /// Converts the IntPoly to a byte array using 64 bit arithmetic
-    pub fn to_arr_64(&self, params: &EncParams) -> Box<[u8]> {
-        let mut a = vec![0u8; params.enc_len() as usize];
-        unsafe { ffi::ntru_to_arr_64(self, params.get_q(), &mut a[0]) };
-
-        a.into_boxed_slice()
-    }
-
-    #[cfg(SSE3)]
-    /// Converts the IntPoly to a byte 2048 SSE arithmetic
-    pub fn to_arr_sse_2048(&self, params: &EncParams) -> Box<[u8]> {
-        let mut a = vec![0u8; params.enc_len() as usize];
-        unsafe { ffi::ntru_to_arr_sse_2048(self, &mut a[0]) };
+        unsafe { ffi::ntru_to_arr(self, params.get_q(), &mut a[0]) };
 
         a.into_boxed_slice()
     }
@@ -187,52 +170,6 @@ impl IntPoly {
         }
         let mut c: IntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_tern(self, b, &mut c, mod_mask) };
-        (c, result == 1)
-    }
-
-    /// General polynomial by ternary polynomial multiplication
-    ///
-    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for both
-    /// polynomials. Uses 32-bit arithmetic. It also returns if the number of coefficients differ or
-    /// not.
-    pub fn mult_tern_32(&self, b: &TernPoly, mod_mask: u16) -> (IntPoly, bool) {
-        if self.n != b.n {
-            panic!("To multiply a IntPoly by a TernPoly the number of coefficients must \
-                    be the same for both polynomials")
-        }
-        let mut c: IntPoly = Default::default();
-        let result = unsafe { ffi::ntru_mult_tern_32(self, b, &mut c, mod_mask) };
-        (c, result == 1)
-    }
-
-    /// General polynomial by ternary polynomial multiplication
-    ///
-    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for both
-    /// polynomials. Uses 64-bit arithmetic. It also returns if the number of coefficients differ or
-    /// not.
-    pub fn mult_tern_64(&self, b: &TernPoly, mod_mask: u16) -> (IntPoly, bool) {
-        if self.n != b.n {
-            panic!("To multiply a IntPoly by a TernPoly the number of coefficients must \
-                    be the same for both polynomials")
-        }
-        let mut c: IntPoly = Default::default();
-        let result = unsafe { ffi::ntru_mult_tern_64(self, b, &mut c, mod_mask) };
-        (c, result == 1)
-    }
-
-    #[cfg(SSE3)]
-    /// General polynomial by ternary polynomial multiplication, SSSE3 version
-    ///
-    /// Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for both
-    /// polynomials. This variant requires SSSE3 support. It also returns if the number of
-    /// coefficients differ or not.
-    pub fn mult_tern_sse(&self, b: &TernPoly, mod_mask: u16) -> (IntPoly, bool) {
-        if self.n != b.n {
-            panic!("To multiply a IntPoly by a TernPoly the number of coefficients must \
-                    be the same for both polynomials")
-        }
-        let mut c: IntPoly = Default::default();
-        let result = unsafe { ffi::ntru_mult_tern_sse(self, b, &mut c, mod_mask) };
         (c, result == 1)
     }
 
@@ -297,28 +234,6 @@ impl IntPoly {
     pub fn mult_int(&self, b: &IntPoly, mod_mask: u16) -> (IntPoly, bool) {
         let mut c: IntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_int(self, b, &mut c, mod_mask) };
-        (c, result == 1)
-    }
-
-    /// General polynomial by general polynomial multiplication, 16 bit arithmetic
-    ///
-    /// Multiplies a IntPoly by another IntPoly, i.e. a TernPoly or a ProdPoly. The number of
-    /// coefficients must be the same for both polynomials. It also returns if the number of
-    /// coefficients differ or not.
-    pub fn mult_int_16(&self, b: &IntPoly, mod_mask: u16) -> (IntPoly, bool) {
-        let mut c: IntPoly = Default::default();
-        let result = unsafe { ffi::ntru_mult_int_16(self, b, &mut c, mod_mask) };
-        (c, result == 1)
-    }
-
-    /// General polynomial by general polynomial multiplication, 64 bit arithmetic
-    ///
-    /// Multiplies a IntPoly by another IntPoly, i.e. a TernPoly or a ProdPoly. The number of
-    /// coefficients must be the same for both polynomials. It also returns if the number of
-    /// coefficients differ or not.
-    pub fn mult_int_64(&self, b: &IntPoly, mod_mask: u16) -> (IntPoly, bool) {
-        let mut c: IntPoly = Default::default();
-        let result = unsafe { ffi::ntru_mult_int_64(self, b, &mut c, mod_mask) };
         (c, result == 1)
     }
 
@@ -736,34 +651,6 @@ impl PrivPoly {
     pub fn invert(&self, mod_mask: u16) -> (IntPoly, bool) {
         let mut fq: IntPoly = Default::default();
         let result = unsafe { ffi::ntru_invert(self, mod_mask, &mut fq) };
-
-        (fq, result == 1)
-    }
-
-    /// Inverse modulo q
-    ///
-    /// Computes the inverse of 1+3a mod q; q must be a power of 2. This function uses 32-bit
-    /// arithmetic. It also returns if the polynomial is invertible.
-    ///
-    /// The algorithm is described in "Almost Inverses and Fast NTRU Key Generation" at
-    /// http://www.securityinnovation.com/uploads/Crypto/NTRUTech014.pdf
-    pub fn invert_32(&self, mod_mask: u16) -> (IntPoly, bool) {
-        let mut fq: IntPoly = Default::default();
-        let result = unsafe { ffi::ntru_invert_32(self, mod_mask, &mut fq) };
-
-        (fq, result == 1)
-    }
-
-    /// Inverse modulo q
-    ///
-    /// Computes the inverse of 1+3a mod q; q must be a power of 2. This function uses 64-bit
-    /// arithmetic. It also returns if the polynomial is invertible.
-    ///
-    /// The algorithm is described in "Almost Inverses and Fast NTRU Key Generation" at
-    /// http://www.securityinnovation.com/uploads/Crypto/NTRUTech014.pdf
-    pub fn invert_64(&self, mod_mask: u16) -> (IntPoly, bool) {
-        let mut fq: IntPoly = Default::default();
-        let result = unsafe { ffi::ntru_invert_64(self, mod_mask, &mut fq) };
 
         (fq, result == 1)
     }

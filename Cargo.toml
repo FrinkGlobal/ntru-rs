@@ -17,6 +17,8 @@ keywords = ["libntru", "NTRU", "NTRUEncrypt"]
 default = []
 no-sse = []
 sse = []
+no-avx2 = []
+avx2 = []
 
 [dependencies]
 libc = "^0.2"
