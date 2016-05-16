@@ -169,9 +169,12 @@ impl EncParams {
 
     /// Encryption length
     pub fn enc_len(&self) -> u16 {
-        if self.q & (self.q - 1) == 0 { 0} else {
-        let len_bits = self.n * EncParams::log2(self.q) as u16;
-        (len_bits + 7) / 8}
+        if self.q & (self.q - 1) != 0 {
+            0
+        } else {
+            let len_bits = self.n * EncParams::log2(self.q) as u16;
+            (len_bits + 7) / 8
+        }
     }
 
     /// Public key length
@@ -181,26 +184,26 @@ impl EncParams {
 
     /// Private key length
     pub fn private_len(&self) -> u16 {
-        let bits_per_idx = EncParams::log2(self.n-1) as u16 + 1;
-        if self.prod_flag  == 1 {
-            let poly1_len = 4 + (bits_per_idx*2*self.df1+7) / 8;
-            let poly2_len = 4 + (bits_per_idx*2*self.df2+7) / 8;
-            let poly3_len = 4 + (bits_per_idx*2*self.df3+7) / 8;
+        let bits_per_idx = EncParams::log2(self.n - 1) as u16 + 1;
+        if self.prod_flag == 1 {
+            let poly1_len = 4 + (bits_per_idx * 2 * self.df1 + 7) / 8;
+            let poly2_len = 4 + (bits_per_idx * 2 * self.df2 + 7) / 8;
+            let poly3_len = 4 + (bits_per_idx * 2 * self.df3 + 7) / 8;
 
             5 + poly1_len + poly2_len + poly3_len
         } else {
-            5 + 4 + (bits_per_idx*2*self.df1+7) / 8
+            5 + 4 + (bits_per_idx * 2 * self.df1 + 7) / 8
         }
     }
 
     fn log2(n: u16) -> u8 {
-            let mut n = n;
-            let mut log = 0;
-            while n > 1 {
-                n /= 2;
-                log +=1;
-            }
-            log
+        let mut n = n;
+        let mut log = 0;
+        while n > 1 {
+            n /= 2;
+            log += 1;
+        }
+        log
     }
 }
 
@@ -661,8 +664,7 @@ pub const DEFAULT_PARAMS_192_BITS: EncParams = EES887EP1;
 pub const DEFAULT_PARAMS_256_BITS: EncParams = EES1171EP1;
 
 /// All parameter sets, in an array
-pub const ALL_PARAM_SETS: [EncParams; 18] = [EES401EP1, EES449EP1, EES677EP1, EES1087EP2,
-                                             EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
-                                             EES659EP1, EES761EP1, EES1087EP1, EES1499EP1,
-                                             EES401EP2, EES439EP1, EES443EP1, EES593EP1,
-                                             EES587EP1, EES743EP1];
+pub const ALL_PARAM_SETS: [EncParams; 18] =
+    [EES401EP1, EES449EP1, EES677EP1, EES1087EP2, EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
+     EES659EP1, EES761EP1, EES1087EP1, EES1499EP1, EES401EP2, EES439EP1, EES443EP1, EES593EP1,
+     EES587EP1, EES743EP1];

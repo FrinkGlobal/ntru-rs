@@ -120,9 +120,8 @@ pub fn generate_public(params: &EncParams,
                        rand_context: &RandContext)
                        -> Result<PublicKey, Error> {
     let mut public: PublicKey = Default::default();
-    let result = unsafe {
-        ffi::ntru_gen_pub(params, private, &mut public, rand_context.get_c_rand_ctx())
-    };
+    let result =
+        unsafe { ffi::ntru_gen_pub(params, private, &mut public, rand_context.get_c_rand_ctx()) };
     if result == 0 {
         Ok(public)
     } else {

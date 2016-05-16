@@ -53,12 +53,6 @@ impl RandContext {
         unsafe { slice::from_raw_parts(self.rand_ctx.seed, self.rand_ctx.seed_len as usize) }
     }
 
-    /// Sets the seed for the RandContext
-    pub fn set_seed(&mut self, seed: &[u8]) {
-        self.rand_ctx.seed_len = seed.len() as uint16_t;
-        self.rand_ctx.seed = &seed[0];
-    }
-
     /// Gets the RNG of the RandContext
     pub fn get_rng(&self) -> &RandGen {
         unsafe { &*self.rand_ctx.rand_gen }

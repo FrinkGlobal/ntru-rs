@@ -128,14 +128,14 @@ fn it_mult_tern() {
         let mut n = u8_arr_to_u16(&rand_ctx.get_rng().generate(2, &rand_ctx).unwrap());
         n = 100 + (n % (MAX_DEGREE as u16 - 100));
         let mut num_ones = u8_arr_to_u16(&rand_ctx.get_rng()
-                                                  .generate(2, &rand_ctx)
-                                                  .unwrap());
+            .generate(2, &rand_ctx)
+            .unwrap());
         num_ones %= n / 2;
         num_ones %= MAX_ONES as u16;
 
         let mut num_neg_ones = u8_arr_to_u16(&rand_ctx.get_rng()
-                                                      .generate(2, &rand_ctx)
-                                                      .unwrap());
+            .generate(2, &rand_ctx)
+            .unwrap());
         num_neg_ones %= n / 2;
         num_neg_ones %= MAX_ONES as u16;
 
