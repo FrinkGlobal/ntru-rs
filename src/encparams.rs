@@ -56,6 +56,10 @@ pub struct EncParams {
     hash_4way: unsafe extern "C" fn(input: *const *const uint8_t,
                                         input_len: uint16_t,
                                         digest: *mut *mut uint8_t),
+    /// Hash function for 8 inputs, e.g. ntru_sha256_8way
+    hash_8way: unsafe extern "C" fn(input: *const *const uint8_t,
+                                        input_len: uint16_t,
+                                        digest: *mut *mut uint8_t),
     /// output length of the hash function
     hlen: uint16_t,
     /// number of bits of the public key to hash
@@ -82,6 +86,7 @@ impl Default for EncParams {
             oid: [0; 3],
             hash: ffi::ntru_sha1,
             hash_4way: ffi::ntru_sha1_4way,
+            hash_8way: ffi::ntru_sha1_8way,
             hlen: 0,
             pklen: 0,
         }
@@ -141,14 +146,17 @@ impl EncParams {
                                self.name[10] as u8];
         String::from_utf8_lossy(&slice).into_owned()
     }
+
     /// Get the number of polynomial coefficients
     pub fn get_n(&self) -> u16 {
         self.n
     }
+
     /// Get the modulus
     pub fn get_q(&self) -> u16 {
         self.q
     }
+
     /// Get the number of random bits to prepend to the message
     pub fn get_db(&self) -> u16 {
         self.db
@@ -161,20 +169,10 @@ impl EncParams {
 
     /// Encryption length
     pub fn enc_len(&self) -> u16 {
-        // Make sure q is a power of 2
         if self.q & (self.q - 1) != 0 {
             0
         } else {
-            let len_bits = self.n *
-                           {
-                let mut q = self.q;
-                let mut log = 0;
-                while q > 1 {
-                    q /= 2;
-                    log += 1;
-                }
-                log
-            };
+            let len_bits = self.n * EncParams::log2(self.q) as u16;
             (len_bits + 7) / 8
         }
     }
@@ -183,13 +181,29 @@ impl EncParams {
     pub fn public_len(&self) -> u16 {
         4 + self.enc_len()
     }
+
     /// Private key length
     pub fn private_len(&self) -> u16 {
+        let bits_per_idx = EncParams::log2(self.n - 1) as u16 + 1;
         if self.prod_flag == 1 {
-            5 + 4 + 4 * self.df1 + 4 + 4 * self.df2 + 4 + 4 * self.df3
+            let poly1_len = 4 + (bits_per_idx * 2 * self.df1 + 7) / 8;
+            let poly2_len = 4 + (bits_per_idx * 2 * self.df2 + 7) / 8;
+            let poly3_len = 4 + (bits_per_idx * 2 * self.df3 + 7) / 8;
+
+            5 + poly1_len + poly2_len + poly3_len
         } else {
-            5 + 4 + 4 * self.df1
+            5 + 4 + (bits_per_idx * 2 * self.df1 + 7) / 8
         }
+    }
+
+    fn log2(n: u16) -> u8 {
+        let mut n = n;
+        let mut log = 0;
+        while n > 1 {
+            n /= 2;
+            log += 1;
+        }
+        log
     }
 }
 
@@ -212,6 +226,7 @@ pub const EES401EP1: EncParams = EncParams {
     oid: [0, 2, 4],
     hash: ffi::ntru_sha1,
     hash_4way: ffi::ntru_sha1_4way,
+    hash_8way: ffi::ntru_sha1_8way,
     hlen: 20,
     pklen: 114,
 };
@@ -235,6 +250,7 @@ pub const EES449EP1: EncParams = EncParams {
     oid: [0, 3, 3],
     hash: ffi::ntru_sha1,
     hash_4way: ffi::ntru_sha1_4way,
+    hash_8way: ffi::ntru_sha1_8way,
     hlen: 20,
     pklen: 128,
 };
@@ -258,6 +274,7 @@ pub const EES677EP1: EncParams = EncParams {
     oid: [0, 5, 3],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 192,
 };
@@ -281,6 +298,7 @@ pub const EES1087EP2: EncParams = EncParams {
     oid: [0, 6, 3],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 256,
 };
@@ -305,6 +323,7 @@ pub const EES541EP1: EncParams = EncParams {
     oid: [0, 2, 5],
     hash: ffi::ntru_sha1,
     hash_4way: ffi::ntru_sha1_4way,
+    hash_8way: ffi::ntru_sha1_8way,
     hlen: 20,
     pklen: 112,
 };
@@ -329,6 +348,7 @@ pub const EES613EP1: EncParams = EncParams {
     oid: [0, 3, 4],
     hash: ffi::ntru_sha1,
     hash_4way: ffi::ntru_sha1_4way,
+    hash_8way: ffi::ntru_sha1_8way,
     hlen: 20,
     pklen: 128,
 };
@@ -353,6 +373,7 @@ pub const EES887EP1: EncParams = EncParams {
     oid: [0, 5, 4],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 192,
 };
@@ -377,6 +398,7 @@ pub const EES1171EP1: EncParams = EncParams {
     oid: [0, 6, 4],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 256,
 };
@@ -401,6 +423,7 @@ pub const EES659EP1: EncParams = EncParams {
     oid: [0, 2, 6],
     hash: ffi::ntru_sha1,
     hash_4way: ffi::ntru_sha1_4way,
+    hash_8way: ffi::ntru_sha1_8way,
     hlen: 20,
     pklen: 112,
 };
@@ -425,6 +448,7 @@ pub const EES761EP1: EncParams = EncParams {
     oid: [0, 3, 5],
     hash: ffi::ntru_sha1,
     hash_4way: ffi::ntru_sha1_4way,
+    hash_8way: ffi::ntru_sha1_8way,
     hlen: 20,
     pklen: 128,
 };
@@ -449,6 +473,7 @@ pub const EES1087EP1: EncParams = EncParams {
     oid: [0, 5, 5],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 192,
 };
@@ -473,6 +498,7 @@ pub const EES1499EP1: EncParams = EncParams {
     oid: [0, 6, 5],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 256,
 };
@@ -496,6 +522,7 @@ pub const EES401EP2: EncParams = EncParams {
     oid: [0, 2, 16],
     hash: ffi::ntru_sha1,
     hash_4way: ffi::ntru_sha1_4way,
+    hash_8way: ffi::ntru_sha1_8way,
     hlen: 20,
     pklen: 112,
 };
@@ -521,6 +548,7 @@ pub const EES439EP1: EncParams = EncParams {
     oid: [0, 3, 16],
     hash: ffi::ntru_sha1,
     hash_4way: ffi::ntru_sha1_4way,
+    hash_8way: ffi::ntru_sha1_8way,
     hlen: 20,
     pklen: 128,
 };
@@ -544,6 +572,7 @@ pub const EES443EP1: EncParams = EncParams {
     oid: [0, 3, 17],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 128,
 };
@@ -569,6 +598,7 @@ pub const EES593EP1: EncParams = EncParams {
     oid: [0, 5, 16],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 192,
 };
@@ -592,6 +622,7 @@ pub const EES587EP1: EncParams = EncParams {
     oid: [0, 5, 17],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 192,
 };
@@ -615,25 +646,25 @@ pub const EES743EP1: EncParams = EncParams {
     oid: [0, 6, 16],
     hash: ffi::ntru_sha256,
     hash_4way: ffi::ntru_sha256_4way,
+    hash_8way: ffi::ntru_sha256_8way,
     hlen: 32,
     pklen: 256,
 };
 
 /// The default parameter set for 112 bits of security.
-pub const DEFAULT_PARAMS_112_BITS: EncParams = EES401EP2;
+pub const DEFAULT_PARAMS_112_BITS: EncParams = EES541EP1;
 
 /// The default parameter set for 128 bits of security.
-pub const DEFAULT_PARAMS_128_BITS: EncParams = EES443EP1;
+pub const DEFAULT_PARAMS_128_BITS: EncParams = EES613EP1;
 
 /// The default parameter set for 192 bits of security.
-pub const DEFAULT_PARAMS_192_BITS: EncParams = EES587EP1;
+pub const DEFAULT_PARAMS_192_BITS: EncParams = EES887EP1;
 
 /// The default parameter set for 256 bits of security.
-pub const DEFAULT_PARAMS_256_BITS: EncParams = EES743EP1;
+pub const DEFAULT_PARAMS_256_BITS: EncParams = EES1171EP1;
 
 /// All parameter sets, in an array
-pub const ALL_PARAM_SETS: [EncParams; 18] = [EES401EP1, EES449EP1, EES677EP1, EES1087EP2,
-                                             EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
-                                             EES659EP1, EES761EP1, EES1087EP1, EES1499EP1,
-                                             EES401EP2, EES439EP1, EES443EP1, EES593EP1,
-                                             EES587EP1, EES743EP1];
+pub const ALL_PARAM_SETS: [EncParams; 18] =
+    [EES401EP1, EES449EP1, EES677EP1, EES1087EP2, EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
+     EES659EP1, EES761EP1, EES1087EP1, EES1499EP1, EES401EP2, EES439EP1, EES443EP1, EES593EP1,
+     EES587EP1, EES743EP1];

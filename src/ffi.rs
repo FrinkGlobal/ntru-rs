@@ -6,11 +6,13 @@ use rand::RandGen;
 
 #[repr(C)]
 pub struct CNtruRandContext {
+    /// The RNG for the RandContext
     pub rand_gen: *const RandGen,
     /// For deterministic RNGs
     pub seed: *const uint8_t,
     /// For deterministic RNGs
     pub seed_len: uint16_t,
+    /// The current context state
     pub state: *const c_void,
 }
 
@@ -50,8 +52,14 @@ extern "C" {
     pub fn ntru_sha1_4way(input: *const *const uint8_t,
                           input_len: uint16_t,
                           digest: *mut *mut uint8_t);
+    pub fn ntru_sha1_8way(input: *const *const uint8_t,
+                          input_len: uint16_t,
+                          digest: *mut *mut uint8_t);
     pub fn ntru_sha256(input: *const uint8_t, input_len: uint16_t, digest: *mut uint8_t);
     pub fn ntru_sha256_4way(input: *const *const uint8_t,
+                            input_len: uint16_t,
+                            digest: *mut *mut uint8_t);
+    pub fn ntru_sha256_8way(input: *const *const uint8_t,
                             input_len: uint16_t,
                             digest: *mut *mut uint8_t);
 
@@ -113,14 +121,14 @@ extern "C" {
                                       -> uint8_t;
     pub fn ntru_rand_default_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
 
-    pub fn ntru_rand_igf2_init(rand_ctx: *mut CNtruRandContext,
-                               rand_gen: *const RandGen)
-                               -> uint8_t;
-    pub fn ntru_rand_igf2_generate(rand_data: *mut uint8_t,
-                                   len: uint16_t,
-                                   rand_ctx: *const CNtruRandContext)
+    pub fn ntru_rand_ctr_drbg_init(rand_ctx: *mut CNtruRandContext,
+                                   rand_gen: *const RandGen)
                                    -> uint8_t;
-    pub fn ntru_rand_igf2_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
+    pub fn ntru_rand_ctr_drbg_generate(rand_data: *mut uint8_t,
+                                       len: uint16_t,
+                                       rand_ctx: *const CNtruRandContext)
+                                       -> uint8_t;
+    pub fn ntru_rand_ctr_drbg_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
 
     // poly.h
     pub fn ntru_rand_tern(n: uint16_t,
@@ -134,22 +142,6 @@ extern "C" {
                           c: *mut IntPoly,
                           mod_mask: uint16_t)
                           -> uint8_t;
-    pub fn ntru_mult_tern_32(a: *const IntPoly,
-                             b: *const TernPoly,
-                             c: *mut IntPoly,
-                             mod_mask: uint16_t)
-                             -> uint8_t;
-    pub fn ntru_mult_tern_64(a: *const IntPoly,
-                             b: *const TernPoly,
-                             c: *mut IntPoly,
-                             mod_mask: uint16_t)
-                             -> uint8_t;
-    #[cfg(SSE3)]
-    pub fn ntru_mult_tern_sse(a: *const IntPoly,
-                              b: *const TernPoly,
-                              c: *mut IntPoly,
-                              mod_mask: uint16_t)
-                              -> uint8_t;
     pub fn ntru_mult_prod(a: *const IntPoly,
                           b: *const ProdPoly,
                           c: *mut IntPoly,
@@ -165,30 +157,15 @@ extern "C" {
                          c: *mut IntPoly,
                          mod_mask: uint16_t)
                          -> uint8_t;
-    pub fn ntru_mult_int_16(a: *const IntPoly,
-                            b: *const IntPoly,
-                            c: *mut IntPoly,
-                            mod_mask: uint16_t)
-                            -> uint8_t;
-    pub fn ntru_mult_int_64(a: *const IntPoly,
-                            b: *const IntPoly,
-                            c: *mut IntPoly,
-                            mod_mask: uint16_t)
-                            -> uint8_t;
     pub fn ntru_add(a: *mut IntPoly, b: *const IntPoly);
     pub fn ntru_sub(a: *mut IntPoly, b: *const IntPoly);
     pub fn ntru_mod_mask(p: *mut IntPoly, mod_mask: uint16_t);
     pub fn ntru_mult_fac(a: *mut IntPoly, factor: int16_t);
     pub fn ntru_mod_center(p: *mut IntPoly, modulus: uint16_t);
     pub fn ntru_mod3(p: *mut IntPoly);
-    pub fn ntru_to_arr_32(p: *const IntPoly, q: uint16_t, a: *mut uint8_t);
-    pub fn ntru_to_arr_64(p: *const IntPoly, q: uint16_t, a: *mut uint8_t);
-    #[cfg(SSE3)]
-    pub fn ntru_to_arr_sse_2048(p: *const IntPoly, a: *mut uint8_t);
+    pub fn ntru_to_arr(p: *const IntPoly, q: uint16_t, a: *mut uint8_t);
     pub fn ntru_from_arr(arr: *const uint8_t, n: uint16_t, q: uint16_t, p: *mut IntPoly);
     pub fn ntru_invert(a: *const PrivPoly, mod_mask: uint16_t, fq: *mut IntPoly) -> uint8_t;
-    pub fn ntru_invert_32(a: *const PrivPoly, mod_mask: uint16_t, fq: *mut IntPoly) -> uint8_t;
-    pub fn ntru_invert_64(a: *const PrivPoly, mod_mask: uint16_t, fq: *mut IntPoly) -> uint8_t;
 
     // key.h
     pub fn ntru_export_pub(key: *const PublicKey, arr: *mut uint8_t);

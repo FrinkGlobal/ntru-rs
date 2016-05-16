@@ -7,6 +7,16 @@ use std::process::Command;
 use std::env;
 
 fn main() {
+    if cfg!(feature = "no-sse") && cfg!(feature = "sse") {
+        panic!("You need to decide if you want SSE support or not. If you have doubts, simply disable both options and let the build script autodetect it.");
+    }
+    if cfg!(feature = "no-avx2") && cfg!(feature = "avx2") {
+        panic!("You need to decide if you want AVX2 support or not. If you have doubts, simply disable both options and let the build script autodetect it.");
+    }
+    if cfg!(feature = "no-sse") && cfg!(feature = "avx2") {
+        panic!("SSE is needed for AVX2 support.");
+    }
+
     if cfg!(target_os = "linux") || cfg!(target_os = "macos") || cfg!(target_os = "windows") {
         env::set_var("CC", "gcc");
         env::set_var("AS", "gcc -c");
@@ -19,7 +29,45 @@ fn main() {
         env::set_var("AR", "ar");
     }
 
-    let sse3 = if cfg!(target_os = "windows") {
+    let mut avx2 = if cfg!(feature = "no-avx2") { false } else if cfg!(target_os = "windows") {
+        cfg!(feature = "avx2")
+    } else {
+        let output = if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
+            // /usr/bin/grep -o AVX2 /var/run/dmesg.boot | /usr/bin/head -1
+            Command::new("/usr/bin/grep")
+                .arg("-o")
+                .arg("AVX2")
+                .arg("/var/run/dmesg.boot")
+                .output()
+                .unwrap()
+        } else if cfg!(target_os = "macos") {
+            // /usr/sbin/sysctl machdep.cpu.features | grep -m 1 -ow AVX2
+            Command::new("/usr/sbin/sysctl")
+                .arg("machdep.cpu.features")
+                .output()
+                .unwrap()
+        } else {
+            // /bin/grep -m 1 -o avx2 /proc/cpuinfo
+            Command::new("/bin/grep")
+                .arg("-m")
+                .arg("1")
+                .arg("-o")
+                .arg("avx2")
+                .arg("/proc/cpuinfo")
+                .output()
+                .unwrap()
+        };
+
+        let output = std::str::from_utf8(&output.stdout[..]).unwrap().trim();
+
+        if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") || cfg!(target_os = "macos") {
+            output.contains("AVX2")
+        } else {
+            output == "avx2"
+        }
+    };
+
+    let sse3 = if cfg!(feature = "no-sse3") { false } else if avx2 { true } else if cfg!(target_os = "windows") {
         cfg!(feature = "sse")
     } else {
         let output = if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
@@ -56,11 +104,17 @@ fn main() {
         }
     };
 
-    let mut cflags = "-g -Wall -Wextra -Wno-unused-parameter".to_owned();
-    if !cfg!(feature = "no-sse") && sse3 {
-        cflags = cflags + " -mssse3";
+    if !sse3 {
+        avx2 = false;
     }
-    if cfg!(feature = "no-sse") && cfg!(target_os = "macos") {
+
+    let mut cflags = "-g -Wall -Wextra -Wno-unused-parameter".to_owned();
+    if avx2 {
+        cflags = cflags + " -mavx2";
+    }
+    if sse3 {
+        cflags = cflags + " -mssse3";
+    } else if cfg!(target_os = "macos") {
         cflags = cflags + " -march=x86-64";
     }
     cflags = cflags + " -O2";
@@ -81,8 +135,7 @@ fn main() {
           .file("src/c/src/sha1.c")
           .file("src/c/src/sha2.c")
           .file("src/c/src/nist_ctr_drbg.c")
-          .file("src/c/src/rijndael.c")
-          .file("src/c/src/rijndael-alg-fst.c");
+          .file("src/c/src/rijndael.c");
 
     if sse3 &&
        (cfg!(target_pointer_width = "64") || cfg!(target_os = "macos") ||
@@ -158,7 +211,10 @@ fn main() {
 
     config.include("src/c/src").compile("libntru.a");
 
-    if !cfg!(feature = "no-sse") && sse3 {
+    if sse3 {
         println!("cargo:rustc-cfg=SSE3")
+    }
+    if avx2 {
+        println!("cargo:rustc-cfg=AVX2")
     }
 }

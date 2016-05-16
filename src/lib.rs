@@ -120,9 +120,8 @@ pub fn generate_public(params: &EncParams,
                        rand_context: &RandContext)
                        -> Result<PublicKey, Error> {
     let mut public: PublicKey = Default::default();
-    let result = unsafe {
-        ffi::ntru_gen_pub(params, private, &mut public, rand_context.get_c_rand_ctx())
-    };
+    let result =
+        unsafe { ffi::ntru_gen_pub(params, private, &mut public, rand_context.get_c_rand_ctx()) };
     if result == 0 {
         Ok(public)
     } else {
@@ -185,33 +184,5 @@ pub fn decrypt(enc: &[u8], kp: &KeyPair, params: &EncParams) -> Result<Box<[u8]>
         Ok(final_dec.into_boxed_slice())
     } else {
         Err(Error::from(result))
-    }
-}
-
-/// Execute if SSE support
-///
-/// Expands to its argument if SSE3 support is configured and to `()` otherwise
-#[cfg(not(SSE3))]
-#[macro_export]
-macro_rules! if_ntru_sse3 {
-    ($ex:expr) => (
-        ()
-    );
-    ($bl:block) => {
-        ()
-    }
-}
-
-/// Execute if SSE support
-///
-/// Expands to its argument if SSE3 support is configured and to `()` otherwise
-#[cfg(SSE3)]
-#[macro_export]
-macro_rules! if_ntru_sse3 {
-    ($ex:expr) => (
-        $ex
-    );
-    ($bl:block) => {
-        $bl
     }
 }
