@@ -35,10 +35,10 @@ script:
       if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       travis-cargo build &&
       travis-cargo test &&
-      travis-cargo build --features "no-sse" &&
-      travis-cargo test  --features "no-sse" &&
-      travis-cargo build --features "no-avx2" &&
-      travis-cargo test  --features "no-avx2" &&
+      travis-cargo build -- --features "no-sse" &&
+      travis-cargo test  -- --features "no-sse" &&
+      travis-cargo build -- --features "no-avx2" &&
+      travis-cargo test  -- --features "no-avx2" &&
       travis-cargo bench;
       fi
   - |
