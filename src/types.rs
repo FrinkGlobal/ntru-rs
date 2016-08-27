@@ -242,10 +242,12 @@ impl IntPoly {
         unsafe { ffi::ntru_mult_fac(self, factor) };
     }
 
+    /// Calls `ntru_mod_center()` in this polinomial.
     pub fn mod_center(&mut self, modulus: u16) {
         unsafe { ffi::ntru_mod_center(self, modulus) };
     }
 
+    /// Calls `ntru_mod3()` in this polinomial.
     pub fn mod3(&mut self) {
         unsafe { ffi::ntru_mod3(self) };
     }
