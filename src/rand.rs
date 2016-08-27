@@ -193,10 +193,6 @@ impl TernPoly {
             ffi::ntru_rand_tern(n, num_ones, num_neg_ones, &mut poly, &rand_ctx.rand_ctx)
         };
 
-        if result == 0 {
-            None
-        } else {
-            Some(poly)
-        }
+        if result == 0 { None } else { Some(poly) }
     }
 }
