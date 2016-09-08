@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `encparams` mod in crate `ntru`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, encparams">
+
+    <title>ntru::encparams - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>ntru</a></p><script>window.sidebarCurrent = {name: 'encparams', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>ntru</a>::<wbr><a class='mod' href=''>encparams</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-609' class='srclink' href='../../src/ntru/src/encparams.rs.html#1-670' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>NTRUEncrypt Encryption parameters</p>
+
+<p>This module contains the parameters for NTRUEncrypt. Theese parameters must be used when
+encrypting, decrypting and generating key pairs. The recomendation is to use the default
+parameters for each level of security, and not use the deprecated parameters. The recommended
+parameters are the following:</p>
+
+<ul>
+<li><code>DEFAULT_PARAMS_112_BITS</code> for 112 bits of security.</li>
+<li><code>DEFAULT_PARAMS_128_BITS</code> for 128 bits of security.</li>
+<li><code>DEFAULT_PARAMS_192_BITS</code> for 192 bits of security.</li>
+<li><code>DEFAULT_PARAMS_256_BITS</code> for 256 bits of security.</li>
+</ul>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='struct' href='struct.EncParams.html'
+                                  title='ntru::encparams::EncParams'>EncParams</a></td>
+                           <td class='docblock short'>
+                                <p>A set of parameters for NtruEncrypt</p>
+                           </td>
+                       </tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.ALL_PARAM_SETS.html'
+                                  title='ntru::encparams::ALL_PARAM_SETS'>ALL_PARAM_SETS</a></td>
+                           <td class='docblock short'>
+                                <p>All parameter sets, in an array</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.DEFAULT_PARAMS_112_BITS.html'
+                                  title='ntru::encparams::DEFAULT_PARAMS_112_BITS'>DEFAULT_PARAMS_112_BITS</a></td>
+                           <td class='docblock short'>
+                                <p>The default parameter set for 112 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.DEFAULT_PARAMS_128_BITS.html'
+                                  title='ntru::encparams::DEFAULT_PARAMS_128_BITS'>DEFAULT_PARAMS_128_BITS</a></td>
+                           <td class='docblock short'>
+                                <p>The default parameter set for 128 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.DEFAULT_PARAMS_192_BITS.html'
+                                  title='ntru::encparams::DEFAULT_PARAMS_192_BITS'>DEFAULT_PARAMS_192_BITS</a></td>
+                           <td class='docblock short'>
+                                <p>The default parameter set for 192 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.DEFAULT_PARAMS_256_BITS.html'
+                                  title='ntru::encparams::DEFAULT_PARAMS_256_BITS'>DEFAULT_PARAMS_256_BITS</a></td>
+                           <td class='docblock short'>
+                                <p>The default parameter set for 256 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES1087EP1.html'
+                                  title='ntru::encparams::EES1087EP1'>EES1087EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 192 bits of security and is optimized for
+encryption/decryption speed.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES1087EP2.html'
+                                  title='ntru::encparams::EES1087EP2'>EES1087EP2</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 256 bits of security and is optimized for key size.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES1171EP1.html'
+                                  title='ntru::encparams::EES1171EP1'>EES1171EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 256 bits of security and is a tradeoff between key size
+and encryption/decryption speed.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES1499EP1.html'
+                                  title='ntru::encparams::EES1499EP1'>EES1499EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 256 bits of security and is optimized for
+encryption/decryption speed.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES401EP1.html'
+                                  title='ntru::encparams::EES401EP1'>EES401EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 112 bits of security and is optimized for key size.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES401EP2.html'
+                                  title='ntru::encparams::EES401EP2'>EES401EP2</a></td>
+                           <td class='docblock short'>
+                                <p>A product-form parameter set that gives 112 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES439EP1.html'
+                                  title='ntru::encparams::EES439EP1'>EES439EP1</a></td>
+                           <td class='docblock short'>
+                                <p><strong>DEPRECATED</strong> A product-form parameter set that gives 128 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES443EP1.html'
+                                  title='ntru::encparams::EES443EP1'>EES443EP1</a></td>
+                           <td class='docblock short'>
+                                <p>A product-form parameter set that gives 128 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES449EP1.html'
+                                  title='ntru::encparams::EES449EP1'>EES449EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 128 bits of security and is optimized for key size.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES541EP1.html'
+                                  title='ntru::encparams::EES541EP1'>EES541EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 112 bits of security and is a tradeoff between key size
+and encryption/decryption speed.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES587EP1.html'
+                                  title='ntru::encparams::EES587EP1'>EES587EP1</a></td>
+                           <td class='docblock short'>
+                                <p>A product-form parameter set that gives 192 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES593EP1.html'
+                                  title='ntru::encparams::EES593EP1'>EES593EP1</a></td>
+                           <td class='docblock short'>
+                                <p><strong>DEPRECATED</strong> A product-form parameter set that gives 192 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES613EP1.html'
+                                  title='ntru::encparams::EES613EP1'>EES613EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 128 bits of security and is a tradeoff between key
+size and encryption/decryption speed.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES659EP1.html'
+                                  title='ntru::encparams::EES659EP1'>EES659EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 112 bits of security and is optimized for
+encryption/decryption speed.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES677EP1.html'
+                                  title='ntru::encparams::EES677EP1'>EES677EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 192 bits of security and is optimized for key size.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES743EP1.html'
+                                  title='ntru::encparams::EES743EP1'>EES743EP1</a></td>
+                           <td class='docblock short'>
+                                <p>A product-form parameter set that gives 256 bits of security.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES761EP1.html'
+                                  title='ntru::encparams::EES761EP1'>EES761EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 128 bits of security and is optimized for
+encryption/decryption speed.</p>
+                           </td>
+                       </tr>
+                       <tr class=' module-item'>
+                           <td><a class='constant' href='constant.EES887EP1.html'
+                                  title='ntru::encparams::EES887EP1'>EES887EP1</a></td>
+                           <td class='docblock short'>
+                                <p>An IEEE 1361.1 parameter set that gives 192 bits of security and is a tradeoff between key size
+and encryption/decryption speed.</p>
+                           </td>
+                       </tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "ntru";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

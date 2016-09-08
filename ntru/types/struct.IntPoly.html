@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `IntPoly` struct in crate `ntru`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, IntPoly">
+
+    <title>ntru::types::IntPoly - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+    
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>ntru</a>::<wbr><a href='index.html'>types</a></p><script>window.sidebarCurrent = {name: 'IntPoly', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>ntru</a>::<wbr><a href='index.html'>types</a>::<wbr><a class='struct' href=''>IntPoly</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a id='src-16' class='srclink' href='../../src/ntru/src/types.rs.html#22-27' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct IntPoly {
+    // some fields omitted
+}</pre><div class='docblock'><p>A polynomial with integer coefficients.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><span class='in-band'><code>impl <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-54' class='srclink' href='../../src/ntru/src/types.rs.html#93-277' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>(coeffs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>) -&gt; <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></h4>
+<div class='docblock'><p>Create a new IntPoly</p>
+</div><h4 id='method.rand' class='method'><code>fn <a href='#method.rand' class='fnname'>rand</a>(n: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>, pow2q: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>, rand_ctx: &amp;<a class='struct' href='../../ntru/rand/struct.RandContext.html' title='ntru::rand::RandContext'>RandContext</a>) -&gt; <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></h4>
+<div class='docblock'><p>Create a new random IntPoly</p>
+</div><h4 id='method.from_arr' class='method'><code>fn <a href='#method.from_arr' class='fnname'>from_arr</a>(arr: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>, n: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>, q: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>) -&gt; <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></h4>
+<div class='docblock'><p>Convert array to IntPoly</p>
+</div><h4 id='method.get_coeffs' class='method'><code>fn <a href='#method.get_coeffs' class='fnname'>get_coeffs</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a></code></h4>
+<div class='docblock'><p>Get the coefficients</p>
+</div><h4 id='method.set_coeffs' class='method'><code>fn <a href='#method.set_coeffs' class='fnname'>set_coeffs</a>(&amp;mut self, coeffs: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>)</code></h4>
+<div class='docblock'><p>Set the coefficients</p>
+</div><h4 id='method.set_coeff' class='method'><code>fn <a href='#method.set_coeff' class='fnname'>set_coeff</a>(&amp;mut self, index: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a>, value: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a>)</code></h4>
+<div class='docblock'><p>Set a coefficient</p>
+</div><h4 id='method.mod_mask' class='method'><code>fn <a href='#method.mod_mask' class='fnname'>mod_mask</a>(&amp;mut self, mod_mask: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>)</code></h4>
+<div class='docblock'><p>Modifies the IntPoly with the given mask</p>
+</div><h4 id='method.to_arr' class='method'><code>fn <a href='#method.to_arr' class='fnname'>to_arr</a>(&amp;self, params: &amp;<a class='struct' href='../../ntru/encparams/struct.EncParams.html' title='ntru::encparams::EncParams'>EncParams</a>) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;<a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>[</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>]</a>&gt;</code></h4>
+<div class='docblock'><p>Converts the IntPoly to a byte array using 32 bit arithmetic</p>
+</div><h4 id='method.mult_tern' class='method'><code>fn <a href='#method.mult_tern' class='fnname'>mult_tern</a>(&amp;self, b: &amp;<a class='struct' href='../../ntru/types/struct.TernPoly.html' title='ntru::types::TernPoly'>TernPoly</a>, mod_mask: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></h4>
+<div class='docblock'><p>General polynomial by ternary polynomial multiplication</p>
+
+<p>Multiplies a IntPoly by a TernPoly. The number of coefficients must be the same for both
+polynomials. It also returns if the number of coefficients differ or not.</p>
+</div><h4 id='method.add_tern' class='method'><code>fn <a href='#method.add_tern' class='fnname'>add_tern</a>(&amp;self, b: &amp;<a class='struct' href='../../ntru/types/struct.TernPoly.html' title='ntru::types::TernPoly'>TernPoly</a>) -&gt; <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></h4>
+<div class='docblock'><p>Add a ternary polynomial</p>
+
+<p>Adds a ternary polynomial to the general polynomial. Returns a new general polynomial.</p>
+</div><h4 id='method.mult_prod' class='method'><code>fn <a href='#method.mult_prod' class='fnname'>mult_prod</a>(&amp;self, b: &amp;<a class='struct' href='../../ntru/types/struct.ProdPoly.html' title='ntru::types::ProdPoly'>ProdPoly</a>, mod_mask: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></h4>
+<div class='docblock'><p>General polynomial by product-form polynomial multiplication</p>
+
+<p>Multiplies a IntPoly by a ProdPoly. The number of coefficients must be the same for both
+polynomials. It also returns if the number of coefficients differ or not.</p>
+</div><h4 id='method.mult_priv' class='method'><code>fn <a href='#method.mult_priv' class='fnname'>mult_priv</a>(&amp;self, b: &amp;<a class='struct' href='../../ntru/types/struct.PrivPoly.html' title='ntru::types::PrivPoly'>PrivPoly</a>, mod_mask: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></h4>
+<div class='docblock'><p>General polynomial by private polynomial multiplication</p>
+
+<p>Multiplies a IntPoly by a PrivPoly, i.e. a TernPoly or a ProdPoly. The number of
+coefficients must be the same for both polynomials. It also returns if the number of
+coefficients differ or not.</p>
+</div><h4 id='method.mult_int' class='method'><code>fn <a href='#method.mult_int' class='fnname'>mult_int</a>(&amp;self, b: &amp;<a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a>, mod_mask: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>(</a><a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a>, <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a><a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.tuple.html'>)</a></code></h4>
+<div class='docblock'><p>General polynomial by general polynomial multiplication</p>
+
+<p>Multiplies a IntPoly by another IntPoly, i.e. a TernPoly or a ProdPoly. The number of
+coefficients must be the same for both polynomials. It also returns if the number of
+coefficients differ or not.</p>
+</div><h4 id='method.mult_fac' class='method'><code>fn <a href='#method.mult_fac' class='fnname'>mult_fac</a>(&amp;mut self, factor: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a>)</code></h4>
+<div class='docblock'><p>Multiply by factor</p>
+</div><h4 id='method.mod_center' class='method'><code>fn <a href='#method.mod_center' class='fnname'>mod_center</a>(&amp;mut self, modulus: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>)</code></h4>
+<div class='docblock'><p>Calls <code>ntru_mod_center()</code> in this polinomial.</p>
+</div><h4 id='method.mod3' class='method'><code>fn <a href='#method.mod3' class='fnname'>mod3</a>(&amp;mut self)</code></h4>
+<div class='docblock'><p>Calls <code>ntru_mod3()</code> in this polinomial.</p>
+</div><h4 id='method.equals_mod' class='method'><code>fn <a href='#method.equals_mod' class='fnname'>equals_mod</a>(&amp;self, other: &amp;<a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a>, modulus: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Check if both polynomials are equals given a modulus</p>
+</div><h4 id='method.equals1' class='method'><code>fn <a href='#method.equals1' class='fnname'>equals1</a>(&amp;self) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>Check if the IntPoly equals 1</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-20' class='srclink' href='../../src/ntru/src/types.rs.html#29-36' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.default' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default' class='fnname'>default</a>() -&gt; <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></h4>
+<div class='docblock'><p>Returns the &quot;default value&quot; for a type. <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html#tymethod.default">Read more</a></p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-23' class='srclink' href='../../src/ntru/src/types.rs.html#38-49' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></h4>
+<div class='docblock'><p>Returns a copy of the value. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#tymethod.clone">Read more</a></p>
+</div><h4 id='method.clone_from' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></h4>
+<div class='docblock'><p>Performs copy-assignment from <code>source</code>. <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html#method.clone_from">Read more</a></p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a> for <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-29' class='srclink' href='../../src/ntru/src/types.rs.html#51-58' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='associatedtype.Output' class='type'><code>type <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html#associatedtype.Output' class='type'>Output</a> = <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></h4>
+<div class='docblock'><p>The resulting type after applying the <code>+</code> operator</p>
+</div><h4 id='method.add' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html#tymethod.add' class='fnname'>add</a>(self, rhs: <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a>) -&gt; Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Output</a></code></h4>
+<div class='docblock'><p>The method for the <code>+</code> operator</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a> for <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-35' class='srclink' href='../../src/ntru/src/types.rs.html#60-67' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='associatedtype.Output-1' class='type'><code>type <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#associatedtype.Output' class='type'>Output</a> = <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></h4>
+<div class='docblock'><p>The resulting type after applying the <code>-</code> operator</p>
+</div><h4 id='method.sub' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#tymethod.sub' class='fnname'>sub</a>(self, rhs: <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a>) -&gt; Self::<a class='trait' href='https://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Output</a></code></h4>
+<div class='docblock'><p>The method for the <code>-</code> operator</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-41' class='srclink' href='../../src/ntru/src/types.rs.html#69-77' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='https://doc.rust-lang.org/nightly/core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+<div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div><h3 class='impl'><span class='in-band'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a></code></span><span class='out-of-band'><div class='ghost'></div><a id='src-49' class='srclink' href='../../src/ntru/src/types.rs.html#79-91' title='goto source code'>[src]</a></span></h3>
+<div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq' class='fnname'>eq</a>(&amp;self, other: &amp;<a class='struct' href='../../ntru/types/struct.IntPoly.html' title='ntru::types::IntPoly'>IntPoly</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<div class='docblock'><p>This method tests for <code>self</code> and <code>other</code> values to be equal, and is used by <code>==</code>. <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#tymethod.eq">Read more</a></p>
+</div><h4 id='method.ne' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code><div class='since' title='Stable since Rust version 1.0.0'>1.0.0</div></h4>
+<div class='docblock'><p>This method tests for <code>!=</code>.</p>
+</div></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                    <dt>+</dt>
+                    <dd>Collapse/expand all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "ntru";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["decrypt","Decrypts a message."],["encrypt","Encrypts a message"],["generate_key_pair","Key generation"],["generate_multiple_key_pairs","Key generation with multiple public keys"],["generate_public","New public key"]],"mod":[["encparams","NTRUEncrypt Encryption parameters"],["rand","Rand module"],["types","NTRUEncrypt type definitions"]]});
