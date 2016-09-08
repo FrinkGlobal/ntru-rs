@@ -60,8 +60,13 @@ after_success:
       travis-cargo --only stable doc-upload;
       fi
   - |
-      if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      travis-cargo --only stable coveralls --no-sudo --verify;
+      if [[ "$TRAVIS_OS_NAME" == "linux" && "$TRAVIS_RUST_VERSION" == "stable" ]]; then
+      travis-cargo coveralls --no-sudo --verify;
+      ./kcov/build/src/kcov --verify --exclude-pattern=/.cargo target/kcov/ntru target/debug/ntru-*;
+      ./kcov/build/src/kcov --verify --exclude-pattern=/.cargo target/kcov/key target/debug/key-*;
+      ./kcov/build/src/kcov --verify --exclude-pattern=/.cargo target/kcov/poly target/debug/poly-*;
+      ./kcov/build/src/kcov --verify --exclude-pattern=/.cargo target/kcov/lib target/debug/lib-*;
+      ./kcov/build/src/kcov --verify --exclude-pattern=/.cargo --coveralls-id=$TRAVIS_JOB_ID --merge target/kcov/final target/kcov/lib target/kcov/poly target/kcov/key target/kcov/ntru;
       fi
 
 env:
