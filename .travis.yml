@@ -67,3 +67,10 @@ after_success:
 env:
   global:
     - TRAVIS_CARGO_NIGHTLY_FEATURE=""
+
+notifications:
+  email:
+    recipients:
+      - iban@fractal.global
+    on_success: change
+on_failure: always
