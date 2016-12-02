@@ -1,43 +1,31 @@
-use libc::{uint16_t, int16_t, uint8_t, c_void};
+use libc::{uint16_t, int16_t, uint8_t};
 
 use encparams::EncParams;
 use types::{IntPoly, ProdPoly, TernPoly, KeyPair, PrivPoly, PublicKey, PrivateKey};
-use rand::RandGen;
-
-#[repr(C)]
-pub struct CNtruRandContext {
-    /// The RNG for the RandContext
-    pub rand_gen: *const RandGen,
-    /// For deterministic RNGs
-    pub seed: *const uint8_t,
-    /// For deterministic RNGs
-    pub seed_len: uint16_t,
-    /// The current context state
-    pub state: *const c_void,
-}
+use rand::{RandContext, RandGen};
 
 extern "C" {
     // ntru.h
     pub fn ntru_gen_key_pair(params: *const EncParams,
                              kp: *mut KeyPair,
-                             rand_ctx: *const CNtruRandContext)
+                             rand_ctx: *const RandContext)
                              -> uint8_t;
     pub fn ntru_gen_key_pair_multi(params: *const EncParams,
                                    private: *mut PrivateKey,
                                    public: *mut PublicKey,
-                                   rand_ctx: *const CNtruRandContext,
+                                   rand_ctx: *const RandContext,
                                    num_pub: u32)
                                    -> uint8_t;
     pub fn ntru_gen_pub(params: *const EncParams,
                         private: *const PrivateKey,
                         public: *mut PublicKey,
-                        rand_ctx: *const CNtruRandContext)
+                        rand_ctx: *const RandContext)
                         -> uint8_t;
     pub fn ntru_encrypt(msg: *const uint8_t,
                         msg_len: uint16_t,
                         public: *const PublicKey,
                         params: *const EncParams,
-                        rand_ctx: *const CNtruRandContext,
+                        rand_ctx: *const RandContext,
                         enc: *const uint8_t)
                         -> uint8_t;
     pub fn ntru_decrypt(enc: *const uint8_t,
@@ -64,17 +52,17 @@ extern "C" {
                             digest: *mut *mut uint8_t);
 
     // rand.h
-    pub fn ntru_rand_init(rand_ctx: *mut CNtruRandContext, rand_gen: *const RandGen) -> uint8_t;
-    pub fn ntru_rand_init_det(rand_ctx: *mut CNtruRandContext,
+    pub fn ntru_rand_init(rand_ctx: *mut RandContext, rand_gen: *const RandGen) -> uint8_t;
+    pub fn ntru_rand_init_det(rand_ctx: *mut RandContext,
                               rand_gen: *const RandGen,
                               seed: *const uint8_t,
                               seed_len: uint16_t)
                               -> uint8_t;
     pub fn ntru_rand_generate(rand_data: *mut uint8_t,
                               len: uint16_t,
-                              rand_ctx: *const CNtruRandContext)
+                              rand_ctx: *const RandContext)
                               -> uint8_t;
-    pub fn ntru_rand_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
+    pub fn ntru_rand_release(rand_ctx: *mut RandContext) -> uint8_t;
 
     #[cfg(target_os = "windows")]
     pub fn ntru_rand_wincrypt_init(rand_ctx: *mut CNtruRandContext,
@@ -89,53 +77,51 @@ extern "C" {
     pub fn ntru_rand_wincrypt_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
 
     #[cfg(not(target_os = "windows"))]
-    pub fn ntru_rand_devrandom_init(rand_ctx: *mut CNtruRandContext,
+    pub fn ntru_rand_devrandom_init(rand_ctx: *mut RandContext,
                                     rand_gen: *const RandGen)
                                     -> uint8_t;
     #[cfg(not(target_os = "windows"))]
     pub fn ntru_rand_devrandom_generate(rand_data: *mut uint8_t,
                                         len: uint16_t,
-                                        rand_ctx: *const CNtruRandContext)
+                                        rand_ctx: *const RandContext)
                                         -> uint8_t;
     #[cfg(not(target_os = "windows"))]
-    pub fn ntru_rand_devrandom_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
+    pub fn ntru_rand_devrandom_release(rand_ctx: *mut RandContext) -> uint8_t;
 
     #[cfg(not(target_os = "windows"))]
-    pub fn ntru_rand_devurandom_init(rand_ctx: *mut CNtruRandContext,
+    pub fn ntru_rand_devurandom_init(rand_ctx: *mut RandContext,
                                      rand_gen: *const RandGen)
                                      -> uint8_t;
     #[cfg(not(target_os = "windows"))]
     pub fn ntru_rand_devurandom_generate(rand_data: *mut uint8_t,
                                          len: uint16_t,
-                                         rand_ctx: *const CNtruRandContext)
+                                         rand_ctx: *const RandContext)
                                          -> uint8_t;
     #[cfg(not(target_os = "windows"))]
-    pub fn ntru_rand_devurandom_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
+    pub fn ntru_rand_devurandom_release(rand_ctx: *mut RandContext) -> uint8_t;
 
-    pub fn ntru_rand_default_init(rand_ctx: *mut CNtruRandContext,
-                                  rand_gen: *const RandGen)
-                                  -> uint8_t;
+    pub fn ntru_rand_default_init(rand_ctx: *mut RandContext, rand_gen: *const RandGen) -> uint8_t;
     pub fn ntru_rand_default_generate(rand_data: *mut uint8_t,
                                       len: uint16_t,
-                                      rand_ctx: *const CNtruRandContext)
+                                      rand_ctx: *const RandContext)
                                       -> uint8_t;
-    pub fn ntru_rand_default_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
+    pub fn ntru_rand_default_release(rand_ctx: *mut RandContext) -> uint8_t;
 
-    pub fn ntru_rand_ctr_drbg_init(rand_ctx: *mut CNtruRandContext,
+    pub fn ntru_rand_ctr_drbg_init(rand_ctx: *mut RandContext,
                                    rand_gen: *const RandGen)
                                    -> uint8_t;
     pub fn ntru_rand_ctr_drbg_generate(rand_data: *mut uint8_t,
                                        len: uint16_t,
-                                       rand_ctx: *const CNtruRandContext)
+                                       rand_ctx: *const RandContext)
                                        -> uint8_t;
-    pub fn ntru_rand_ctr_drbg_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
+    pub fn ntru_rand_ctr_drbg_release(rand_ctx: *mut RandContext) -> uint8_t;
 
     // poly.h
     pub fn ntru_rand_tern(n: uint16_t,
                           num_ones: uint16_t,
                           num_neg_ones: uint16_t,
                           poly: *mut TernPoly,
-                          rand_ctx: *const CNtruRandContext)
+                          rand_ctx: *const RandContext)
                           -> uint8_t;
     pub fn ntru_mult_tern(a: *const IntPoly,
                           b: *const TernPoly,

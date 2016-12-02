@@ -66,7 +66,7 @@ use rand::RandContext;
 /// deterministic for a given random seed; otherwise, the key pair will be completely random.
 pub fn generate_key_pair(params: &EncParams, rand_context: &RandContext) -> Result<KeyPair, Error> {
     let mut kp: KeyPair = Default::default();
-    let result = unsafe { ffi::ntru_gen_key_pair(params, &mut kp, rand_context.get_c_rand_ctx()) };
+    let result = unsafe { ffi::ntru_gen_key_pair(params, &mut kp, rand_context) };
     if result == 0 {
         Ok(kp)
     } else {
@@ -94,7 +94,7 @@ pub fn generate_multiple_key_pairs(params: &EncParams,
         ffi::ntru_gen_key_pair_multi(params,
                                      &mut private,
                                      &mut public[0],
-                                     rand_context.get_c_rand_ctx(),
+                                     rand_context,
                                      num_pub as u32)
     };
     if result == 0 {
@@ -119,8 +119,7 @@ pub fn generate_public(params: &EncParams,
                        rand_context: &RandContext)
                        -> Result<PublicKey, Error> {
     let mut public: PublicKey = Default::default();
-    let result =
-        unsafe { ffi::ntru_gen_pub(params, private, &mut public, rand_context.get_c_rand_ctx()) };
+    let result = unsafe { ffi::ntru_gen_pub(params, private, &mut public, rand_context) };
     if result == 0 {
         Ok(public)
     } else {
@@ -152,7 +151,7 @@ pub fn encrypt(msg: &[u8],
                           msg.len() as u16,
                           public,
                           params,
-                          rand_ctx.get_c_rand_ctx(),
+                          rand_ctx,
                           &mut enc[0])
     };
 
