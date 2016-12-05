@@ -18,8 +18,7 @@ rust:
   - nightly
   - beta
   - stable
-  - 1.12.0
-  - 1.4.0
+  - 1.13.0
 
 # Load travis-cargo
 before_script:
@@ -56,11 +55,6 @@ script:
 after_success:
   - |
       if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-      travis-cargo --only stable doc &&
-      travis-cargo --only stable doc-upload;
-      fi
-  - |
-      if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
       travis-cargo --only stable coveralls --no-sudo --verify;
       fi
 
@@ -71,6 +65,7 @@ env:
 notifications:
   email:
     recipients:
+      - matt@fractal.global
       - iban@fractal.global
     on_success: change
 on_failure: always
