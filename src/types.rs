@@ -1,7 +1,7 @@
-//! NTRUEncrypt type definitions
+//! NTRU type definitions
 //!
-//! This module includes all the needed structs and enums for NTRUEncrypt. All of them with their
-//! needed methods.
+//! This module includes all the needed structs and enums for NTRU encryption library. All of them
+//! with their needed methods.
 use std::ops::{Add, Sub};
 use std::default::Default;
 use std::{fmt, mem, error};
@@ -10,11 +10,11 @@ use ffi;
 use encparams::EncParams;
 use rand::RandContext;
 
-/// Max N value for all param sets; +1 for ntru_invert_...()
+/// Max `N` value for all param sets; +1 for `ntru_invert_...()`
 pub const MAX_DEGREE: usize = (1499 + 1);
-/// (Max #coefficients + 16) rounded to a multiple of 8
+/// (Max `coefficients` + 16) rounded to a multiple of 8
 const INT_POLY_SIZE: usize = ((MAX_DEGREE + 16 + 7) & 0xFFF8);
-/// max(df1, df2, df3, dg)
+/// `max(df1, df2, df3, dg)`
 pub const MAX_ONES: usize = 499;
 
 #[repr(C)]
@@ -38,9 +38,8 @@ impl Default for IntPoly {
 impl Clone for IntPoly {
     fn clone(&self) -> IntPoly {
         let mut new_coeffs = [0i16; INT_POLY_SIZE];
-        for i in 0..self.n as usize {
-            new_coeffs[i] = self.coeffs[i];
-        }
+        new_coeffs.clone_from_slice(&self.coeffs);
+
         IntPoly {
             n: self.n,
             coeffs: new_coeffs,
@@ -301,14 +300,9 @@ impl Default for TernPoly {
 impl Clone for TernPoly {
     fn clone(&self) -> TernPoly {
         let mut new_ones = [0u16; MAX_ONES];
+        new_ones.clone_from_slice(&self.ones);
         let mut new_neg_ones = [0u16; MAX_ONES];
-
-        for i in 0..self.num_ones as usize {
-            new_ones[i] = self.ones[i]
-        }
-        for i in 0..self.num_neg_ones as usize {
-            new_neg_ones[i] = self.neg_ones[i]
-        }
+        new_neg_ones.clone_from_slice(&self.neg_ones);
 
         TernPoly {
             n: self.n,
@@ -660,7 +654,7 @@ impl PrivPoly {
 
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone)]
-/// NtruEncrypt private key
+/// NTRU encryption private key
 pub struct PrivateKey {
     q: uint16_t,
     t: PrivPoly,
@@ -717,7 +711,7 @@ impl PrivateKey {
 
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone)]
-/// NtruEncrypt public key
+/// NTRU encryption public key
 pub struct PublicKey {
     q: uint16_t,
     h: IntPoly,
@@ -762,7 +756,7 @@ impl PublicKey {
 
 #[repr(C)]
 #[derive(Debug, PartialEq, Clone)]
-/// NtruEncrypt key pair
+/// NTRU encryption key pair
 pub struct KeyPair {
     /// Private key
     private: PrivateKey,
@@ -857,18 +851,18 @@ impl From<uint8_t> for Error {
 
 impl error::Error for Error {
     fn description(&self) -> &str {
-        match self {
-            &Error::OutOfMemory => "Out of memory error.",
-            &Error::Prng => "Error in the random number generator.",
-            &Error::MessageTooLong => "Message is too long.",
-            &Error::InvalidMaxLength => "Invalid maximum length.",
-            &Error::Md0Violation => "MD0 violation.",
-            &Error::NoZeroPad => "No zero pad.",
-            &Error::InvalidEncoding => "Invalid encoding of the message.",
-            &Error::NullArgument => "Null argument.",
-            &Error::UnknownParamSet => "Unknown parameter set.",
-            &Error::InvalidParam => "Invalid parameter.",
-            &Error::InvalidKey => "Invalid key.",
+        match *self {
+            Error::OutOfMemory => "Out of memory error.",
+            Error::Prng => "Error in the random number generator.",
+            Error::MessageTooLong => "Message is too long.",
+            Error::InvalidMaxLength => "Invalid maximum length.",
+            Error::Md0Violation => "MD0 violation.",
+            Error::NoZeroPad => "No zero pad.",
+            Error::InvalidEncoding => "Invalid encoding of the message.",
+            Error::NullArgument => "Null argument.",
+            Error::UnknownParamSet => "Unknown parameter set.",
+            Error::InvalidParam => "Invalid parameter.",
+            Error::InvalidKey => "Invalid key.",
         }
     }
 }

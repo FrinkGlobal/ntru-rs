@@ -1,8 +1,8 @@
-//! This crate implements the NTRUEncrypt library in Rust. It is an interface to libntru, even
+//! This crate implements the NTRU encryption library in Rust. It is an interface to libntru, even
 //! though many of the methods are being implemented in pure Rust. The plan is to gradually
 //! implement the library natively. It uses this library since it has proven to be faster than the
-//! original NTRUEncrypt implementation. In any case, it is much faster than usual encryption /
-//! decryption mecanisms, and quantum-proof. More on NTRUEncrypt
+//! original NTRU encryption implementation. In any case, it is much faster than usual encryption /
+//! decryption mecanisms, and quantum-proof. More on NTRU encryption
 //! [here](https://en.wikipedia.org/wiki/NTRUEncrypt).
 //!
 //! To use it you only need to include the following in your crate:
@@ -11,8 +11,8 @@
 //! extern crate ntru;
 //! ```
 //!
-//! NTRUEncrypt uses its own keys, that must be generated with the included random key generator,
-//! and must not be used for other applications such as NTRUSign or NTRUNMLS.
+//! NTRU encryption uses its own keys, that must be generated with the included random key
+//! generator, and must not be used for other applications such as NTRU signing or NTRUNMLS.
 //!
 //! # Examples
 //!
@@ -62,7 +62,7 @@ use rand::RandContext;
 
 /// Key generation
 ///
-/// Generates a NtruEncrypt key pair. If a deterministic RNG is used, the key pair will be
+/// Generates a NTRU encryption key pair. If a deterministic RNG is used, the key pair will be
 /// deterministic for a given random seed; otherwise, the key pair will be completely random.
 pub fn generate_key_pair(params: &EncParams, rand_context: &RandContext) -> Result<KeyPair, Error> {
     let mut kp: KeyPair = Default::default();
@@ -76,11 +76,11 @@ pub fn generate_key_pair(params: &EncParams, rand_context: &RandContext) -> Resu
 
 /// Key generation with multiple public keys
 ///
-/// Generates num_pub NtruEncrypt key pairs. They all share a private key but their public keys
-/// differ. The private key decrypts messages encrypted for any of the public keys. Note that when
-/// decrypting, the public key of the key pair passed into ntru_decrypt() must match the public key
-/// used for encrypting the message. If a deterministic RNG is used, the key pair will be
-/// deterministic for a given random seed; otherwise, the key pair will be completely random.
+/// Generates `num_pub` Ntru encryption key pairs. They all share a private key but their public
+/// keys differ. The private key decrypts messages encrypted for any of the public keys. Note that
+/// when decrypting, the public key of the key pair passed into `ntru_decrypt()` must match the
+/// public key used for encrypting the message. If a deterministic RNG is used, the key pair will
+/// be deterministic for a given random seed; otherwise, the key pair will be completely random.
 pub fn generate_multiple_key_pairs(params: &EncParams,
                                    rand_context: &RandContext,
                                    num_pub: usize)
@@ -108,10 +108,10 @@ pub fn generate_multiple_key_pairs(params: &EncParams,
 ///
 /// Generates a new public key for an existing private key. The new public key can be used
 /// interchangeably with the existing public key(s). Generating n keys via
-/// ntru::generate_multiple_key_pairs() is more efficient than generating one and then calling
-/// ntru_gen_pub() n-1 times, so if the number of public keys needed is known beforehand and if
-/// speed matters, ntru_gen_key_pair_multi() should be used. Note that when decrypting, the public
-/// key of the key pair passed into ntru_decrypt() must match the public key used for encrypting
+/// `ntru::generate_multiple_key_pairs()` is more efficient than generating one and then calling
+/// `ntru_gen_pub()` n-1 times, so if the number of public keys needed is known beforehand and if
+/// speed matters, `ntru_gen_key_pair_multi()` should be used. Note that when decrypting, the public
+/// key of the key pair passed into `ntru_decrypt()` must match the public key used for encrypting
 /// the message. If a deterministic RNG is used, the key will be deterministic for a given random
 /// seed; otherwise, the key will be completely random.
 pub fn generate_public(params: &EncParams,
@@ -132,10 +132,10 @@ pub fn generate_public(params: &EncParams,
 /// If a deterministic RNG is used, the encrypted message will also be deterministic for a given
 /// combination of plain text, key, and random seed. See P1363.1 section 9.2.2.
 /// The parameters needed are the following:
-/// * msg: The message to encrypt as an ```u8``` slice.
-/// * public: The public key to encrypt the message with.
-/// * params: The NtruEncrypt parameters to use.
-/// * and_ctx: An initialized random number generator.
+/// * `msg`: The message to encrypt as an ```u8``` slice.
+/// * `public`: The public key to encrypt the message with.
+/// * `params`: The NTRU encryption parameters to use.
+/// * `and_ctx`: An initialized random number generator.
 pub fn encrypt(msg: &[u8],
                public: &PublicKey,
                params: &EncParams,
@@ -176,9 +176,7 @@ pub fn decrypt(enc: &[u8], kp: &KeyPair, params: &EncParams) -> Result<Box<[u8]>
 
     if result == 0 {
         let mut final_dec = Vec::with_capacity(dec_len as usize);
-        for i in 0..(dec_len as usize) {
-            final_dec.push(dec[i]);
-        }
+        final_dec.extend(dec.into_iter().take(dec_len as usize));
         Ok(final_dec.into_boxed_slice())
     } else {
         Err(Error::from(result))

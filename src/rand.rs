@@ -1,11 +1,10 @@
 //! Rand module
 //!
 //! This module includes all the needed structs and functions to interact with the randomness
-//! needed by NTRUEncrypt. Both, key generation and encryption need a source of randomness, for
-//! that they need a RandContext, that can be generated from a RandGen. The recommended RNG
-//! is the ```RNG_DEFAULT```. If needed, in this module random data can be generated with the
-//! ```generate()``` function. Also both random ```TernPoly``` and ```ProdPoly``` can be
-//! generated.
+//! needed by NTRU. Both, key generation and encryption need a source of randomness, for that they
+//! need a `RandContext`, that can be generated from a `RandGen`. The recommended RNG is the
+//! `RNG_DEFAULT`. If needed, in this module random data can be generated with the `generate()`
+//! function. Also both random `TernPoly` and `ProdPoly` can be generated.
 use std::{slice, ptr};
 use libc::{uint8_t, uint16_t, c_void};
 use types::{Error, TernPoly};
@@ -122,14 +121,14 @@ pub const RNG_DEVRANDOM: RandGen = RandGen {
 
 /// Default RNG
 ///
-/// CTR_DRBG seeded from /dev/urandom (on *nix) or CryptGenRandom() (on Windows)
+/// `CTR_DRBG` seeded from `/dev/urandom` (on *nix) or `CryptGenRandom()` (on Windows)
 pub const RNG_DEFAULT: RandGen = RandGen {
     init_fn: ffi::ntru_rand_default_init,
     generate_fn: ffi::ntru_rand_default_generate,
     release_fn: ffi::ntru_rand_default_release,
 };
 
-/// Deterministic RNG based on CTR_DRBG
+/// Deterministic RNG based on `CTR_DRBG`
 pub const RNG_CTR_DRBG: RandGen = RandGen {
     init_fn: ffi::ntru_rand_ctr_drbg_init,
     generate_fn: ffi::ntru_rand_ctr_drbg_generate,
