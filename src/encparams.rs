@@ -1,20 +1,20 @@
-//! NTRUEncrypt Encryption parameters
+//! NTRU encryption parameters
 //!
-//! This module contains the parameters for NTRUEncrypt. Theese parameters must be used when
+//! This module contains the parameters for NTRU encryption. Theese parameters must be used when
 //! encrypting, decrypting and generating key pairs. The recomendation is to use the default
 //! parameters for each level of security, and not use the deprecated parameters. The recommended
 //! parameters are the following:
 //!
-//! * ```DEFAULT_PARAMS_112_BITS``` for 112 bits of security.
-//! * ```DEFAULT_PARAMS_128_BITS``` for 128 bits of security.
-//! * ```DEFAULT_PARAMS_192_BITS``` for 192 bits of security.
-//! * ```DEFAULT_PARAMS_256_BITS``` for 256 bits of security.
+//! * `DEFAULT_PARAMS_112_BITS` for 112 bits of security.
+//! * `DEFAULT_PARAMS_128_BITS` for 128 bits of security.
+//! * `DEFAULT_PARAMS_192_BITS` for 192 bits of security.
+//! * `DEFAULT_PARAMS_256_BITS` for 256 bits of security.
 //!
 use libc::{c_char, uint16_t, uint8_t};
 use std::fmt;
 use super::ffi;
 
-/// A set of parameters for NtruEncrypt
+/// A set of parameters for NTRU encryption
 #[repr(C)]
 pub struct EncParams {
     /// Name of the parameter set
@@ -123,7 +123,7 @@ impl PartialEq for EncParams {
 impl fmt::Debug for EncParams {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut name = String::with_capacity(10);
-        for c in self.name.iter() {
+        for c in &self.name {
             name.push(*c as u8 as char);
         }
         write!(f, "param: {}", name)

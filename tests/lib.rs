@@ -21,10 +21,10 @@ use ntru::rand::{RNG_DEFAULT, RNG_CTR_DRBG};
 use ntru::types::{IntPoly, TernPoly, PrivateKey, PublicKey, KeyPair};
 
 fn encrypt_poly(m: IntPoly, r: &TernPoly, h: &IntPoly, q: u16) -> IntPoly {
-    let (mut e, _) = h.mult_tern(r, q);
-    e = e + m;
-    e.mod_mask(q - 1);
-    e
+    let (mut res, _) = h.mult_tern(r, q);
+    res = res + m;
+    res.mod_mask(q - 1);
+    res
 }
 
 fn decrypt_poly(e: IntPoly, private: &PrivateKey, modulus: u16) -> IntPoly {
@@ -69,7 +69,7 @@ fn it_keygen() {
 
     for params in param_arr {
         let rand_ctx = ntru::rand::init(&RNG_DEFAULT).unwrap();
-        let mut kp = ntru::generate_key_pair(&params, &rand_ctx).unwrap();
+        let mut kp = ntru::generate_key_pair(params, &rand_ctx).unwrap();
 
         // Encrypt a random message
         let m = TernPoly::rand(params.get_n(),
@@ -85,17 +85,17 @@ fn it_keygen() {
                                &rand_ctx)
             .unwrap();
 
-        let e = encrypt_poly(m_int.clone(), &r, &kp.get_public().get_h(), params.get_q());
+        let e = encrypt_poly(m_int.clone(), &r, kp.get_public().get_h(), params.get_q());
 
         // Decrypt and verify
-        let c = decrypt_poly(e, &kp.get_private(), params.get_q());
+        let c = decrypt_poly(e, kp.get_private(), params.get_q());
         assert_eq!(m_int, c);
 
         // Test deterministic key generation
-        kp = gen_key_pair("my test password", &params);
+        kp = gen_key_pair("my test password", params);
         let rng = RNG_CTR_DRBG;
         let rand_ctx2 = ntru::rand::init_det(&rng, b"my test password").unwrap();
-        let kp2 = ntru::generate_key_pair(&params, &rand_ctx2).unwrap();
+        let kp2 = ntru::generate_key_pair(params, &rand_ctx2).unwrap();
 
         assert_eq!(kp, kp2);
     }
@@ -127,7 +127,7 @@ fn test_encr_decr_nondet(params: &EncParams) {
 
     for plain_len in 0..max_len + 1 {
         // Test single public key
-        let encrypted = ntru::encrypt(&plain[0..plain_len as usize],
+        let encrypted = ntru::encrypt(&plain[..plain_len as usize],
                                       kp.get_public(),
                                       params,
                                       &rand_ctx)
@@ -139,20 +139,17 @@ fn test_encr_decr_nondet(params: &EncParams) {
         }
 
         // Test multiple public keys
-        for i in 0..num_pub_keys {
+        for (i, pub_key) in pub_multi1.into_iter().enumerate() {
             let rand_value = rand::thread_rng().gen_range(1, 100);
             if rand_value % 100 != 0 {
                 continue;
             }
 
             // Test priv_multi1/pub_multi1
-            let encrypted = ntru::encrypt(&plain[0..plain_len as usize],
-                                          &pub_multi1[i],
-                                          params,
-                                          &rand_ctx)
-                .unwrap();
+            let encrypted =
+                ntru::encrypt(&plain[0..plain_len as usize], pub_key, params, &rand_ctx).unwrap();
 
-            let kp_decrypt1 = KeyPair::new(priv_multi1.clone(), pub_multi1[i].clone());
+            let kp_decrypt1 = KeyPair::new(priv_multi1.clone(), pub_key.clone());
             let decrypted = ntru::decrypt(&encrypted, &kp_decrypt1, params).unwrap();
             for i in 0..plain_len {
                 assert_eq!(plain[i as usize], decrypted[i as usize]);

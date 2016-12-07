@@ -26,13 +26,13 @@ extern "C" {
                         public: *const PublicKey,
                         params: *const EncParams,
                         rand_ctx: *const RandContext,
-                        enc: *const uint8_t)
+                        enc: *mut uint8_t)
                         -> uint8_t;
     pub fn ntru_decrypt(enc: *const uint8_t,
                         kp: *const KeyPair,
                         params: *const EncParams,
-                        dec: *const uint8_t,
-                        dec_len: *const uint16_t)
+                        dec: *mut uint8_t,
+                        dec_len: *mut uint16_t)
                         -> uint8_t;
 
     // hash.h
