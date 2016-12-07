@@ -1,6 +1,6 @@
 [package]
 name = "ntru"
-version = "0.5.4"
+version = "0.5.5"
 license = "GPL-3.0+/BSD-3-Clause"
 build = "build.rs"
 links = "ntru"
