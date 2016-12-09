@@ -65,16 +65,16 @@ extern "C" {
     pub fn ntru_rand_release(rand_ctx: *mut RandContext) -> uint8_t;
 
     #[cfg(target_os = "windows")]
-    pub fn ntru_rand_wincrypt_init(rand_ctx: *mut CNtruRandContext,
+    pub fn ntru_rand_wincrypt_init(rand_ctx: *mut NtruRandContext,
                                    rand_gen: *const RandGen)
                                    -> uint8_t;
     #[cfg(target_os = "windows")]
     pub fn ntru_rand_wincrypt_generate(rand_data: *mut uint8_t,
                                        len: uint16_t,
-                                       rand_ctx: *const CNtruRandContext)
+                                       rand_ctx: *const NtruRandContext)
                                        -> uint8_t;
     #[cfg(target_os = "windows")]
-    pub fn ntru_rand_wincrypt_release(rand_ctx: *mut CNtruRandContext) -> uint8_t;
+    pub fn ntru_rand_wincrypt_release(rand_ctx: *mut NtruRandContext) -> uint8_t;
 
     #[cfg(not(target_os = "windows"))]
     pub fn ntru_rand_devrandom_init(rand_ctx: *mut RandContext,
