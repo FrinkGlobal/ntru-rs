@@ -6,7 +6,6 @@
 #![warn(trivial_casts, trivial_numeric_casts, unused, unused_extern_crates, unused_import_braces,
     unused_qualifications, unused_results, variant_size_differences)]
 
-#[macro_use]
 extern crate ntru;
 use ntru::types::{MAX_DEGREE, MAX_ONES, IntPoly, TernPoly, ProdPoly, PrivPoly};
 use ntru::encparams::EES1087EP1;
@@ -22,7 +21,7 @@ fn ntru_mult_int_nomod(a: &IntPoly, b: &IntPoly) -> IntPoly {
     for k in 0..n {
         let mut ck = 0i32;
         for i in 0..n {
-            ck += b.get_coeffs()[i] as i32 * a.get_coeffs()[((n + k - i) % n)] as i32;
+            ck += i32::from(b.get_coeffs()[i]) * i32::from(a.get_coeffs()[((n + k - i) % n)]);
         }
         coeffs.push(ck as i16);
     }
@@ -34,7 +33,7 @@ fn u8_arr_to_u16(arr: &[u8]) -> u16 {
     if arr.len() != 2 {
         panic!("u8_arr_to_u16() requires an array of 2 elements")
     }
-    ((arr[0] as u16) << 8) + arr[1] as u16
+    ((u16::from(arr[0])) << 8) + u16::from(arr[1])
 }
 
 fn ntru_priv_to_int(a: &PrivPoly, modulus: u16) -> IntPoly {
@@ -55,7 +54,7 @@ fn rand_int(n: u16, pow2q: u16, rand_ctx: &RandContext) -> IntPoly {
 
     let mut coeffs = vec![0i16; n as usize];
     for i in n..0 {
-        coeffs[i as usize] = rand_data[i as usize] as i16 >> shift;
+        coeffs[i as usize] = i16::from(rand_data[i as usize]) >> shift;
     }
     IntPoly::new(&coeffs.into_boxed_slice())
 }
@@ -126,15 +125,11 @@ fn it_mult_tern() {
     for _ in 0..10 {
         let mut n = u8_arr_to_u16(&rand_ctx.get_rng().generate(2, &rand_ctx).unwrap());
         n = 100 + (n % (MAX_DEGREE as u16 - 100));
-        let mut num_ones = u8_arr_to_u16(&rand_ctx.get_rng()
-            .generate(2, &rand_ctx)
-            .unwrap());
+        let mut num_ones = u8_arr_to_u16(&rand_ctx.get_rng().generate(2, &rand_ctx).unwrap());
         num_ones %= n / 2;
         num_ones %= MAX_ONES as u16;
 
-        let mut num_neg_ones = u8_arr_to_u16(&rand_ctx.get_rng()
-            .generate(2, &rand_ctx)
-            .unwrap());
+        let mut num_neg_ones = u8_arr_to_u16(&rand_ctx.get_rng().generate(2, &rand_ctx).unwrap());
         num_neg_ones %= n / 2;
         num_neg_ones %= MAX_ONES as u16;
 

@@ -8,13 +8,13 @@ environment:
     MSYS_BITS: 64
   - TARGET: beta-i686-pc-windows-gnu
     MSYS_BITS: 32
-  - TARGET: 1.14.0-x86_64-pc-windows-gnu
+  - TARGET: 1.21.0-x86_64-pc-windows-gnu
     MSYS_BITS: 64
-  - TARGET: 1.14.0-i686-pc-windows-gnu
+  - TARGET: 1.21.0-i686-pc-windows-gnu
     MSYS_BITS: 32
-  - TARGET: 1.14.0-x86_64-pc-windows-gnu
+  - TARGET: 1.21.0-x86_64-pc-windows-gnu
     MSYS_BITS: 64
-  - TARGET: 1.14.0-i686-pc-windows-gnu
+  - TARGET: 1.21.0-i686-pc-windows-gnu
     MSYS_BITS: 32
   - TARGET: 1.13.0-x86_64-pc-windows-gnu
     MSYS_BITS: 64
@@ -37,7 +37,11 @@ install:
 
 build_script:
   - cargo build
+  - cargo build --features "no-sse"
+  - cargo build --features "no-avx2"
   - cargo package
 
 test_script:
   - cargo test
+  - cargo test --features "no-sse"
+  - cargo test  --features "no-avx2"

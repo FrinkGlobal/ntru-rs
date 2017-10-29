@@ -1,4 +1,4 @@
-extern crate gcc;
+extern crate cc;
 
 use std::fs::File;
 use std::path::Path;
@@ -8,10 +8,16 @@ use std::env;
 
 fn main() {
     if cfg!(feature = "no-sse") && cfg!(feature = "sse") {
-        panic!("You need to decide if you want SSE support or not. If you have doubts, simply disable both options and let the build script autodetect it.");
+        panic!(
+            "You need to decide if you want SSE support or not. If you have doubts, simply \
+                disable both options and let the build script autodetect it."
+        );
     }
     if cfg!(feature = "no-avx2") && cfg!(feature = "avx2") {
-        panic!("You need to decide if you want AVX2 support or not. If you have doubts, simply disable both options and let the build script autodetect it.");
+        panic!(
+            "You need to decide if you want AVX2 support or not. If you have doubts, simply \
+                disable both options and let the build script autodetect it."
+        );
     }
     if cfg!(feature = "no-sse") && cfg!(feature = "avx2") {
         panic!("SSE is needed for AVX2 support.");
@@ -29,7 +35,9 @@ fn main() {
         env::set_var("AR", "ar");
     }
 
-    let mut avx2 = if cfg!(feature = "no-avx2") { false } else if cfg!(target_os = "windows") {
+    let mut avx2 = if cfg!(feature = "no-avx2") {
+        false
+    } else if cfg!(target_os = "windows") {
         cfg!(feature = "avx2")
     } else {
         let output = if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
@@ -67,7 +75,11 @@ fn main() {
         }
     };
 
-    let sse3 = if cfg!(feature = "no-sse3") { false } else if avx2 { true } else if cfg!(target_os = "windows") {
+    let sse3 = if cfg!(feature = "no-sse3") {
+        false
+    } else if avx2 {
+        true
+    } else if cfg!(target_os = "windows") {
         cfg!(feature = "sse")
     } else {
         let output = if cfg!(target_os = "freebsd") || cfg!(target_os = "openbsd") {
@@ -121,25 +133,27 @@ fn main() {
 
     env::set_var("CFLAGS", cflags);
 
-    let mut config = gcc::Config::new();
-    config.file("src/c/src/bitstring.c")
-          .file("src/c/src/encparams.c")
-          .file("src/c/src/hash.c")
-          .file("src/c/src/idxgen.c")
-          .file("src/c/src/key.c")
-          .file("src/c/src/mgf.c")
-          .file("src/c/src/ntru.c")
-          .file("src/c/src/poly.c")
-          .file("src/c/src/rand.c")
-          .file("src/c/src/arith.c")
-          .file("src/c/src/sha1.c")
-          .file("src/c/src/sha2.c")
-          .file("src/c/src/nist_ctr_drbg.c")
-          .file("src/c/src/rijndael.c");
+    let mut config = cc::Build::new();
+    config
+        .file("src/c/src/bitstring.c")
+        .file("src/c/src/encparams.c")
+        .file("src/c/src/hash.c")
+        .file("src/c/src/idxgen.c")
+        .file("src/c/src/key.c")
+        .file("src/c/src/mgf.c")
+        .file("src/c/src/ntru.c")
+        .file("src/c/src/poly.c")
+        .file("src/c/src/rand.c")
+        .file("src/c/src/arith.c")
+        .file("src/c/src/sha1.c")
+        .file("src/c/src/sha2.c")
+        .file("src/c/src/nist_ctr_drbg.c")
+        .file("src/c/src/rijndael.c");
 
     if sse3 &&
-       (cfg!(target_pointer_width = "64") || cfg!(target_os = "macos") ||
-        cfg!(target_os = "windows")) {
+        (cfg!(target_pointer_width = "64") || cfg!(target_os = "macos") ||
+             cfg!(target_os = "windows"))
+    {
         let out = if cfg!(target_os = "windows") {
             Command::new("c:\\mingw\\msys\\1.0\\bin\\perl")
                 .arg("src/c/src/sha1-mb-x86_64.pl")
@@ -152,7 +166,7 @@ fn main() {
                 .arg("macosx")
                 .output()
                 .unwrap()
-        } else  {
+        } else {
             Command::new("/usr/bin/perl")
                 .arg("src/c/src/sha1-mb-x86_64.pl")
                 .arg("elf")
@@ -206,7 +220,9 @@ fn main() {
             .output()
             .unwrap();
 
-        config.object("src/c/src/sha1-mb-x86_64.o").object("src/c/src/sha256-mb-x86_64.o");
+        config.object("src/c/src/sha1-mb-x86_64.o").object(
+            "src/c/src/sha256-mb-x86_64.o",
+        );
     }
 
     config.include("src/c/src").compile("libntru.a");
