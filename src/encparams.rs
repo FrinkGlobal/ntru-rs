@@ -96,26 +96,26 @@ impl Default for EncParams {
 impl PartialEq for EncParams {
     fn eq(&self, other: &EncParams) -> bool {
         self.name == other.name && self.n == other.n && self.q == other.q &&
-        self.prod_flag == other.prod_flag && self.df1 == other.df1 &&
-        (self.prod_flag == 0 || (self.df2 == other.df2 && self.df3 == other.df3)) &&
-        self.dm0 == other.dm0 && self.db == other.db && self.c == other.c &&
-        self.min_calls_r == other.min_calls_r &&
-        self.min_calls_mask == other.min_calls_mask &&
-        self.hash_seed == other.hash_seed && self.oid == other.oid &&
-        {
-            let input = [0u8; 100];
-            let mut hash1 = [0u8; 256];
-            let mut hash2 = [0u8; 256];
-            unsafe { (self.hash)(&input[0], 100, &mut hash1[0]) };
-            unsafe { (other.hash)(&input[0], 100, &mut hash2[0]) };
+            self.prod_flag == other.prod_flag && self.df1 == other.df1 &&
+            (self.prod_flag == 0 || (self.df2 == other.df2 && self.df3 == other.df3)) &&
+            self.dm0 == other.dm0 && self.db == other.db && self.c == other.c &&
+            self.min_calls_r == other.min_calls_r &&
+            self.min_calls_mask == other.min_calls_mask &&
+            self.hash_seed == other.hash_seed && self.oid == other.oid &&
+            {
+                let input = [0u8; 100];
+                let mut hash1 = [0u8; 256];
+                let mut hash2 = [0u8; 256];
+                unsafe { (self.hash)(&input[0], 100, &mut hash1[0]) };
+                unsafe { (other.hash)(&input[0], 100, &mut hash2[0]) };
 
-            for (i, b) in hash1.iter().enumerate() {
-                if *b != hash2[i] {
-                    return false;
+                for (i, b) in hash1.iter().enumerate() {
+                    if *b != hash2[i] {
+                        return false;
+                    }
                 }
-            }
-            true
-        } && self.hlen == other.hlen && self.pklen == other.pklen
+                true
+            } && self.hlen == other.hlen && self.pklen == other.pklen
     }
 }
 
@@ -133,17 +133,19 @@ impl fmt::Debug for EncParams {
 impl EncParams {
     /// Get the name of the parameter set
     pub fn get_name(&self) -> String {
-        let slice: [u8; 11] = [self.name[0] as u8,
-                               self.name[1] as u8,
-                               self.name[2] as u8,
-                               self.name[3] as u8,
-                               self.name[4] as u8,
-                               self.name[5] as u8,
-                               self.name[6] as u8,
-                               self.name[7] as u8,
-                               self.name[8] as u8,
-                               self.name[9] as u8,
-                               self.name[10] as u8];
+        let slice: [u8; 11] = [
+            self.name[0] as u8,
+            self.name[1] as u8,
+            self.name[2] as u8,
+            self.name[3] as u8,
+            self.name[4] as u8,
+            self.name[5] as u8,
+            self.name[6] as u8,
+            self.name[7] as u8,
+            self.name[8] as u8,
+            self.name[9] as u8,
+            self.name[10] as u8,
+        ];
         String::from_utf8_lossy(&slice).into_owned()
     }
 
@@ -172,7 +174,7 @@ impl EncParams {
         if self.q & (self.q - 1) != 0 {
             0
         } else {
-            let len_bits = self.n * EncParams::log2(self.q) as u16;
+            let len_bits = self.n * u16::from(EncParams::log2(self.q));
             (len_bits + 7) / 8
         }
     }
@@ -184,7 +186,7 @@ impl EncParams {
 
     /// Private key length
     pub fn private_len(&self) -> u16 {
-        let bits_per_idx = EncParams::log2(self.n - 1) as u16 + 1;
+        let bits_per_idx = u16::from(EncParams::log2(self.n - 1)) + 1;
         if self.prod_flag == 1 {
             let poly1_len = 4 + (bits_per_idx * 2 * self.df1 + 7) / 8;
             let poly2_len = 4 + (bits_per_idx * 2 * self.df2 + 7) / 8;
@@ -664,7 +666,23 @@ pub const DEFAULT_PARAMS_192_BITS: EncParams = EES887EP1;
 pub const DEFAULT_PARAMS_256_BITS: EncParams = EES1171EP1;
 
 /// All parameter sets, in an array
-pub const ALL_PARAM_SETS: [EncParams; 18] =
-    [EES401EP1, EES449EP1, EES677EP1, EES1087EP2, EES541EP1, EES613EP1, EES887EP1, EES1171EP1,
-     EES659EP1, EES761EP1, EES1087EP1, EES1499EP1, EES401EP2, EES439EP1, EES443EP1, EES593EP1,
-     EES587EP1, EES743EP1];
+pub const ALL_PARAM_SETS: [EncParams; 18] = [
+    EES401EP1,
+    EES449EP1,
+    EES677EP1,
+    EES1087EP2,
+    EES541EP1,
+    EES613EP1,
+    EES887EP1,
+    EES1171EP1,
+    EES659EP1,
+    EES761EP1,
+    EES1087EP1,
+    EES1499EP1,
+    EES401EP2,
+    EES439EP1,
+    EES443EP1,
+    EES593EP1,
+    EES587EP1,
+    EES743EP1,
+];

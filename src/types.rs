@@ -67,25 +67,27 @@ impl Sub for IntPoly {
 
 impl fmt::Debug for IntPoly {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "{{ n: {}, coeffs: [{}...{}] }}",
-               self.n,
-               self.coeffs[0],
-               self.coeffs[INT_POLY_SIZE - 1])
+        write!(
+            f,
+            "{{ n: {}, coeffs: [{}...{}] }}",
+            self.n,
+            self.coeffs[0],
+            self.coeffs[INT_POLY_SIZE - 1]
+        )
     }
 }
 
 impl PartialEq for IntPoly {
     fn eq(&self, other: &IntPoly) -> bool {
         self.n == other.n &&
-        {
-            for i in 0..self.n as usize {
-                if self.coeffs[i] != other.coeffs[i] {
-                    return false;
+            {
+                for i in 0..self.n as usize {
+                    if self.coeffs[i] != other.coeffs[i] {
+                        return false;
+                    }
                 }
+                true
             }
-            true
-        }
     }
 }
 
@@ -110,7 +112,7 @@ impl IntPoly {
         let mut coeffs = [0i16; INT_POLY_SIZE];
         let shift = 16 - pow2q;
         for i in (n as usize)..0usize {
-            coeffs[i] = rand_data[i] as i16 >> shift;
+            coeffs[i] = i16::from(rand_data[i]) >> shift;
         }
 
         IntPoly {
@@ -164,8 +166,10 @@ impl IntPoly {
     /// polynomials. It also returns if the number of coefficients differ or not.
     pub fn mult_tern(&self, b: &TernPoly, mod_mask: u16) -> (IntPoly, bool) {
         if self.n != b.n {
-            panic!("To multiply a IntPoly by a TernPoly the number of coefficients must \
-                    be the same for both polynomials")
+            panic!(
+                "To multiply a IntPoly by a TernPoly the number of coefficients must \
+                    be the same for both polynomials"
+            )
         }
         let mut c: IntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_tern(self, b, &mut c, mod_mask) };
@@ -201,8 +205,10 @@ impl IntPoly {
     /// polynomials. It also returns if the number of coefficients differ or not.
     pub fn mult_prod(&self, b: &ProdPoly, mod_mask: u16) -> (IntPoly, bool) {
         if self.n != b.n {
-            panic!("To multiply a IntPoly by a ProdPoly the number of coefficients must \
-                    be the same for both polynomials")
+            panic!(
+                "To multiply a IntPoly by a ProdPoly the number of coefficients must \
+                    be the same for both polynomials"
+            )
         }
         let mut c: IntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_prod(self, b, &mut c, mod_mask) };
@@ -216,9 +222,12 @@ impl IntPoly {
     /// coefficients differ or not.
     pub fn mult_priv(&self, b: &PrivPoly, mod_mask: u16) -> (IntPoly, bool) {
         if (b.is_product() && self.n != b.get_poly_prod().n) ||
-           (!b.is_product() && self.n != b.get_poly_tern().n) {
-            panic!("To multiply a IntPoly by a ProdPoly the number of coefficients must \
-                    be the same for both polynomials")
+            (!b.is_product() && self.n != b.get_poly_tern().n)
+        {
+            panic!(
+                "To multiply a IntPoly by a ProdPoly the number of coefficients must \
+                    be the same for both polynomials"
+            )
         }
         let mut c: IntPoly = Default::default();
         let result = unsafe { ffi::ntru_mult_priv(b, self, &mut c, mod_mask) };
@@ -254,14 +263,14 @@ impl IntPoly {
     /// Check if both polynomials are equals given a modulus
     pub fn equals_mod(&self, other: &IntPoly, modulus: u16) -> bool {
         self.n == other.n &&
-        {
-            for i in 0..self.n as usize {
-                if (self.coeffs[i] - other.coeffs[i]) as i32 % modulus as i32 != 0 {
-                    return false;
+            {
+                for i in 0..self.n as usize {
+                    if i32::from(self.coeffs[i] - other.coeffs[i]) % i32::from(modulus) != 0 {
+                        return false;
+                    }
                 }
+                true
             }
-            true
-        }
     }
 
     /// Check if the IntPoly equals 1
@@ -316,33 +325,35 @@ impl Clone for TernPoly {
 
 impl fmt::Debug for TernPoly {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,
-               "{{ n: {}, num_ones: {}, num_neg_ones: {}, ones: [{}...{}], neg_ones: [{}...{}] }}",
-               self.n,
-               self.num_ones,
-               self.num_neg_ones,
-               self.ones[0],
-               self.ones[MAX_ONES - 1],
-               self.neg_ones[0],
-               self.neg_ones[MAX_ONES - 1])
+        write!(
+            f,
+            "{{ n: {}, num_ones: {}, num_neg_ones: {}, ones: [{}...{}], neg_ones: [{}...{}] }}",
+            self.n,
+            self.num_ones,
+            self.num_neg_ones,
+            self.ones[0],
+            self.ones[MAX_ONES - 1],
+            self.neg_ones[0],
+            self.neg_ones[MAX_ONES - 1]
+        )
     }
 }
 
 impl PartialEq for TernPoly {
     fn eq(&self, other: &TernPoly) -> bool {
         self.n == other.n && self.num_ones == other.num_ones &&
-        self.num_neg_ones == other.num_neg_ones &&
-        {
-            for i in 0..MAX_ONES {
-                if self.ones[i] != other.ones[i] {
-                    return false;
+            self.num_neg_ones == other.num_neg_ones &&
+            {
+                for i in 0..MAX_ONES {
+                    if self.ones[i] != other.ones[i] {
+                        return false;
+                    }
+                    if self.neg_ones[i] != other.neg_ones[i] {
+                        return false;
+                    }
                 }
-                if self.neg_ones[i] != other.neg_ones[i] {
-                    return false;
-                }
+                true
             }
-            true
-        }
     }
 }
 
@@ -450,13 +461,14 @@ impl ProdPoly {
     /// * *df3_ones*: number of ones ones in the third ternary polynomial
     /// * *df3_neg_ones*: number of negative ones in the third ternary polynomial
     /// * *rand_ctx*: a random number generator
-    pub fn rand(n: u16,
-                df1: u16,
-                df2: u16,
-                df3_ones: u16,
-                df3_neg_ones: u16,
-                rand_ctx: &RandContext)
-                -> Option<ProdPoly> {
+    pub fn rand(
+        n: u16,
+        df1: u16,
+        df2: u16,
+        df3_ones: u16,
+        df3_neg_ones: u16,
+        rand_ctx: &RandContext,
+    ) -> Option<ProdPoly> {
         let f1 = TernPoly::rand(n, df1, df1, rand_ctx);
         if f1.is_none() {
             return None;
@@ -585,13 +597,13 @@ impl fmt::Debug for PrivPoly {
 impl PartialEq for PrivPoly {
     fn eq(&self, other: &PrivPoly) -> bool {
         self.prod_flag == other.prod_flag &&
-        {
-            if self.prod_flag > 0 {
-                self.get_poly_prod() == other.get_poly_prod()
-            } else {
-                self.get_poly_tern() == other.get_poly_tern()
+            {
+                if self.prod_flag > 0 {
+                    self.get_poly_prod() == other.get_poly_prod()
+                } else {
+                    self.get_poly_tern() == other.get_poly_tern()
+                }
             }
-        }
     }
 }
 

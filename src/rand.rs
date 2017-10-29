@@ -59,8 +59,8 @@ impl RandContext {
 /// Random number generator
 pub struct RandGen {
     /// Random number generator initialization function
-    init_fn: unsafe extern "C" fn(rand_ctx: *mut RandContext, rand_gen: *const RandGen)
-                                      -> uint8_t,
+    init_fn:
+        unsafe extern "C" fn(rand_ctx: *mut RandContext, rand_gen: *const RandGen) -> uint8_t,
     /// A pointer to a function that takes an array and an array size, and fills the array with
     /// random data
     generate_fn: unsafe extern "C" fn(rand_data: *mut uint8_t,
@@ -175,11 +175,12 @@ impl TernPoly {
     /// Random ternary polynomial
     ///
     /// Generates a random ternary polynomial. If an error occurs, it will return None.
-    pub fn rand(n: u16,
-                num_ones: u16,
-                num_neg_ones: u16,
-                rand_ctx: &RandContext)
-                -> Option<TernPoly> {
+    pub fn rand(
+        n: u16,
+        num_ones: u16,
+        num_neg_ones: u16,
+        rand_ctx: &RandContext,
+    ) -> Option<TernPoly> {
         let mut poly: TernPoly = Default::default();
         let result = unsafe { ffi::ntru_rand_tern(n, num_ones, num_neg_ones, &mut poly, rand_ctx) };
 

@@ -63,7 +63,7 @@ fn it_params_from_key() {
             if params1 == params2 {
                 assert_eq!(i, j);
             } else {
-                assert!(i != j);
+                assert_ne!(i, j);
             }
         }
     }
